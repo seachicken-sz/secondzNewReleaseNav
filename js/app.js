@@ -250,7 +250,7 @@ const entries=[["予算",config.budgetOptions.find(x=>x.id===a.budget)?.label||"
 if(a.store!=="yes"&&a.seven!==null)entries.push(["近くのセブンイレブン",a.seven==="yes"?"あり":"なし"]);
 entries.push(["ファンクラブ",a.fc?"加入済み":"未加入"],["加入中のサブスク",subs.length?subs.join("・"):"なし"]);
 if(priority)entries.push(["特に優先したいこと",priority]);
-return '<div class="answer-summary"><details class="answer-summary-details"><summary>あなたの回答</summary><dl>'+entries.map(([k,v])=>'<div class="answer-item"><dt>'+escapeHtml(k)+'</dt><dd>'+escapeHtml(v)+'</dd></div>').join("")+'</dl></details><button class="btn answer-restart screen-only" type="button" data-action="restart">もう一度回答する</button></div>';
+return '<div class="answer-summary"><details class="answer-summary-details"><summary>あなたの回答</summary><dl>'+entries.map(([k,v])=>'<div class="answer-item"><dt>'+escapeHtml(k)+'</dt><dd>'+escapeHtml(v)+'</dd></div>').join("")+'</dl><button class="btn answer-restart screen-only" type="button" data-action="restart">もう一度回答する</button></details></div>';
 }
 function resultContent(result,print=false){
 const a=result.answers;
@@ -263,11 +263,45 @@ section("03",messages.headings.support,supportMarkup(data.support,a)+addOnMarkup
 '<hr class="divider"><p class="small" style="text-align:center">非公式ファンツール｜タムごとDaily<br>集計・購入条件は必ず公式・販売店の最新情報をご確認ください。</p>';
 answers=oldAnswers;return html;
 }
+function compactResultContent(result){
+const a=result.answers;
+const purchase=buildPurchase(a,config,messages);
+const support=buildSupport(a,messages);
+const budget=config.budgetOptions.find(x=>x.id===a.budget)?.label||"0円";
+const cdTitle=config.release?.cdTitle||"ザユウノメイ／本当のことを言うと";
+const shopSummary=a.store==="yes"?"近くの対象店舗で早めに予約・購入しよう！":
+a.store==="no"?"集計対象の通販サイトで早めに予約・購入しよう！":
+"対象店舗を調べて、店舗か通販で予約・購入しよう！";
+const purchaseCards=purchase.items.length?purchase.items.map(item=>
+'<div class="compact-product">'+
+'<p class="compact-cd-title">'+escapeHtml(item.productIds?.length===1&&item.productIds[0]==="digital"?(config.release?.digitalTitle||"本当のことを言うと"):cdTitle)+'</p>'+
+productList(item)+'<p class="compact-price">'+money(item.price)+'</p></div>').join("") :
+'<p>購入なしでもできる応援を楽しもう！</p>';
+const optional=purchase.secondaries?.length?
+'<p class="compact-subheading">もう1枚の候補</p><ul class="compact-alternatives">'+
+purchase.secondaries.map(x=>'<li>'+escapeHtml(x.label)+'（合計 '+money(x.total)+'）</li>').join("")+'</ul>':"";
+const methods=[shopSummary];
+if(a.store!=="yes"&&a.seven==="yes")methods.push("対象商品はセブン-イレブン受取もチェック（送料無料）。");
+if(purchase.items.some(item=>item.productIds?.includes("set")))methods.push("3形態の特典付きセットは専用の商品ページで購入しよう！");
+if(purchase.items.some(item=>item.productIds?.includes("fc")))methods.push("FC限定盤は12/21 23:59までに予約しよう！");
+if(purchase.items.some(item=>item.productIds?.includes("digital")))methods.push("デジタル配信「本当のことを言うと」もチェック！");
+const selected=(a.subs||[]).filter(id=>id!=="unext").map(id=>config.subscriptions.find(x=>x.id===id)?.label).filter(Boolean);
+const music=selected.length?selected.join("・")+"で新曲を聴こう！":"Spotifyの無料プランでも新曲を聴こう！";
+const supports=[music];
+if(support.stationhead)supports.push("Stationheadのsecondzチャンネルにも参加しよう！");
+if(support.unext)supports.push("U-NEXT会員はUSEN推し活リクエストを追加でできるよ！");
+supports.push("YouTubeでMVを視聴・高評価しよう！","SNSでの拡散やラジオ・推し活リクエストも応援に！");
+return '<div class="compact-header"><p class="pill">タムごと新曲応援ナビ</p><h1>あなたの新曲応援プラン</h1><p>予算：'+escapeHtml(budget)+'</p></div>'+
+'<section class="compact-section"><h2>01｜これを買うのがおすすめ！</h2>'+purchaseCards+optional+'</section>'+
+'<section class="compact-section"><h2>02｜こんな買い方がおすすめ！</h2>'+listText(methods)+'</section>'+
+'<section class="compact-section"><h2>03｜他にこんなこともできるよ！</h2>'+listText(supports)+'</section>'+
+'<p class="compact-footer">詳細・購入リンクはタムごと新曲応援ナビで確認してね！<br>非公式ファンツール｜購入条件・期限は公式情報をご確認ください。</p>';
+}
 function showResult(){
 view="result";
 const result=lastResult||load(RESULT_KEY);if(!result||result.releaseId!==config.releaseId){home();return}
 lastResult=result;
-frame('<div id="result-view" class="card">'+resultContent(result)+'</div><section class="card footer-actions"><div class="actions"><button class="btn" data-action="export">結果を画像で保存</button><button class="btn secondary" data-action="home">トップへ戻る</button><button class="btn ghost" data-action="restart">もう一度診断する</button></div><p class="small">診断結果はこの端末に保存済み。再診断が完了すると上書きされます。</p></section>');
+frame('<div id="result-view" class="card">'+resultContent(result)+'</div><section class="card footer-actions"><div class="actions"><button class="btn" data-action="export">簡易版を画像で保存</button><button class="btn secondary" data-action="home">トップへ戻る</button><button class="btn ghost" data-action="restart">もう一度診断する</button></div><p class="small">診断結果はこの端末に保存済み。再診断が完了すると上書きされます。</p></section>');
 }
 async function exportImage(button){
 const result=lastResult||load(RESULT_KEY);if(!result)return;
@@ -275,22 +309,21 @@ button.disabled=true;button.textContent="画像を作成中…";
 const node=document.createElement("div");
 node.className="image-canvas";
 node.id="result-image-export";
-node.innerHTML=resultContent(result,true);
-node.querySelectorAll(".add-on-details, .answer-summary-details").forEach(el=>el.open=true);
+node.innerHTML=compactResultContent(result);
 document.body.appendChild(node);
 try{
 await document.fonts?.ready;
 const {toBlob}=await import("https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/+esm");
 const blob=await toBlob(node,{backgroundColor:"#ffffff",pixelRatio:1,cacheBust:true,style:{position:"static",left:"auto",top:"auto"}});
 if(!blob)throw Error("PNGの作成に失敗しました");
-const filename="新曲応援プラン_"+new Date().toLocaleDateString("sv-SE",{timeZone:"Asia/Tokyo"}).replaceAll("-","")+".png";
+const filename="新曲応援プラン_簡易版_"+new Date().toLocaleDateString("sv-SE",{timeZone:"Asia/Tokyo"}).replaceAll("-","")+".png";
 const file=new File([blob],filename,{type:"image/png"});
 if(navigator.canShare?.({files:[file]})&&navigator.share){
 try{await navigator.share({files:[file],title:"新曲応援プラン"});return}catch(e){if(e.name==="AbortError")return}
 }
 const url=URL.createObjectURL(blob);
 const a=document.createElement("a");a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
-}catch(err){console.error(err);alert("画像の保存ができませんでした。通信環境を確認して再度お試しください。");}finally{node.remove();button.disabled=false;button.textContent="結果を画像で保存"}
+}catch(err){console.error(err);alert("画像の保存ができませんでした。通信環境を確認して再度お試しください。");}finally{node.remove();button.disabled=false;button.textContent="簡易版を画像で保存"}
 }
 document.addEventListener("click",event=>{
 const toggle=event.target.closest("[data-store-toggle]");
