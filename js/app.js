@@ -3,7 +3,8 @@ const DRAFT_KEY="secondzReleaseNav:draft:v1";
 const RESULT_KEY="secondzReleaseNav:result:v1";
 const $=s=>document.querySelector(s);
 let config,messages,answers={},step=0,view="home",lastResult=null;
-const QUESTIONS=["store","seven","fc","subs","budget","priority"];
+const QUESTIONS=["budget","store","seven","fc","subs","priority"];
+const isSmallBudget=budget=>budget==="zero"||budget==="300";
 const defaultAnswers=()=>({store:null,seven:null,fc:null,subs:[],budget:"zero",priority:null});
 const load=key=>{try{return JSON.parse(localStorage.getItem(key))}catch{return null}};
 const save=(key,obj)=>{try{localStorage.setItem(key,JSON.stringify(obj));return true}catch{return false}};
@@ -13,7 +14,10 @@ const p=txt=>"<p>"+escapeHtml(txt)+"</p>";
 const money=value=>Number(value).toLocaleString("ja-JP")+"円";
 const deadline=()=>isBeforeDeadline(config.deadline);
 const fcAvailable=()=>answers.fc===true&&deadline();
-const steps=()=>QUESTIONS.filter(q=>(q!=="seven"||answers.store!=="yes")&&(q!=="priority"||["1800","3600","5000"].includes(answers.budget)));
+const steps=()=>QUESTIONS.filter(q=>{
+  if(isSmallBudget(answers.budget))return q==="budget"||q==="subs";
+  return (q!=="seven"||answers.store!=="yes")&&(q!=="priority"||["1800","3600"].includes(answers.budget));
+});
 const question=()=>steps()[step];
 function frame(content){$("#app").innerHTML=content;window.scrollTo({top:0,behavior:"instant"})}
 function home(){
@@ -28,13 +32,18 @@ frame('<section class="card"><div class="intro"><img class="home-brand-logo" src
 function start(resume=false){
 const d=resume?load(DRAFT_KEY):null;
 answers=d&&d.releaseId===config.releaseId?{...defaultAnswers(),...d.answers}:defaultAnswers();
-step=resume?Math.max(0,Math.min(Number(d.step)||0,steps().length-1)):0;
+// Older drafts stored their step in the former order; migrate by question name.
+const oldOrder=["store","seven","fc","subs","budget","priority"];
+const oldIndex=Number(d?.step)||0;
+const oldQuestion=d?.version===1?oldOrder[Math.max(0,Math.min(oldIndex,oldOrder.length-1))]:null;
+step=resume?(oldQuestion&&steps().includes(oldQuestion)?steps().indexOf(oldQuestion):Math.max(0,Math.min(oldIndex,steps().length-1))):0;
 if(answers.budget===null)answers.budget="zero";
-if(!["1800","3600","5000"].includes(answers.budget))answers.priority=null;
+if(!["1800","3600"].includes(answers.budget))answers.priority=null;
+if(isSmallBudget(answers.budget)){answers.store=null;answers.seven=null;answers.fc=null;}
 answers.subs=answers.subs.filter(x=>x!=="none");
 saveDraft();showQuestion();
 }
-function saveDraft(){save(DRAFT_KEY,{releaseId:config.releaseId,version:1,step,answers});}
+function saveDraft(){save(DRAFT_KEY,{releaseId:config.releaseId,version:2,step,answers});}
 function choice(name,value,label,checked,multiple=false){
 return '<button type="button" class="choice '+(multiple?"checkbox ":"")+(checked?"active":"")+'" data-choice="'+escapeHtml(name)+'" data-value="'+escapeHtml(value)+'" aria-pressed="'+checked+'"><span>'+escapeHtml(label)+'</span></button>';
 }
@@ -188,6 +197,11 @@ return card(m.storeTitle,listText([m.storeBenefit1,m.storeBenefit2,m.storePickup
 }
 function methodMarkup(data,print=false){
 let html="";
+if(isSmallBudget(answers.budget)){
+  if(data.digitalMethod)return card(messages.method.digitalHeading,
+    p(messages.method.digitalMethod)+'<div class="site-links">'+linkFor("予約・購入ページ",config.links.digital)+'</div>');
+  return "";
+}
 if(answers.store==="yes")html=storeMarkup();
 else if(answers.store==="no")html=onlineMarkup(answers.seven==="yes");
 else{
@@ -246,9 +260,11 @@ function resultSummary(a){
 const store={yes:"近くに対象店舗あり",no:"近くに対象店舗なし",unknown:"対象店舗は未確認"}[a.store]||"未回答";
 const subs=(a.subs||[]).map(id=>config.subscriptions.find(s=>s.id===id)?.label).filter(Boolean);
 const priority=config.priorities.find(x=>x.id===a.priority)?.label;
-const entries=[["予算",config.budgetOptions.find(x=>x.id===a.budget)?.label||"0円"],["対象店舗",store]];
-if(a.store!=="yes"&&a.seven!==null)entries.push(["近くのセブンイレブン",a.seven==="yes"?"あり":"なし"]);
-entries.push(["ファンクラブ",a.fc?"加入済み":"未加入"],["加入中のサブスク",subs.length?subs.join("・"):"なし"]);
+const entries=[["予算",config.budgetOptions.find(x=>x.id===a.budget)?.label||"0円"]];
+if(!isSmallBudget(a.budget))entries.push(["対象店舗",store]);
+if(!isSmallBudget(a.budget)&&a.store!=="yes"&&a.seven!==null)entries.push(["近くのセブンイレブン",a.seven==="yes"?"あり":"なし"]);
+if(!isSmallBudget(a.budget))entries.push(["ファンクラブ",a.fc?"加入済み":"未加入"]);
+entries.push(["加入中のサブスク",subs.length?subs.join("・"):"なし"]);
 if(priority)entries.push(["特に優先したいこと",priority]);
 return '<div class="answer-summary"><details class="answer-summary-details"><summary>あなたの回答</summary><dl>'+entries.map(([k,v])=>'<div class="answer-item"><dt>'+escapeHtml(k)+'</dt><dd>'+escapeHtml(v)+'</dd></div>').join("")+'</dl><button class="btn answer-restart screen-only" type="button" data-action="restart">もう一度回答する</button></details></div>';
 }
@@ -258,8 +274,8 @@ const data={purchase:buildPurchase(a,config,messages),method:buildMethod(a,confi
 const oldAnswers=answers;answers=a;
 const html='<div class="result-meta"><p class="pill">MY NEW RELEASE SUPPORT PLAN</p><h1>あなたの新曲応援プラン</h1><p class="release-title">'+escapeHtml(config.release?.cdTitle||"ザユウノメイ／本当のことを言うと")+'</p></div>'+resultSummary(a)+
 section("01","これを買うのがおすすめ！",purchaseMarkup(data.purchase))+
-section("02","こんな買い方がおすすめ！",methodMarkup(data.method,print))+
-section("03",messages.headings.support,supportMarkup(data.support,a)+addOnMarkup(data.purchase))+
+(a.budget==="zero"?"":section("02","こんな買い方がおすすめ！",methodMarkup(data.method,print)))+
+section(a.budget==="zero"?"02":"03",messages.headings.support,supportMarkup(data.support,a)+addOnMarkup(data.purchase))+
 '<hr class="divider"><p class="small" style="text-align:center">非公式ファンツール｜タムごとDaily<br>集計・購入条件は必ず公式・販売店の最新情報をご確認ください。</p>';
 answers=oldAnswers;return html;
 }
@@ -280,8 +296,8 @@ productList(item)+'<p class="compact-price">'+money(item.price)+'</p></div>').jo
 const optional=purchase.secondaries?.length?
 '<p class="compact-subheading">もう1枚の候補</p><ul class="compact-alternatives">'+
 purchase.secondaries.map(x=>'<li>'+escapeHtml(x.label)+'（合計 '+money(x.total)+'）</li>').join("")+'</ul>':"";
-const methods=[shopSummary];
-if(a.store!=="yes"&&a.seven==="yes")methods.push("対象商品はセブンイレブン受取もチェック（送料無料）。");
+const methods=isSmallBudget(a.budget)?(a.budget==="300"?["デジタル配信「本当のことを言うと」を予約・購入しよう！"]:[]):[shopSummary];
+if(!isSmallBudget(a.budget)&&a.store!=="yes"&&a.seven==="yes")methods.push("対象商品はセブンイレブン受取もチェック（送料無料）。");
 if(purchase.items.some(item=>item.productIds?.includes("set")))methods.push("3形態の特典付きセットは専用の商品ページで購入しよう！");
 if(purchase.items.some(item=>item.productIds?.includes("fc")))methods.push("FC限定盤は12/21 23:59までに予約しよう！");
 if(purchase.items.some(item=>item.productIds?.includes("digital")))methods.push("デジタル配信「本当のことを言うと」もチェック！");
@@ -293,8 +309,8 @@ if(support.unext)supports.push("U-NEXT会員はUSEN推し活リクエストを�
 supports.push("YouTubeでMVを視聴・高評価しよう！","SNSでの拡散やラジオ・推し活リクエストも応援に！");
 return '<div class="compact-header"><p class="pill">タムごと新曲応援ナビ</p><h1>あなたの新曲応援プラン</h1><p>予算：'+escapeHtml(budget)+'</p></div>'+
 '<section class="compact-section"><h2>01｜これを買うのがおすすめ！</h2>'+purchaseCards+optional+'</section>'+
-'<section class="compact-section"><h2>02｜こんな買い方がおすすめ！</h2>'+listText(methods)+'</section>'+
-'<section class="compact-section"><h2>03｜他にこんなこともできるよ！</h2>'+listText(supports)+'</section>'+
+(methods.length?'<section class="compact-section"><h2>02｜こんな買い方がおすすめ！</h2>'+listText(methods)+'</section>':"")+
+'<section class="compact-section"><h2>'+(methods.length?"03":"02")+'｜他にこんなこともできるよ！</h2>'+listText(supports)+'</section>'+
 '<p class="compact-footer">詳細・購入リンクはタムごと新曲応援ナビで確認してね！<br>非公式ファンツール｜購入条件・期限は公式情報をご確認ください。</p>';
 }
 function showResult(){
@@ -354,9 +370,12 @@ case "export":exportImage(button);break;
 document.addEventListener("input",event=>{
 if(event.target.id==="budget-range"){
 const id=config.budgetOptions[Number(event.target.value)].id;
-answers.budget=id;if(!["1800","3600","5000"].includes(id))answers.priority=null;
+answers.budget=id;if(!["1800","3600"].includes(id))answers.priority=null;
+if(isSmallBudget(id)){answers.store=null;answers.seven=null;answers.fc=null;}
 saveDraft();$("#budget-label").textContent=config.budgetOptions[Number(event.target.value)].label;
 $("#next").disabled=false;
+const progress=document.querySelector(".progress > span");
+if(progress)progress.style.width=(100/steps().length)+"%";
 }
 });
 async function init(){
