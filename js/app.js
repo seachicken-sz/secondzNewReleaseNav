@@ -2,7 +2,7 @@ import {buildPurchase,buildMethod,buildSupport,isBeforeDeadline} from "./result.
 const DRAFT_KEY="secondzReleaseNav:draft:v1";
 const RESULT_KEY="secondzReleaseNav:result:v1";
 const $=s=>document.querySelector(s);
-let config,messages,answers={},step=0,view="home",lastResult=null;
+let config,messages,answers={},step=0,view="home",lastResult=null,progressPercent=0;
 const QUESTIONS=["budget","store","seven","fc","subs","priority"];
 const isSmallBudget=budget=>budget==="zero"||budget==="300";
 const defaultAnswers=()=>({store:null,seven:null,fc:null,subs:[],budget:"zero",priority:null});
@@ -41,13 +41,14 @@ if(answers.budget===null)answers.budget="zero";
 if(!["1800","3600"].includes(answers.budget))answers.priority=null;
 if(isSmallBudget(answers.budget)){answers.store=null;answers.seven=null;answers.fc=null;}
 answers.subs=answers.subs.filter(x=>x!=="none");
+progressPercent=step/steps().length*100;
 saveDraft();showQuestion();
 }
 function saveDraft(){save(DRAFT_KEY,{releaseId:config.releaseId,version:2,step,answers});}
 function choice(name,value,label,checked,multiple=false){
 return '<button type="button" class="choice '+(multiple?"checkbox ":"")+(checked?"active":"")+'" data-choice="'+escapeHtml(name)+'" data-value="'+escapeHtml(value)+'" aria-pressed="'+checked+'"><span>'+escapeHtml(label)+'</span></button>';
 }
-function showQuestion(){
+function showQuestion(fromPercent=null){
 view="question";
 const q=question(),total=steps().length,number=step+1;
 let title="",description="",content="";
@@ -77,7 +78,15 @@ title="どれを優先したい？";description="あなたが特に楽しみた�
 content=config.priorities.filter(item=>item.id!=="variety"||fcAvailable()).map(item=>choice(q,item.id,item.label,answers.priority===item.id)).join("");
 }
 const enabled=isAnswered(q);
-frame('<section class="card"><div class="progress"><span style="width:'+(number/total*100)+'%"></span></div><h1>'+escapeHtml(title)+'</h1>'+(description?'<p class="muted">'+escapeHtml(description)+'</p>':'')+'<div class="choices">'+content+'</div><div class="actions"><button class="btn" id="next" data-action="next" '+(!enabled?"disabled":"")+'>'+(step===total-1?"結果を見る":"次へ")+'</button><button class="btn ghost" data-action="back">'+(step===0?"トップに戻る":"ひとつ前に戻る")+'</button></div></section>');
+frame('<section class="card"><div class="progress" role="progressbar" aria-label="回答の進み具合" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+Math.round(progressPercent)+'"><span style="width:'+(fromPercent??progressPercent)+'%"></span></div><h1>'+escapeHtml(title)+'</h1>'+(description?'<p class="muted">'+escapeHtml(description)+'</p>':'')+'<div class="choices">'+content+'</div><div class="actions"><button class="btn" id="next" data-action="next" '+(!enabled?"disabled":"")+'>'+(step===total-1?"結果を見る":"次へ")+'</button><button class="btn ghost" data-action="back">'+(step===0?"トップに戻る":"ひとつ前に戻る")+'</button></div></section>');
+if(fromPercent!==null){
+  const bar=document.querySelector(".progress > span");
+  if(bar){
+    // Replaced screens otherwise reset CSS transitions: paint the old width first.
+    bar.getBoundingClientRect();
+    requestAnimationFrame(()=>{if(bar.isConnected)bar.style.width=progressPercent+"%";});
+  }
+}
 }
 function isAnswered(q){
 if(q==="subs")return true;
@@ -103,9 +112,11 @@ saveDraft();showQuestion();
 function next(){
 if(!isAnswered(question()))return;
 if(step+1>=steps().length){finish();return}
-step++;saveDraft();showQuestion();
+const from=progressPercent;
+step++;progressPercent=step/steps().length*100;
+saveDraft();showQuestion(from);
 }
-function back(){if(step===0){home();return}step--;saveDraft();showQuestion()}
+function back(){if(step===0){home();return}const from=progressPercent;step--;progressPercent=step/steps().length*100;saveDraft();showQuestion(from)}
 function finish(){
 const result={releaseId:config.releaseId,version:1,completedAt:new Date().toISOString(),answers:{...answers,subs:[...answers.subs]}};
 save(RESULT_KEY,result);clear(DRAFT_KEY);lastResult=result;showResult();
@@ -374,8 +385,7 @@ answers.budget=id;if(!["1800","3600"].includes(id))answers.priority=null;
 if(isSmallBudget(id)){answers.store=null;answers.seven=null;answers.fc=null;}
 saveDraft();$("#budget-label").textContent=config.budgetOptions[Number(event.target.value)].label;
 $("#next").disabled=false;
-const progress=document.querySelector(".progress > span");
-if(progress)progress.style.width=(100/steps().length)+"%";
+// Keep the progress bar still until the user presses Next.
 }
 });
 async function init(){
