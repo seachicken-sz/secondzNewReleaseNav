@@ -36,7 +36,10 @@ export function buildPurchase(a,c,m){
       const id=baseId==="fc"&&!canFc?"a":baseId||"a";
       item(product(id).label,product(id).price,m.purchase[id]||"",[id]);
     }
-    const regular=items[0].productIds.length===1&&items[0].productIds[0]==="regular";
+    const primaryIds=items[0].productIds;
+    const candidates=["regular","a","b","fc"].filter(id=>!primaryIds.includes(id)&&(id!=="fc"||canFc));
+    candidates.forEach(id=>secondaries.push({id,label:product(id).label,price:product(id).price,description:m.purchase[id]||""}));
+    const regular=primaryIds.length===1&&primaryIds[0]==="regular";
     add(regular?"regularAddEdition":"editionAddRegular");
     add(regular?"regularSet":"editionSet");
     add("threeSetBonus");add("consider");
