@@ -2,7 +2,7 @@
   "headings": {
     "purchase": "おすすめの購入内容",
     "method": "あなたに合った購入方法",
-    "support": "その他の応援"
+    "support": "他にこんなこともできるよ！"
   },
   "purchase": {
     "zero": "お金をかけずにできる応援もたくさんあるよ！",
@@ -33,7 +33,8 @@
       "iphoneGift": "iPhoneユーザーなら＋255円で友達に楽曲をプレゼントするのもおすすめ！",
       "spotifyPremium": "＋1,080円でSpotify Premiumに加入してみない？ 1ヶ月だけでも加入してStationheadに参加すると、Billboardポイントへの貢献につながるよ！",
       "discs": "限定盤の追加購入もおすすめ！ Blu-ray盤とDVD盤は内容は同じだけど盤面デザインが違うので、揃えてみるのもいいかも！",
-      "joinFc": "せっかくならFCに加入してFC限定盤も買ってみない？"
+      "joinFc": "せっかくならFCに加入してFC限定盤も買ってみない？",
+      "storeChecker": "CD発売後に店舗へ行くなら、TSZ在庫チェッカーさんを活用しよう！ オリコン・Billboard JAPANの加盟店を調べたり、発売後にはCDのおおよその在庫数を入力して、同じ地域のsecondzと情報共有ができるよ！"
     },
     "extraLinks": {
       "digital": "購入はこちら！",
@@ -70,17 +71,18 @@
     "digitalHeading": "デジタル配信「本当のことを言うと」を買うには"
   },
   "support": {
-    "freeSpotify": "音楽サブスクに加入していなくても、発売されたらSpotifyの無料プランで新曲を聴いてみよう！",
-    "spotify": "Spotify Premiumで新曲を聴こう！",
-    "prime": "Amazon Music Primeで新曲を聴こう！",
-    "unlimited": "Amazon Music Unlimitedで新曲を聴こう！",
-    "line": "LINE MUSICで新曲を聴こう！",
-    "youtubeMusic": "YouTube Musicで新曲を楽しもう！",
-    "apple": "Apple Musicで新曲を聴こう！",
-    "stationhead": "Spotify PremiumまたはApple Musicに加入しているなら、Stationheadのsecondzチャンネルもチェック！",
-    "unext": "U-NEXTに加入している方は、推し活リクエストを2回できるよ！ ※利用条件・回数は公式の最新案内を確認してね。",
+    "freeSpotify": "音楽サブスク未加入なら、Spotifyの無料プランでも新曲を聴けるよ！",
+    "spotify": "Spotify Premium",
+    "prime": "Amazon Music Prime",
+    "unlimited": "Amazon Music Unlimited",
+    "line": "LINE MUSIC",
+    "youtubeMusic": "YouTube Music Premium",
+    "apple": "Apple Music",
+    "stationhead": "Spotify PremiumまたはApple Musicの有料会員で18歳以上ならStationhead（ステヘ）に参加できるよ！プレイリストを自分で作らず、secondzチャンネルで一緒に再生しよう。詳しい設定方法もチェックしてね！",
+    "unext": "U-NEXT加入者は推し活リクエストを2回できるよ！ タムごとDailyで毎日のリクエストをチェックしよう。※利用回数・条件は公式の最新情報を確認してね。",
     "youtube": "YouTubeにMVが公開されたら高評価！ たくさん再生して楽しもう！",
     "sns": "各SNSでいいね・拡散・応援コメントをしよう！",
-    "request": "ラジオリクエストや推し活リクエストに参加しよう！ タムごとDailyも活用してね！"
+    "request": "ラジオリクエストや推し活リクエストに参加しよう！ タムごとDailyも活用してね！",
+    "listenIntro": "11/25〜先行配信される「本当のことを言うと」をたくさん聴こう！"
   }
 }
