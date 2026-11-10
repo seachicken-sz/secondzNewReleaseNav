@@ -151,7 +151,8 @@
     },
     "stationheadGuide": "https://www.universal-music.co.jp/other/umjstationhead/",
     "stationheadIOS": "https://apps.apple.com/us/app/stationhead/id1076117681",
-    "stationheadAndroid": "https://play.google.com/store/apps/details?id=com.stationhead.app"
+    "stationheadAndroid": "https://play.google.com/store/apps/details?id=com.stationhead.app",
+    "unextCampaign": "https://usen.oshireq.com/campaign/unext"
   },
   "release": {
     "cdTitle": "ザユウノメイ／本当のことを言うと",
