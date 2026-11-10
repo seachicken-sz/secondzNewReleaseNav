@@ -4,7 +4,7 @@ const RESULT_KEY="secondzReleaseNav:result:v1";
 const $=s=>document.querySelector(s);
 let config,messages,answers={},step=0,view="home",lastResult=null;
 const QUESTIONS=["store","seven","fc","subs","budget","priority"];
-const defaultAnswers=()=>({store:null,seven:null,fc:null,subs:[],budget:null,priority:null});
+const defaultAnswers=()=>({store:null,seven:null,fc:null,subs:[],budget:"zero",priority:null});
 const load=key=>{try{return JSON.parse(localStorage.getItem(key))}catch{return null}};
 const save=(key,obj)=>{try{localStorage.setItem(key,JSON.stringify(obj));return true}catch{return false}};
 const clear=key=>{try{localStorage.removeItem(key)}catch{}};
@@ -29,6 +29,8 @@ function start(resume=false){
 const d=resume?load(DRAFT_KEY):null;
 answers=d&&d.releaseId===config.releaseId?{...defaultAnswers(),...d.answers}:defaultAnswers();
 step=resume?Math.max(0,Math.min(Number(d.step)||0,steps().length-1)):0;
+if(answers.budget===null)answers.budget="zero";
+answers.subs=answers.subs.filter(x=>x!=="none");
 saveDraft();showQuestion();
 }
 function saveDraft(){save(DRAFT_KEY,{releaseId:config.releaseId,version:1,step,answers});}
@@ -40,12 +42,11 @@ view="question";
 const q=question(),total=steps().length,number=step+1;
 let title="",description="",content="";
 if(q==="store"){
-title="お家の近くに対象店舗はありますか？";
-description="オリコン・Billboard JAPAN両方の集計対象になっているCD販売店について教えてね！";
+title="家の近くにオリコン・Billboard JAPAN両方の集計対象になっているCD販売店はありますか？";
 content=choice(q,"yes","ある",answers.store==="yes")+choice(q,"no","ない",answers.store==="no")+choice(q,"unknown","わからない",answers.store==="unknown");
 }
 if(q==="seven"){
-title="お家の近くにセブンイレブンはありますか？";
+title="家の近くにセブンイレブンはありますか？";
 content=choice(q,"yes","ある",answers.seven==="yes")+choice(q,"no","ない",answers.seven==="no");
 }
 if(q==="fc"){
@@ -53,14 +54,13 @@ title="timeleszのファンクラブに加入していますか？";
 content=choice(q,"yes","加入している",answers.fc===true)+choice(q,"no","加入していない",answers.fc===false);
 }
 if(q==="subs"){
-title="加入しているサブスクを教えてください！";description="複数選択OK！ U-NEXTも選べるよ。";
-content=config.subscriptions.map(s=>choice(q,s.id,s.label,answers.subs.includes(s.id),true)).join("")+
-choice(q,"none","どれにも加入していない",answers.subs.length===1&&answers.subs[0]==="none",true);
+title="加入しているサブスクを選択してください。";description="加入しているものをすべて選択して「次へ」を押してください。加入しているものがないときは、そのまま「次へ」を押してください。";
+content=config.subscriptions.map(s=>choice(q,s.id,s.label,answers.subs.includes(s.id),true)).join("");
 }
 if(q==="budget"){
 title="新曲の応援に使える予算は？";description="無理のない範囲で選んでね！";
 const idx=Math.max(0,config.budgetOptions.findIndex(b=>b.id===answers.budget));
-content='<div class="budget-value" id="budget-label">'+escapeHtml(config.budgetOptions[idx].label)+'</div><input class="range" id="budget-range" type="range" min="0" max="'+(config.budgetOptions.length-1)+'" step="1" value="'+idx+'" aria-label="予算を選択"><div class="range-label"><span>0円</span><span>もっと！</span></div><div class="note">購入する商品は、質問への回答をもとに最後にご案内します。</div>';
+content='<div class="budget-value" id="budget-label">'+escapeHtml(config.budgetOptions[idx].label)+'</div><input class="range" id="budget-range" type="range" min="0" max="'+(config.budgetOptions.length-1)+'" step="1" value="'+idx+'" aria-label="予算を選択"><div class="range-label"><span>0円</span><span>もっと！</span></div>';
 }
 if(q==="priority"){
 title="どれを優先したい？";description="あなたが特に楽しみたいことを1つ選んでね！";
@@ -70,15 +70,21 @@ const enabled=isAnswered(q);
 frame('<section class="card"><p class="pill">STEP '+number+' / '+total+'</p><div class="progress"><span style="width:'+(number/total*100)+'%"></span></div><h1>'+escapeHtml(title)+'</h1>'+(description?'<p class="muted">'+escapeHtml(description)+'</p>':'')+'<div class="choices">'+content+'</div><div class="actions"><button class="btn" id="next" data-action="next" '+(!enabled?"disabled":"")+'>'+(step===total-1?"結果を見る":"次へ")+'</button><button class="btn ghost" data-action="back">'+(step===0?"トップに戻る":"ひとつ前に戻る")+'</button></div></section>');
 }
 function isAnswered(q){
-if(q==="subs")return answers.subs.length>0;
+if(q==="subs")return true;
 if(q==="fc")return answers.fc!==null;
 return answers[q]!==null&&answers[q]!==undefined;
 }
 function setAnswer(q,val){
 if(q==="fc"){answers.fc=val==="yes";if(!fcAvailable()&&answers.priority==="variety")answers.priority=null}
 else if(q==="subs"){
-if(val==="none")answers.subs=["none"];
-else {const other=answers.subs.filter(s=>s!=="none");answers.subs=other.includes(val)?other.filter(s=>s!==val):[...other,val]}
+answers.subs=answers.subs.includes(val)?answers.subs.filter(s=>s!==val):[...answers.subs,val];
+saveDraft();
+document.querySelectorAll('[data-choice="subs"]').forEach(el=>{
+const active=answers.subs.includes(el.dataset.value);
+el.classList.toggle("active",active);
+el.setAttribute("aria-pressed",String(active));
+});
+return;
 }
 else if(q==="store"){answers.store=val;if(val==="yes")answers.seven=null}
 else {answers[q]=val}
@@ -94,17 +100,20 @@ function finish(){
 const result={releaseId:config.releaseId,version:1,completedAt:new Date().toISOString(),answers:{...answers,subs:[...answers.subs]}};
 save(RESULT_KEY,result);clear(DRAFT_KEY);lastResult=result;showResult();
 }
-function card(title,body,css=""){return '<div class="panel '+css+'"><h3>'+escapeHtml(title)+'</h3>'+body+'</div>'}
+function card(title,body,css=""){return '<div class="panel '+css+'">'+(title?'<h3>'+escapeHtml(title)+'</h3>':"")+body+'</div>'}
 function listText(items){return "<ul>"+items.map(x=>"<li>"+escapeHtml(x)+"</li>").join("")+"</ul>"}
 function purchaseMarkup(data){
+const cdTitle=config.release?.cdTitle||"ザユウノメイ／本当のことを言うと";
+const digitalTitle=config.release?.digitalTitle||"本当のことを言うと";
+const displayTitle=(name,isDigital=false)=>'<span class="product-name">'+escapeHtml(isDigital?digitalTitle:cdTitle)+'</span><strong class="edition-name">'+escapeHtml(name)+'</strong>';
 if(!data.items.length)return card("購入以外の応援を楽しもう！",p(messages.purchase.zero),"highlight");
 let html="";
 data.items.forEach((item,i)=>{
-const heading=i===0?"おすすめの購入プラン":"もうひとつの候補";
-html+=card(heading,'<p><strong>'+escapeHtml(item.title)+'</strong></p>'+(item.description?p(item.description):"")+'<div class="price">'+money(item.price)+'</div>',i===0?"highlight":"");
+const heading=i===0?"":"もうひとつの候補";
+html+=card(heading,'<div class="product-heading">'+displayTitle(item.title,item.title===config.products.digital.label)+'</div>'+(item.description?p(item.description):"")+'<div class="price">'+money(item.price)+'</div>',i===0?"highlight purchase-feature":"");
 });
 if(data.secondaries?.length){
-html+=card("もう1枚はここから選ぼう！",data.secondaries.map(s=>'<div class="panel"><strong>'+escapeHtml(s.label)+'</strong><div class="detail">合計 '+money(s.total)+'</div></div>').join(""));
+html+=card("もう1枚はここから選ぼう！",data.secondaries.map(s=>'<div class="option-card">'+displayTitle(s.label)+'<div class="detail">合計 '+money(s.total)+'</div></div>').join(""));
 }
 if(data.extra?.length)html+=card(messages.purchase.extra,data.extra.map(s=>'<p>'+escapeHtml(s)+'</p>').join(""));
 if(data.notes?.length)html+='<div class="note">'+data.notes.map(s=>'<p>'+escapeHtml(s)+'</p>').join("")+'</div>';
@@ -146,13 +155,23 @@ return card("音楽・サブスクで応援",data.streaming.map(x=>p(x)).join(""
 card("みんなでできる応援",listText([messages.support.youtube,messages.support.sns,messages.support.request])+linkFor("タムごとDailyを開く",config.links.daily));
 }
 function section(index,title,body){return '<section class="section"><h2 class="section-title"><span class="number">'+index+'</span>'+escapeHtml(title)+'</h2>'+body+'</section>'}
+function resultSummary(a){
+const store={yes:"近くに対象店舗あり",no:"近くに対象店舗なし",unknown:"対象店舗は未確認"}[a.store]||"未回答";
+const subs=(a.subs||[]).map(id=>config.subscriptions.find(s=>s.id===id)?.label).filter(Boolean);
+const priority=config.priorities.find(x=>x.id===a.priority)?.label;
+const entries=[["予算",config.budgetOptions.find(x=>x.id===a.budget)?.label||"0円"],["対象店舗",store]];
+if(a.store!=="yes"&&a.seven!==null)entries.push(["近くのセブンイレブン",a.seven==="yes"?"あり":"なし"]);
+entries.push(["ファンクラブ",a.fc?"加入済み":"未加入"],["加入中のサブスク",subs.length?subs.join("・"):"なし"]);
+if(priority)entries.push(["特に優先したいこと",priority]);
+return '<div class="answer-summary"><h2>あなたの回答</h2><dl>'+entries.map(([k,v])=>'<div class="answer-item"><dt>'+escapeHtml(k)+'</dt><dd>'+escapeHtml(v)+'</dd></div>').join("")+'</dl></div>';
+}
 function resultContent(result,print=false){
 const a=result.answers;
 const data={purchase:buildPurchase(a,config,messages),method:buildMethod(a,config),support:buildSupport(a,messages)};
 const oldAnswers=answers;answers=a;
-const html='<div class="result-meta"><p class="pill">MY NEW RELEASE SUPPORT PLAN</p><h1>あなたの新曲応援プラン</h1><p class="subtle">予算：'+escapeHtml(config.budgetOptions.find(x=>x.id===a.budget)?.label||"未設定")+'</p></div>'+
-section("01",messages.headings.purchase,purchaseMarkup(data.purchase))+
-section("02",messages.headings.method,methodMarkup(data.method,print))+
+const html='<div class="result-meta"><p class="pill">MY NEW RELEASE SUPPORT PLAN</p><h1>あなたの新曲応援プラン</h1><p class="release-title">'+escapeHtml(config.release?.cdTitle||"ザユウノメイ／本当のことを言うと")+'</p></div>'+resultSummary(a)+
+section("01","これを買うのがおすすめ！",purchaseMarkup(data.purchase))+
+section("02","こんな買い方がおすすめ！",methodMarkup(data.method,print))+
 section("03",messages.headings.support,supportMarkup(data.support))+
 '<hr class="divider"><p class="small" style="text-align:center">非公式ファンツール｜タムごとDaily<br>集計・購入条件は必ず公式・販売店の最新情報をご確認ください。</p>';
 answers=oldAnswers;return html;
