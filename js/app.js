@@ -127,14 +127,31 @@ return html;
 }
 function addOnMarkup(data){
 if(!data.extra?.length)return "";
-const content=data.extra.map(part=>{
-  const text=typeof part==="string"?part:part.text;
-  const link=typeof part==="string"?null:part.link;
-  const links={digital:config.links.digital,fcSpecial:config.links.fcSpecial,joinFc:config.links.joinFc,spotifyPremium:config.links.spotifyPremium,storeList:config.links.storeList};
-  const names={digital:"購入はこちら！",fcSpecial:"購入はこちら！",joinFc:"FC加入ページはこちら！",spotifyPremium:"Spotify Premiumはこちら！",storeList:"TSZ在庫チェッカー"};
-  const attribution=part.credit?'<p class="detail">作成・運営：chino様<br>※外部サイトに移動します</p>':"";
-  return '<div class="add-on-item"><p>'+escapeHtml(text)+'</p>'+(link&&links[link]?'<div class="addon-link">'+linkFor(names[link],links[link])+'</div>':"")+attribution+'</div>';
-}).join("");
+const groupName=part=>{
+const k=part.key||"";
+if(["regularAddEdition","regularSet","editionAddRegular","editionSet","threeSet3600","threeSetSongs3600","threeSetBonus","consider","fc5000","discs"].includes(k))return "CDでもっと応援";
+if(["digital5000","iphoneGift"].includes(k))return "デジタル配信で応援";
+if(["spotifyPremium"].includes(k))return "サブスク・Stationheadで応援";
+if(["joinFc"].includes(k))return "ファンクラブで応援";
+if(["storeChecker"].includes(k))return "店舗で応援";
+return "その他の応援";
+};
+const links={digital:config.links.digital,fcSpecial:config.links.fcSpecial,joinFc:config.links.joinFc,spotifyPremium:config.links.spotifyPremium,storeList:config.links.storeList};
+const names={digital:"購入はこちら！",fcSpecial:"購入はこちら！",joinFc:"FC加入ページはこちら！",spotifyPremium:"Spotify Premiumはこちら！",storeList:"TSZ在庫チェッカー"};
+const groups=new Map();
+data.extra.forEach(part=>{
+const label=groupName(part);
+if(!groups.has(label))groups.set(label,[]);
+groups.get(label).push(part);
+});
+const content=Array.from(groups.entries()).map(([label,items])=>
+'<section class="add-on-group"><h4 class="add-on-group-title">'+escapeHtml(label)+'</h4>'+
+items.map(part=>{
+const text=typeof part==="string"?part:part.text;
+const link=typeof part==="string"?null:part.link;
+const attribution=part.credit?'<p class="detail">作成・運営：chino様<br>※外部サイトに移動します</p>':"";
+return '<div class="add-on-item"><p>'+escapeHtml(text)+'</p>'+(link&&links[link]?'<div class="addon-link">'+linkFor(names[link],links[link])+'</div>':"")+attribution+'</div>';
+}).join("")+'</section>').join("");
 return '<div class="add-on"><details class="add-on-details"><summary>'+escapeHtml(messages.purchase.extraTitle)+'</summary><div class="add-on-body">'+content+'</div></details></div>';
 }
 function linkFor(name,url){return '<a href="'+escapeHtml(url)+'" target="_blank" rel="noopener noreferrer">'+escapeHtml(name)+' ↗</a>'}
@@ -216,12 +233,12 @@ p(messages.support.stationhead)+
 '<div class="site-links">'+linkFor("secondzチャンネル",config.links.stationhead)+'</div>');
 }
 if(data.unext){
-html+=card("U-NEXT加入者さんへ！",p(messages.support.unext)+
-'<div class="site-links">'+linkFor("U-NEXT会員限定・2回投票のページ",config.links.unextCampaign)+'</div>');
+html+=card("U-NEXT会員の方へ！",p(messages.support.unext)+
+'<div class="site-links">'+linkFor("詳しくはこちら",config.links.unextCampaign)+'</div>');
 }
 html+=card("みんなでできる応援",
 listText([messages.support.youtube,messages.support.sns,messages.support.request])+
-'<div class="app-link-grid">'+linkFor("タムごとDailyを開く",config.links.daily)+'</div>');
+'<div class="app-link-grid">'+linkFor("タムごとDailyで応援する",config.links.daily)+'</div>');
 return html;
 }
 function section(index,title,body){return '<section class="section"><h2 class="section-title"><span class="number">'+index+'</span>'+escapeHtml(title)+'</h2>'+body+'</section>'}
@@ -233,7 +250,7 @@ const entries=[["予算",config.budgetOptions.find(x=>x.id===a.budget)?.label||"
 if(a.store!=="yes"&&a.seven!==null)entries.push(["近くのセブンイレブン",a.seven==="yes"?"あり":"なし"]);
 entries.push(["ファンクラブ",a.fc?"加入済み":"未加入"],["加入中のサブスク",subs.length?subs.join("・"):"なし"]);
 if(priority)entries.push(["特に優先したいこと",priority]);
-return '<div class="answer-summary"><h2>あなたの回答</h2><dl>'+entries.map(([k,v])=>'<div class="answer-item"><dt>'+escapeHtml(k)+'</dt><dd>'+escapeHtml(v)+'</dd></div>').join("")+'</dl></div>';
+return '<div class="answer-summary"><details class="answer-summary-details"><summary>あなたの回答</summary><dl>'+entries.map(([k,v])=>'<div class="answer-item"><dt>'+escapeHtml(k)+'</dt><dd>'+escapeHtml(v)+'</dd></div>').join("")+'</dl></details><button class="btn answer-restart screen-only" type="button" data-action="restart">もう一度回答する</button></div>';
 }
 function resultContent(result,print=false){
 const a=result.answers;
@@ -259,7 +276,7 @@ const node=document.createElement("div");
 node.className="image-canvas";
 node.id="result-image-export";
 node.innerHTML=resultContent(result,true);
-node.querySelectorAll(".add-on-details").forEach(el=>el.open=true);
+node.querySelectorAll(".add-on-details, .answer-summary-details").forEach(el=>el.open=true);
 document.body.appendChild(node);
 try{
 await document.fonts?.ready;
