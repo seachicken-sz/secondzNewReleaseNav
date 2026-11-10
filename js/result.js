@@ -30,7 +30,7 @@ export function buildPurchase(a,c,m){
   if(level==="1800"){
     if(choice==="complete"){
       if(canFc)item(product("fc").label,1800,m.purchase.completeBefore,["fc"]);
-      else item("初回限定盤A または B",1800,eligible?m.purchase.completeBefore:m.purchase.completeAfter,["a","b"]);
+      else item(product("a").label,1800,eligible?m.purchase.completeBefore:m.purchase.completeAfter,["a"]);
       if(eligible&&!a.fc)notes.push(m.purchase.fcJoin);
     }else{
       const id=baseId==="fc"&&!canFc?"a":baseId||"a";
