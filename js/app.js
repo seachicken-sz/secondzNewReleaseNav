@@ -172,6 +172,7 @@ return '<div class="delivery-item"><h4>'+escapeHtml(title)+'</h4><p>'+linkFor(ti
 function sevenMarkup(){
 const m=messages.method;
 return card(m.sevenTitle,
+p(m.sevenInfo)+
 '<div class="site-links">'+linkFor("タワレコオンライン",config.links.tower)+linkFor("セブンネット",config.links.seven)+'</div>');
 }
 function onlineMarkup(showSeven){
@@ -334,7 +335,7 @@ btn.setAttribute("aria-expanded",String(selected));
 btn.classList.toggle("active",selected);
 });
 const panel=document.getElementById("store-expand");
-if(panel)panel.innerHTML=active?"":toggle.dataset.storeToggle==="yes"?storeMarkup():onlineMarkup(answers.seven==="yes");
+if(panel)panel.innerHTML=active?"":toggle.dataset.storeToggle==="yes"?storeMarkup():onlineMarkup((lastResult?.answers?.seven??answers.seven)==="yes");
 return;
 }
 const choiceEl=event.target.closest("[data-choice]");
