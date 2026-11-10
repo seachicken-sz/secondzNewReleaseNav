@@ -74,3 +74,20 @@ body{background:radial-gradient(ellipse 90% 250px at 50% 0%,#f6e8f8 0%,transpare
 .image-canvas .fc-deadline{font-size:24px}
 .image-canvas .store-finder{font-size:19px}
 .image-canvas .store-finder .detail{font-size:17px}
+
+/* Extra support accordion */
+.add-on{margin:18px 0 10px;border:1px solid #eacde8;border-radius:16px;background:#fffafe;overflow:hidden}
+.add-on-details summary{list-style:none;cursor:pointer;padding:17px 18px;color:#8a4496;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.add-on-details summary::-webkit-details-marker{display:none}
+.add-on-details summary::after{content:"＋";font-size:22px;font-weight:500;line-height:1}
+.add-on-details[open] summary::after{content:"−"}
+.add-on-body{padding:4px 18px 18px;border-top:1px solid #f0deee}
+.add-on-item{padding:12px 0;border-bottom:1px solid #efdfed}
+.add-on-item:last-child{border-bottom:0}
+.add-on-item p{margin:4px 0;line-height:1.85}
+.addon-link{margin:8px 0 0}
+.addon-link a{display:inline-flex;align-items:center;padding:9px 14px;border-radius:9px;background:#f1e2f5;font-size:13px;font-weight:750;text-decoration:none}
+.image-canvas .add-on-details summary{font-size:25px}
+.image-canvas .add-on-details summary::after{display:none}
+.image-canvas .add-on-item{padding:18px 0}
+.image-canvas .addon-link a{font-size:20px}
