@@ -290,3 +290,10 @@ body{background:radial-gradient(ellipse 90% 250px at 50% 0%,#f6e8f8 0%,transpare
 .image-canvas .compact-alternatives{font-size:19px}
 .image-canvas .compact-footer{font-size:16px;color:#777;line-height:1.8;text-align:center;border-top:1px solid #e6d9e8;padding-top:24px;margin-top:36px}
 .image-canvas .compact-section:not(:first-child){page-break-inside:avoid}
+
+/* ちょい足し: 一つのカテゴリを連続した説明として見せる */
+.add-on-group .add-on-item{border-bottom:none;padding:4px 0}
+.add-on-group .add-on-item + .add-on-item{margin-top:6px}
+.add-on-group .add-on-item p{margin:5px 0;line-height:1.85}
+.add-on-group+.add-on-group{border-top:1px solid #e9d5ef;padding-top:18px;margin-top:15px}
+.image-canvas .add-on-group .add-on-item{border-bottom:none;padding:6px 0}
