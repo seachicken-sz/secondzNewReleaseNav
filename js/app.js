@@ -147,7 +147,7 @@ fc:{intro:"わちゃわちゃを楽しみたいならFC限定盤！",sections:[
 const editionLabels={regular:"通常盤",a:"初回限定盤A",b:"初回限定盤B",fc:"FC限定盤"};
 function editionContents(id){
 const d=editionDetails[id];if(!d)return "";
-return '<div class="edition-details"><p class="edition-intro">'+escapeHtml(d.intro)+'</p><p class="edition-contents-label">収録内容</p>'+
+return '<div class="edition-details"><p class="edition-intro">'+escapeHtml(d.intro)+'</p>'+(id==="regular"?"":'<p class="edition-contents-label">収録内容</p>')+
 d.sections.map(section=>'<div class="edition-section"><h4>'+escapeHtml(section.title)+'</h4><ul>'+section.items.map(([name,emphasis])=>
 '<li'+(emphasis?' class="edition-emphasis"':'')+'>'+escapeHtml(name)+'</li>').join("")+'</ul></div>').join("")+'</div>';
 }
@@ -389,6 +389,7 @@ const node=document.createElement("div");
 node.className="image-canvas";
 node.id="result-image-export";
 node.innerHTML=compactResultContent(result);
+node.querySelectorAll(".edition-set-item").forEach(el=>el.open=true);
 document.body.appendChild(node);
 try{
 await document.fonts?.ready;
