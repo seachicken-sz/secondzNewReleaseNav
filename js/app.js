@@ -116,7 +116,7 @@ if(!data.items.length)return card("購入以外の応援を楽しもう！",p(me
 let html="";
 data.items.forEach((item,i)=>{
 const heading=i===0?"":"もうひとつの候補";
-html+=card(heading,'<div class="product-heading"><span class="product-name">'+escapeHtml(cdTitle)+'</span>'+productList(item)+'</div>'+(item.description?p(item.description):"")+'<div class="price">'+money(item.price)+'</div>',i===0?"highlight purchase-feature":"");
+html+=card(heading,'<div class="product-heading"><span class="product-name">'+escapeHtml(item.productIds?.length===1&&item.productIds[0]==="digital"?(config.release?.digitalTitle||"本当のことを言うと"):cdTitle)+'</span>'+productList(item)+'</div>'+(item.description?p(item.description):"")+'<div class="price">'+money(item.price)+'</div>',i===0?"highlight purchase-feature":"");
 });
 if(data.secondaries?.length){
 html+=card("もう1枚はここから選ぼう！",data.secondaries.map(s=>'<div class="option-card"><span class="product-name">'+escapeHtml(cdTitle)+'</span><strong class="edition-name">'+escapeHtml(s.label)+'</strong><div class="detail">合計 '+money(s.total)+'</div></div>').join(""));
