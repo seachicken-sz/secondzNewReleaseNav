@@ -20,7 +20,7 @@ function home(){
 view="home";
 const draft=load(DRAFT_KEY);
 const result=load(RESULT_KEY);
-frame('<section class="card"><div class="intro"><img class="home-brand-logo" src="./img/new-release-nav-logo.svg?v=20261110-logo-fix2" width="440" height="121" style="display:block;width:100%;max-width:440px;height:auto;max-height:145px;object-fit:contain;margin:0 auto 12px" alt="タムごと新曲応援ナビ"><p class="lead muted">自分にぴったりの新曲応援方法を見つけよう！<br>予算も楽しみ方も、あなたのペースで。</p></div><div class="actions"><button class="btn" data-action="start">ナビをはじめる</button>'+
+frame('<section class="card"><div class="intro"><img class="home-brand-logo" src="./img/new-release-nav-logo.svg?v=20261110-logo-fix2" width="440" height="121" style="display:block;width:100%;max-width:440px;height:auto;max-height:145px;object-fit:contain;margin:0 auto 12px" alt="タムごと新曲応援ナビ"><p class="home-release-copy">2/3 release「ザユウノメイ/本当のことを言うと」を応援しよう！<br>予算や好みに応じた応援プランをチェックできます！</p><div class="home-cautions"><p>※特典情報・受け取り・支払いについては必ず購入先で確認してください。</p><p>※特典内容は変更される可能性があります。<br>必ず購入前に公式サイトで確認をしてください。</p></div></div><div class="actions"><button class="btn" data-action="start">ナビをはじめる</button>'+
 (draft&&draft.releaseId===config.releaseId?'<button class="btn secondary" data-action="resume">前回の続きから</button>':"")+
 (result&&result.releaseId===config.releaseId?'<button class="btn secondary" data-action="saved">前回の結果を見る</button>':"")+
 '</div><p class="small" style="text-align:center;margin-top:22px">回答はこの端末のブラウザにのみ保存します。</p></section>');
@@ -68,7 +68,7 @@ title="どれを優先したい？";description="あなたが特に楽しみた�
 content=config.priorities.filter(item=>item.id!=="variety"||fcAvailable()).map(item=>choice(q,item.id,item.label,answers.priority===item.id)).join("");
 }
 const enabled=isAnswered(q);
-frame('<section class="card"><p class="pill">STEP '+number+' / '+total+'</p><div class="progress"><span style="width:'+(number/total*100)+'%"></span></div><h1>'+escapeHtml(title)+'</h1>'+(description?'<p class="muted">'+escapeHtml(description)+'</p>':'')+'<div class="choices">'+content+'</div><div class="actions"><button class="btn" id="next" data-action="next" '+(!enabled?"disabled":"")+'>'+(step===total-1?"結果を見る":"次へ")+'</button><button class="btn ghost" data-action="back">'+(step===0?"トップに戻る":"ひとつ前に戻る")+'</button></div></section>');
+frame('<section class="card"><div class="progress"><span style="width:'+(number/total*100)+'%"></span></div><h1>'+escapeHtml(title)+'</h1>'+(description?'<p class="muted">'+escapeHtml(description)+'</p>':'')+'<div class="choices">'+content+'</div><div class="actions"><button class="btn" id="next" data-action="next" '+(!enabled?"disabled":"")+'>'+(step===total-1?"結果を見る":"次へ")+'</button><button class="btn ghost" data-action="back">'+(step===0?"トップに戻る":"ひとつ前に戻る")+'</button></div></section>');
 }
 function isAnswered(q){
 if(q==="subs")return true;
