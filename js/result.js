@@ -17,10 +17,14 @@ export function buildPurchase(a,c,m){
   if(level==="zero")return finish();
   if(level==="300"){
     item(product("digital").label,255,m.purchase.digital,["digital"]);
+    add("digitalAdd1400");
+    add("editionAdd300");
     return finish();
   }
   if(level==="1400"){
     item(product("regular").label,1320,m.purchase.regular,["regular"]);
+    add("digitalAdd1400Budget","digital");
+    if(canFc)add("fcAdd1400Budget","fcSpecial");
     return finish();
   }
   if(level==="1800"){
