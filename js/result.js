@@ -70,6 +70,9 @@ export function buildPurchase(a,c,m){
     add("discs");
     if(level==="more"&&eligible&&!a.fc)add("joinFc","joinFc");
   }
+  if(["1800","3600","5000","7000","more"].includes(level)&&a.store!=="no"){
+    extra.push({text:m.purchase.extraParts.storeChecker,link:"storeList",credit:true});
+  }
   return {items,extra,notes,secondaries};
 }
 export function buildMethod(a,c){
