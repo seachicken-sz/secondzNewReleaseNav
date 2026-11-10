@@ -149,10 +149,10 @@ function addOnMarkup(data){
 if(!data.extra?.length)return "";
 const groupName=part=>{
 const k=part.key||"";
-if(["regularAddEdition","regularSet","editionAddRegular","editionSet","threeSet3600","threeSetSongs3600","threeSetBonus","consider","fc5000","discs","digitalAdd1400","editionAdd300","fcAdd1400Budget"].includes(k))return "CDでもっと応援";
+if(["regularAddEdition","regularSet","editionAddRegular","editionSet","threeSet3600","threeSetSongs3600","threeSetBonus","consider","fc5000","discs","digitalAdd1400","editionAdd300"].includes(k))return "CDでもっと応援";
 if(["digital5000","iphoneGift","digitalAdd1400Budget"].includes(k))return "デジタル配信で応援";
 if(["spotifyPremium"].includes(k))return "サブスク・Stationheadで応援";
-if(["joinFc"].includes(k))return "ファンクラブで応援";
+if(["joinFc","fcAdd1400Budget"].includes(k))return "ファンクラブで応援";
 if(["storeChecker"].includes(k))return "店舗で応援";
 return "その他の応援";
 };
@@ -170,7 +170,7 @@ items.map(part=>{
 const text=typeof part==="string"?part:part.text;
 const link=typeof part==="string"?null:part.link;
 const attribution=part.credit?'<p class="detail">作成・運営：chino様<br>※外部サイトに移動します</p>':"";
-return '<div class="add-on-item"><p>'+escapeHtml(text).replaceAll("\\n","<br>")+'</p>'+(link&&links[link]?'<div class="addon-link">'+linkFor(names[link],links[link])+'</div>':"")+attribution+'</div>';
+return '<div class="add-on-item"><p>'+escapeHtml(text).replace(/\n/g,"<br>")+'</p>'+(link&&links[link]?'<div class="addon-link">'+linkFor(names[link],links[link])+'</div>':"")+attribution+'</div>';
 }).join("")+'</section>').join("");
 return '<div class="add-on"><details class="add-on-details"><summary>'+escapeHtml(messages.purchase.extraTitle)+'</summary><div class="add-on-body">'+content+'</div></details></div>';
 }
