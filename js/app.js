@@ -164,7 +164,7 @@ const info=config.delivery?.[kind];if(!info)return "";
 const title=kind==="tower"?"タワレコオンライン":"セブンネット";
 const url=kind==="tower"?config.links.tower:config.links.seven;
 return '<div class="delivery-item"><h4>'+escapeHtml(title)+'</h4><p>'+linkFor(title+"を開く",url)+'</p>'+
-(kind==="tower"?'<p class="tag">フラゲ対象</p><p class="tag">セブン-イレブン受取送料無料</p>':'<p class="tag">セブン-イレブン受取送料無料</p>')+
+(kind==="tower"?'<p class="tag">フラゲ対象</p><p class="tag">セブンイレブン受取送料無料</p>':'<p class="tag">セブンイレブン受取送料無料</p>')+
 '<p class="detail">'+escapeHtml(info.home)+'</p><p class="detail">'+escapeHtml(info.seven)+'</p>'+
 (info.other?'<p class="detail">'+escapeHtml(info.other)+'</p>':'')+
 (info.caution?'<p class="detail">'+escapeHtml(info.caution)+'</p>':'')+'</div>';
@@ -172,7 +172,7 @@ return '<div class="delivery-item"><h4>'+escapeHtml(title)+'</h4><p>'+linkFor(ti
 function sevenMarkup(){
 const m=messages.method;
 return card(m.sevenTitle,
-p(m.sevenInfo)+
+'<p class="seven-info">'+escapeHtml(m.sevenInfo)+'</p>'+
 '<div class="site-links">'+linkFor("タワレコオンライン",config.links.tower)+linkFor("セブンネット",config.links.seven)+'</div>');
 }
 function onlineMarkup(showSeven){
@@ -281,7 +281,7 @@ const optional=purchase.secondaries?.length?
 '<p class="compact-subheading">もう1枚の候補</p><ul class="compact-alternatives">'+
 purchase.secondaries.map(x=>'<li>'+escapeHtml(x.label)+'（合計 '+money(x.total)+'）</li>').join("")+'</ul>':"";
 const methods=[shopSummary];
-if(a.store!=="yes"&&a.seven==="yes")methods.push("対象商品はセブン-イレブン受取もチェック（送料無料）。");
+if(a.store!=="yes"&&a.seven==="yes")methods.push("対象商品はセブンイレブン受取もチェック（送料無料）。");
 if(purchase.items.some(item=>item.productIds?.includes("set")))methods.push("3形態の特典付きセットは専用の商品ページで購入しよう！");
 if(purchase.items.some(item=>item.productIds?.includes("fc")))methods.push("FC限定盤は12/21 23:59までに予約しよう！");
 if(purchase.items.some(item=>item.productIds?.includes("digital")))methods.push("デジタル配信「本当のことを言うと」もチェック！");
