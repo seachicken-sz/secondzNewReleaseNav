@@ -48,3 +48,29 @@ body{background:radial-gradient(ellipse 90% 250px at 50% 0%,#f6e8f8 0%,transpare
 .image-canvas .panel{padding:24px}
 .image-canvas .option-card{padding:18px}
 .image-canvas .section-title{font-size:28px}
+
+/* Grouped edition list and purchase guide */
+.product-list{padding-left:23px;margin:12px 0 2px;font-size:16px;line-height:1.85}
+.product-list>li{padding-left:3px;font-weight:650;margin:5px 0}
+.product-list ul{padding-left:22px;margin:2px 0 8px}
+.product-list ul li{font-weight:400;margin:0;list-style-type:circle}
+.store-toggle{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:17px 0 12px}
+.store-toggle .btn{min-width:0;padding:12px 8px;box-shadow:none}
+.store-toggle .btn.active{background:linear-gradient(110deg,#9455b1,#c375b5);color:white;border-color:transparent}
+.store-expand>.panel{animation:expandIn .18s ease-out}
+@keyframes expandIn{from{opacity:.6;transform:translateY(-3px)}to{opacity:1;transform:none}}
+.store-finder{border:1px solid #efdbef;background:#fdf7fe;padding:14px;border-radius:13px;margin:16px 0}
+.store-finder>a{display:inline-flex;padding:10px 14px;background:white;border:1px solid #e6cbe9;border-radius:10px;font-weight:750;text-decoration:none}
+.store-finder .detail{margin:6px 0 0}
+.delivery-item{padding:14px 0;border-top:1px solid #eaddea}
+.delivery-item h4{margin:0 0 5px;color:#884f99;font-size:16px}
+.delivery-item .detail{font-size:13px;line-height:1.75}
+.delivery-item .tag{background:#f8eafa;color:#825299;font-size:11px}
+.fc-deadline{padding:16px;border-radius:12px;background:#fff0f4;border:2px solid #e897b5;color:#ab365f;font-weight:850;font-size:17px;line-height:1.55;margin:15px 0}
+.image-canvas .product-list{font-size:22px}
+.image-canvas .product-list ul{font-size:20px}
+.image-canvas .delivery-item h4{font-size:23px}
+.image-canvas .delivery-item .detail{font-size:18px}
+.image-canvas .fc-deadline{font-size:24px}
+.image-canvas .store-finder{font-size:19px}
+.image-canvas .store-finder .detail{font-size:17px}
