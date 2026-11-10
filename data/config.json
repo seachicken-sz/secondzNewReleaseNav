@@ -135,11 +135,23 @@
     "seven": "https://7net.omni7.jp/",
     "fc": "https://famikura-store.jp/s/j/page/top",
     "daily": "https://seachicken-sz.github.io/secondzDailyRoutine/app/",
-    "stationhead": "https://www.stationhead.com/",
+    "stationhead": "https://www.stationhead.com/c/secondz",
     "fcSpecial": "https://famikura-store.jp/s/j/page/PROS-5056?ima=2702",
     "digital": "https://timelesz.lnk.to/honkoto_1125",
     "joinFc": "https://www.fc-member.familyclub.jp/page/index/f/TZ",
-    "spotifyPremium": "https://www.spotify.com/jp/premium/"
+    "spotifyPremium": "https://www.spotify.com/jp/premium/",
+    "musicApps": {
+      "spotify": "https://open.spotify.com/",
+      "prime": "https://music.amazon.co.jp/",
+      "unlimited": "https://music.amazon.co.jp/",
+      "line": "https://music.line.me/",
+      "youtubeMusic": "https://music.youtube.com/",
+      "apple": "https://music.apple.com/jp",
+      "unext": "https://video.unext.jp/"
+    },
+    "stationheadGuide": "https://www.universal-music.co.jp/other/umjstationhead/",
+    "stationheadIOS": "https://apps.apple.com/us/app/stationhead/id1076117681",
+    "stationheadAndroid": "https://play.google.com/store/apps/details?id=com.stationhead.app"
   },
   "release": {
     "cdTitle": "ザユウノメイ／本当のことを言うと",
@@ -165,5 +177,6 @@
       "seven": "セブン-イレブン受取り（送料無料）：発売日前日～2日で発送",
       "home": "宅配（送料550円・税込）：発売日前日～2日で発送"
     }
-  }
+  },
+  "streamStart": "2026-11-25"
 }
