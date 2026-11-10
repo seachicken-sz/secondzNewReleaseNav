@@ -300,3 +300,10 @@ body{background:radial-gradient(ellipse 90% 250px at 50% 0%,#f6e8f8 0%,transpare
 
 /* セブンイレブン受取案内は指定どおり2行で表示 */
 .seven-info{white-space:pre-line;line-height:1.85;margin:10px 0 15px}
+
+/* トップページ: リリース告知と注意書き */
+.home-release-copy{font-size:16px;line-height:1.9;font-weight:700;color:var(--ink);margin:16px 0}
+.home-cautions{text-align:left;color:#777;font-size:12px;line-height:1.75;font-weight:700;margin:18px auto 4px;max-width:480px}
+.home-cautions p{font-size:inherit;line-height:inherit;margin:0 0 9px;font-weight:inherit}
+/* 進捗バーは残し、STEP数字は非表示 */
+.progress{margin-top:4px}
