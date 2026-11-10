@@ -102,53 +102,85 @@ save(RESULT_KEY,result);clear(DRAFT_KEY);lastResult=result;showResult();
 }
 function card(title,body,css=""){return '<div class="panel '+css+'">'+(title?'<h3>'+escapeHtml(title)+'</h3>':"")+body+'</div>'}
 function listText(items){return "<ul>"+items.map(x=>"<li>"+escapeHtml(x)+"</li>").join("")+"</ul>"}
+function productList(item){
+const names={set:"3形態セット",a:"初回限定盤A",b:"初回限定盤B",regular:"通常盤",fc:"FC限定盤",digital:"デジタル配信「"+(config.release?.digitalTitle||"本当のことを言うと")+"」"};
+const ids=item.productIds||[];
+if(!ids.length)return '<p class="edition-name">'+escapeHtml(item.title)+'</p>';
+return '<ul class="product-list">'+ids.map(id=>id==="set"
+?'<li><strong>3形態セット</strong><ul><li>初回限定盤A</li><li>初回限定盤B</li><li>通常盤</li></ul></li>'
+:'<li>'+escapeHtml(names[id]||id)+'</li>').join("")+'</ul>';
+}
 function purchaseMarkup(data){
 const cdTitle=config.release?.cdTitle||"ザユウノメイ／本当のことを言うと";
-const digitalTitle=config.release?.digitalTitle||"本当のことを言うと";
-const displayTitle=(name,isDigital=false)=>'<span class="product-name">'+escapeHtml(isDigital?digitalTitle:cdTitle)+'</span><strong class="edition-name">'+escapeHtml(name)+'</strong>';
 if(!data.items.length)return card("購入以外の応援を楽しもう！",p(messages.purchase.zero),"highlight");
 let html="";
 data.items.forEach((item,i)=>{
 const heading=i===0?"":"もうひとつの候補";
-html+=card(heading,'<div class="product-heading">'+displayTitle(item.title,item.title===config.products.digital.label)+'</div>'+(item.description?p(item.description):"")+'<div class="price">'+money(item.price)+'</div>',i===0?"highlight purchase-feature":"");
+html+=card(heading,'<div class="product-heading"><span class="product-name">'+escapeHtml(cdTitle)+'</span>'+productList(item)+'</div>'+(item.description?p(item.description):"")+'<div class="price">'+money(item.price)+'</div>',i===0?"highlight purchase-feature":"");
 });
 if(data.secondaries?.length){
-html+=card("もう1枚はここから選ぼう！",data.secondaries.map(s=>'<div class="option-card">'+displayTitle(s.label)+'<div class="detail">合計 '+money(s.total)+'</div></div>').join(""));
+html+=card("もう1枚はここから選ぼう！",data.secondaries.map(s=>'<div class="option-card"><span class="product-name">'+escapeHtml(cdTitle)+'</span><strong class="edition-name">'+escapeHtml(s.label)+'</strong><div class="detail">合計 '+money(s.total)+'</div></div>').join(""));
 }
 if(data.extra?.length)html+=card(messages.purchase.extra,data.extra.map(s=>'<p>'+escapeHtml(s)+'</p>').join(""));
 if(data.notes?.length)html+='<div class="note">'+data.notes.map(s=>'<p>'+escapeHtml(s)+'</p>').join("")+'</div>';
 return html;
 }
 function linkFor(name,url){return '<a href="'+escapeHtml(url)+'" target="_blank" rel="noopener noreferrer">'+escapeHtml(name)+' ↗</a>'}
+function storeFinderMarkup(){
+const finder=config.storeFinder||{};
+return '<div class="store-finder"><p>'+escapeHtml(messages.method.storeFinder||"対象店舗をチェックしよう！")+'</p>'+linkFor(finder.name||"TSZ在庫チェッカー",config.links.storeList)+'<p class="detail">'+escapeHtml(finder.credit||"作成・運営：chino様")+'</p><p class="detail">'+escapeHtml(finder.notice||"※外部サイトに移動します")+'</p></div>';
+}
+function deliveryDetails(kind){
+const info=config.delivery?.[kind];if(!info)return "";
+const title=kind==="tower"?"タワレコオンライン":"セブンネット";
+const url=kind==="tower"?config.links.tower:config.links.seven;
+return '<div class="delivery-item"><h4>'+escapeHtml(title)+'</h4><p>'+linkFor(title+"を開く",url)+'</p>'+
+(kind==="tower"?'<p class="tag">フラゲ対象</p><p class="tag">セブン-イレブン受取送料無料</p>':'<p class="tag">セブン-イレブン受取送料無料</p>')+
+'<p class="detail">'+escapeHtml(info.home)+'</p><p class="detail">'+escapeHtml(info.seven)+'</p>'+
+(info.other?'<p class="detail">'+escapeHtml(info.other)+'</p>':'')+
+(info.caution?'<p class="detail">'+escapeHtml(info.caution)+'</p>':'')+'</div>';
+}
+function sevenMarkup(){
+const m=messages.method;
+return card(m.sevenTitle,p(m.sevenInfo)+p(m.sevenUse)+
+deliveryDetails("tower")+deliveryDetails("seven")+
+'<p class="detail">'+escapeHtml(m.sevenCaution)+'</p>');
+}
 function onlineMarkup(showSeven){
 const m=messages.method;
 let html=card(m.onlineTitle,listText([m.onlineCheck,m.onlinePickup,m.onlineSet])+'<p class="subhead">'+escapeHtml(m.onlineStores)+'</p><div class="site-links">'+[
 ["楽天ブックス",config.links.rakuten],["HMV",config.links.hmv],["タワレコオンライン",config.links.tower],["セブンネット",config.links.seven]].map(x=>linkFor(...x)).join("")+"</div>");
-if(showSeven)html+=card(m.sevenTitle,p(m.sevenInfo)+p(m.sevenUse)+'<p class="detail">'+escapeHtml(m.sevenCaution)+'</p>');
+if(showSeven)html+=sevenMarkup();
 return html;
 }
 function storeMarkup(){
 const m=messages.method;
-return card(m.storeTitle,listText([m.storeBenefit1,m.storeBenefit2,m.storePickup])+p(m.storeLink)+(config.links.storeList?'<div class="site-links">'+linkFor("対象店舗一覧を確認",config.links.storeList)+'</div>':'<div class="note">'+escapeHtml(m.linkMissing)+'</div>'));
+return card(m.storeTitle,listText([m.storeBenefit1,m.storeBenefit2,m.storePickup])+p(m.storeLink)+storeFinderMarkup());
 }
 function methodMarkup(data,print=false){
 let html="";
 if(answers.store==="yes")html=storeMarkup();
 else if(answers.store==="no")html=onlineMarkup(answers.seven==="yes");
 else{
-html=card(messages.method.unknownTitle,p(messages.method.unknownNote)+(config.links.storeList?'<p>'+linkFor("対象店舗を探す",config.links.storeList)+'</p>':p(messages.method.linkMissing)));
+html=card(messages.method.unknownTitle,p(messages.method.unknownNote)+storeFinderMarkup());
 if(print){
 html+=card("対象店舗があった場合",storeMarkup())+card("対象店舗がなかった場合",onlineMarkup(answers.seven==="yes"));
 }else{
-html+='<div class="accordion screen-only"><details><summary>あった！　店舗購入の案内を見る</summary><div>'+storeMarkup()+'</div></details></div>';
-html+='<div class="accordion screen-only"><details><summary>なかった　通販の案内を見る</summary><div>'+onlineMarkup(answers.seven==="yes")+'</div></details></div>';
-html+='<div class="print-only">'+storeMarkup()+onlineMarkup(answers.seven==="yes")+"</div>";
+html+='<div class="store-toggle screen-only" role="group" aria-label="対象店舗の検索結果"><button type="button" class="btn secondary" data-store-toggle="yes" aria-expanded="false">あった</button><button type="button" class="btn secondary" data-store-toggle="no" aria-expanded="false">なかった</button></div>';
+html+='<div id="store-expand" class="store-expand screen-only" aria-live="polite"></div>';
+html+='<div class="print-only">'+card("対象店舗があった場合",storeMarkup())+card("対象店舗がなかった場合",onlineMarkup(answers.seven==="yes"))+"</div>";
 }
 }
-if(data.fcMethod)html+=card("FC限定盤の購入方法",p(messages.method.fcMethod)+(config.links.fc?'<p>'+linkFor("FC限定盤の案内を見る",config.links.fc)+'</p>':'')+'<p class="alert">'+escapeHtml(messages.purchase.deadline)+'</p>');
-if(data.digitalMethod)html+=card("デジタル楽曲の購入方法",p(messages.method.digitalMethod));
+if(data.fcMethod)html+=card(messages.method.fcHeading,
+p(messages.method.fcMethod)+
+'<div class="site-links">'+linkFor("ファミクラストアオンライン",config.links.fc)+linkFor("FC限定盤 特設ページ",config.links.fcSpecial)+'</div>'+
+p(messages.method.fcInstructions)+p(messages.method.fcCardWarning)+
+'<div class="fc-deadline">'+escapeHtml(messages.method.fcDeadlineStrong)+'</div>');
+if(data.digitalMethod)html+=card(messages.method.digitalHeading,
+p(messages.method.digitalMethod)+'<div class="site-links">'+linkFor("予約・購入ページ",config.links.digital)+'</div>');
 return html;
 }
+
 function supportMarkup(data){
 return card("音楽・サブスクで応援",data.streaming.map(x=>p(x)).join("")||p(messages.support.freeSpotify))+ (data.stationhead?card("Stationheadもおすすめ！",p(messages.support.stationhead)+linkFor("Stationheadを開く",config.links.stationhead)):"")+
 (data.unext?card("U-NEXT加入者さんへ！",p(messages.support.unext)+linkFor("タムごとDailyへ",config.links.daily)):"")+
@@ -205,6 +237,18 @@ const a=document.createElement("a");a.href=url;a.download=filename;document.body
 }catch(err){console.error(err);alert("画像の保存ができませんでした。通信環境を確認して再度お試しください。");}finally{node.remove();button.disabled=false;button.textContent="結果を画像で保存"}
 }
 document.addEventListener("click",event=>{
+const toggle=event.target.closest("[data-store-toggle]");
+if(toggle){
+const active=toggle.getAttribute("aria-expanded")==="true";
+document.querySelectorAll("[data-store-toggle]").forEach(btn=>{
+const selected=!active&&btn===toggle;
+btn.setAttribute("aria-expanded",String(selected));
+btn.classList.toggle("active",selected);
+});
+const panel=document.getElementById("store-expand");
+if(panel)panel.innerHTML=active?"":toggle.dataset.storeToggle==="yes"?storeMarkup():onlineMarkup(answers.seven==="yes");
+return;
+}
 const choiceEl=event.target.closest("[data-choice]");
 if(choiceEl){setAnswer(choiceEl.dataset.choice,choiceEl.dataset.value);return}
 const button=event.target.closest("[data-action]");if(!button)return;
