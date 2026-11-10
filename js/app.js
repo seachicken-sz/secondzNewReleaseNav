@@ -20,7 +20,7 @@ function home(){
 view="home";
 const draft=load(DRAFT_KEY);
 const result=load(RESULT_KEY);
-frame('<section class="card"><div class="intro"><div class="logo">♫</div><p class="pill">secondz SUPPORT TOOL</p><h1>新曲応援ナビ</h1><p class="lead muted">自分にぴったりの新曲応援方法を見つけよう！<br>予算も楽しみ方も、あなたのペースで。</p></div><div class="actions"><button class="btn" data-action="start">ナビをはじめる</button>'+
+frame('<section class="card"><div class="intro"><img class="home-brand-logo" src="./img/new-release-nav-logo.svg" alt="タムごと新曲応援ナビ"><p class="lead muted">自分にぴったりの新曲応援方法を見つけよう！<br>予算も楽しみ方も、あなたのペースで。</p></div><div class="actions"><button class="btn" data-action="start">ナビをはじめる</button>'+
 (draft&&draft.releaseId===config.releaseId?'<button class="btn secondary" data-action="resume">前回の続きから</button>':"")+
 (result&&result.releaseId===config.releaseId?'<button class="btn secondary" data-action="saved">前回の結果を見る</button>':"")+
 '</div><p class="small" style="text-align:center;margin-top:22px">回答はこの端末のブラウザにのみ保存します。</p></section>');
@@ -178,15 +178,17 @@ html=card(messages.method.unknownTitle,p(messages.method.unknownNote)+storeFinde
 if(print){
 html+=card("対象店舗があった場合",storeMarkup())+card("対象店舗がなかった場合",onlineMarkup(answers.seven==="yes"));
 }else{
-html+='<div class="store-toggle screen-only" role="group" aria-label="対象店舗の検索結果"><button type="button" class="btn secondary" data-store-toggle="yes" aria-expanded="false">あった</button><button type="button" class="btn secondary" data-store-toggle="no" aria-expanded="false">なかった</button></div>';
+html+='<h3 class="store-toggle-heading screen-only">オリコン・ビルボ加盟店はあった？</h3><div class="store-toggle screen-only" role="group" aria-label="対象店舗の検索結果"><button type="button" class="btn secondary" data-store-toggle="yes" aria-expanded="false">あった</button><button type="button" class="btn secondary" data-store-toggle="no" aria-expanded="false">なかった</button></div>';
 html+='<div id="store-expand" class="store-expand screen-only" aria-live="polite"></div>';
 html+='<div class="print-only">'+card("対象店舗があった場合",storeMarkup())+card("対象店舗がなかった場合",onlineMarkup(answers.seven==="yes"))+"</div>";
 }
 }
 if(data.fcMethod)html+=card(messages.method.fcHeading,
 p(messages.method.fcMethod)+
-'<div class="site-links">'+linkFor("ファミクラストアオンライン",config.links.fc)+linkFor("FC限定盤 特設ページ",config.links.fcSpecial)+'</div>'+
-p(messages.method.fcInstructions)+p(messages.method.fcCardWarning)+
+'<div class="site-links">'+linkFor("ファミクラストアオンライン",config.links.fc)+'</div>'+
+'<p class="subhead">FC盤特設ページはこちら！</p>'+
+'<div class="site-links">'+linkFor("FC限定盤 特設ページ",config.links.fcSpecial)+'</div>'+
+p(messages.method.fcInstructions)+'<p class="fc-card-warning">※'+escapeHtml(messages.method.fcCardWarning)+'</p>'+
 '<div class="fc-deadline">'+escapeHtml(messages.method.fcDeadlineStrong)+'</div>');
 if(data.digitalMethod)html+=card(messages.method.digitalHeading,
 p(messages.method.digitalMethod)+'<div class="site-links">'+linkFor("予約・購入ページ",config.links.digital)+'</div>');
@@ -208,12 +210,14 @@ if(data.stationhead){
 html+=card("ステヘにチャレンジしてみない？",
 p(messages.support.stationhead)+
 '<p class="detail">対象：Apple Music有料会員またはSpotify Premium会員・18歳以上</p>'+
-'<div class="site-links">'+linkFor("設定方法を見る",config.links.stationheadGuide)+linkFor("secondzチャンネル",config.links.stationhead)+'</div>'+
-'<div class="site-links">'+linkFor("iPhoneアプリ",config.links.stationheadIOS)+linkFor("Androidアプリ",config.links.stationheadAndroid)+'</div>');
+'<div class="site-links">'+linkFor("設定方法を見る",config.links.stationheadGuide)+'</div>'+
+'<div class="stationhead-device-links"><a href="'+escapeHtml(config.links.stationheadIOS)+'" target="_blank" rel="noopener noreferrer">iPhone</a><a href="'+escapeHtml(config.links.stationheadAndroid)+'" target="_blank" rel="noopener noreferrer">Android</a></div>'+
+'<p class="subhead">登録ができたら以下のリンクをタップ！</p>'+
+'<div class="site-links">'+linkFor("secondzチャンネル",config.links.stationhead)+'</div>');
 }
 if(data.unext){
 html+=card("U-NEXT加入者さんへ！",p(messages.support.unext)+
-'<div class="app-link-grid">'+linkFor("タムごとDailyでリクエスト",config.links.daily)+'</div>');
+'<div class="site-links">'+linkFor("U-NEXT会員限定・2回投票のページ",config.links.unextCampaign)+'</div>');
 }
 html+=card("みんなでできる応援",
 listText([messages.support.youtube,messages.support.sns,messages.support.request])+
