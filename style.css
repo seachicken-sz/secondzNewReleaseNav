@@ -116,3 +116,104 @@ body{background:radial-gradient(ellipse 90% 250px at 50% 0%,#f6e8f8 0%,transpare
 .image-canvas .stream-intro{font-size:24px}
 .image-canvas .add-on-details summary{border-radius:30px}
 @media(max-width:370px){.app-link-grid{grid-template-columns:1fr 1fr}.app-link-grid a{font-size:12px;padding:9px 5px}}
+
+/* Exact button structure matched to secondzDailyRoutine/app CSS:
+   .primary-button/.secondary-button in style.css and .song-button in task.css.
+   Preserve the navigator's purple/pink palette. */
+:root{
+  --color-brand:#8b5cf6;
+  --color-brand-soft:#f5f3ff;
+  --color-surface:#ffffff;
+  --color-border:#ddd;
+  --color-text:#222;
+  --radius-button:999px;
+}
+.btn{
+  display:block;
+  width:100%;
+  min-height:0;
+  margin-top:0;
+  padding:14px 16px;
+  border-radius:var(--radius-button);
+  font-size:16px;
+  font-weight:700;
+  line-height:normal;
+  text-align:center;
+  text-decoration:none;
+  box-shadow:none;
+  transform:none;
+}
+.btn:not(.secondary):not(.ghost){
+  border:0;
+  background:var(--color-brand);
+  color:#fff;
+}
+.btn.secondary{
+  border:1px solid var(--color-border);
+  background:var(--color-surface);
+  color:var(--color-text);
+}
+.btn.ghost{
+  border:1px solid transparent;
+  background:transparent;
+  color:var(--color-brand);
+}
+.btn:active{transform:scale(.98)}
+.choice,.choice.checkbox{
+  display:block;
+  width:100%;
+  min-height:0;
+  padding:14px 16px;
+  border:1px solid var(--color-border);
+  border-radius:14px;
+  background:var(--color-surface);
+  color:var(--color-text);
+  font-size:16px;
+  line-height:normal;
+  text-align:left;
+  font-weight:400;
+  box-shadow:none;
+}
+.choice.active,.choice.checkbox.active{
+  border:1px solid var(--color-brand);
+  padding:14px 16px;
+  background:var(--color-brand-soft);
+  color:var(--color-text);
+  font-weight:700;
+}
+.choice .dot{display:none}
+.choices{gap:10px}
+.store-toggle .btn.active{
+  border:1px solid var(--color-brand);
+  background:var(--color-brand-soft);
+  color:var(--color-text);
+  font-weight:700;
+}
+.site-links a,.app-link-grid a,.addon-link a,.store-finder>a{
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-button);
+  background:#fff;
+  color:var(--color-text);
+  font-size:16px;
+  font-weight:700;
+  padding:14px 16px;
+  box-shadow:none;
+  text-align:center;
+  text-decoration:none;
+  line-height:1.4;
+}
+.add-on-details summary{
+  border:1px solid var(--color-border);
+  border-radius:14px;
+  background:#fff;
+  color:var(--color-text);
+  padding:14px 16px;
+  font-size:17px;
+  font-weight:700;
+}
+.add-on{border:0;background:transparent;overflow:visible}
+.add-on-details[open] summary{border-color:var(--color-brand);background:var(--color-brand-soft)}
+.add-on-body{background:#fff;border:1px solid var(--color-border);border-radius:14px;margin-top:12px;padding:4px 18px 18px}
+@media(max-width:370px){
+  .app-link-grid a{font-size:13px;padding:12px 8px}
+}
