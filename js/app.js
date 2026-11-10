@@ -24,7 +24,7 @@ function home(){
 view="home";
 const draft=load(DRAFT_KEY);
 const result=load(RESULT_KEY);
-frame('<section class="card"><div class="intro"><img class="home-brand-logo" src="./img/new-release-nav-logo.svg?v=20261110-logo-fix2" width="440" height="121" style="display:block;width:100%;max-width:440px;height:auto;max-height:145px;object-fit:contain;margin:0 auto 12px" alt="タムごと新曲応援ナビ"><p class="home-release-copy">2/3 release「ザユウノメイ/本当のことを言うと」を応援しよう！<br>予算や好みに応じた応援プランをチェックできます！</p><div class="home-cautions"><p>※特典情報・受け取り・支払いについては必ず購入先で確認してください。</p><p>※特典内容は変更される可能性があります。<br>必ず購入前に公式サイトで確認をしてください。</p></div></div><div class="actions"><button class="btn" data-action="start">ナビをはじめる</button>'+
+frame('<section class="card"><div class="intro"><img class="home-brand-logo" src="./img/new-release-nav-logo.svg?v=20261110-logo-fix2" width="440" height="121" style="display:block;width:100%;max-width:440px;height:auto;max-height:145px;object-fit:contain;margin:0 auto 12px" alt="タムごと新曲応援ナビ"><p class="home-release-copy">2/3 発売<br>「ザユウノメイ/本当のことを言うと」<br>を応援しよう！<br>予算や好みに応じた応援プランを<br>チェックできます！</p><div class="home-cautions"><p>※特典情報・受け取り・支払いについては必ず購入先で確認してください。</p><p>※特典内容は変更される可能性があります。<br>必ず購入前に公式サイトで確認をしてください。</p></div></div><div class="actions"><button class="btn" data-action="start">ナビをはじめる</button>'+
 (draft&&draft.releaseId===config.releaseId?'<button class="btn secondary" data-action="resume">前回の続きから</button>':"")+
 (result&&result.releaseId===config.releaseId?'<button class="btn secondary" data-action="saved">前回の結果を見る</button>':"")+
 '</div><p class="small" style="text-align:center;margin-top:22px">回答はこの端末のブラウザにのみ保存します。</p></section>');
@@ -149,8 +149,8 @@ function addOnMarkup(data){
 if(!data.extra?.length)return "";
 const groupName=part=>{
 const k=part.key||"";
-if(["regularAddEdition","regularSet","editionAddRegular","editionSet","threeSet3600","threeSetSongs3600","threeSetBonus","consider","fc5000","discs"].includes(k))return "CDでもっと応援";
-if(["digital5000","iphoneGift"].includes(k))return "デジタル配信で応援";
+if(["regularAddEdition","regularSet","editionAddRegular","editionSet","threeSet3600","threeSetSongs3600","threeSetBonus","consider","fc5000","discs","digitalAdd1400","editionAdd300","fcAdd1400Budget"].includes(k))return "CDでもっと応援";
+if(["digital5000","iphoneGift","digitalAdd1400Budget"].includes(k))return "デジタル配信で応援";
 if(["spotifyPremium"].includes(k))return "サブスク・Stationheadで応援";
 if(["joinFc"].includes(k))return "ファンクラブで応援";
 if(["storeChecker"].includes(k))return "店舗で応援";
@@ -170,7 +170,7 @@ items.map(part=>{
 const text=typeof part==="string"?part:part.text;
 const link=typeof part==="string"?null:part.link;
 const attribution=part.credit?'<p class="detail">作成・運営：chino様<br>※外部サイトに移動します</p>':"";
-return '<div class="add-on-item"><p>'+escapeHtml(text)+'</p>'+(link&&links[link]?'<div class="addon-link">'+linkFor(names[link],links[link])+'</div>':"")+attribution+'</div>';
+return '<div class="add-on-item"><p>'+escapeHtml(text).replaceAll("\\n","<br>")+'</p>'+(link&&links[link]?'<div class="addon-link">'+linkFor(names[link],links[link])+'</div>':"")+attribution+'</div>';
 }).join("")+'</section>').join("");
 return '<div class="add-on"><details class="add-on-details"><summary>'+escapeHtml(messages.purchase.extraTitle)+'</summary><div class="add-on-body">'+content+'</div></details></div>';
 }
