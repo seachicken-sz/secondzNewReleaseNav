@@ -122,18 +122,20 @@ html+=card(heading,'<div class="product-heading"><span class="product-name">'+es
 if(data.secondaries?.length){
 html+=card("もう1枚はここから選ぼう！",data.secondaries.map(s=>'<div class="option-card"><span class="product-name">'+escapeHtml(cdTitle)+'</span><strong class="edition-name">'+escapeHtml(s.label)+'</strong><div class="detail">合計 '+money(s.total)+'</div></div>').join(""));
 }
-if(data.extra?.length){
+if(data.notes?.length)html+='<div class="note">'+data.notes.map(s=>'<p>'+escapeHtml(s)+'</p>').join("")+'</div>';
+return html;
+}
+function addOnMarkup(data){
+if(!data.extra?.length)return "";
 const content=data.extra.map(part=>{
   const text=typeof part==="string"?part:part.text;
   const link=typeof part==="string"?null:part.link;
-  const links={digital:config.links.digital,fcSpecial:config.links.fcSpecial,joinFc:config.links.joinFc,spotifyPremium:config.links.spotifyPremium};
-  const names={digital:"購入はこちら！",fcSpecial:"購入はこちら！",joinFc:"FC加入ページはこちら！",spotifyPremium:"Spotify Premiumはこちら！"};
-  return '<div class="add-on-item"><p>'+escapeHtml(text)+'</p>'+(link&&links[link]?'<div class="addon-link">'+linkFor(names[link],links[link])+'</div>':"")+'</div>';
+  const links={digital:config.links.digital,fcSpecial:config.links.fcSpecial,joinFc:config.links.joinFc,spotifyPremium:config.links.spotifyPremium,storeList:config.links.storeList};
+  const names={digital:"購入はこちら！",fcSpecial:"購入はこちら！",joinFc:"FC加入ページはこちら！",spotifyPremium:"Spotify Premiumはこちら！",storeList:"TSZ在庫チェッカー"};
+  const attribution=part.credit?'<p class="detail">作成・運営：chino様<br>※外部サイトに移動します</p>':"";
+  return '<div class="add-on-item"><p>'+escapeHtml(text)+'</p>'+(link&&links[link]?'<div class="addon-link">'+linkFor(names[link],links[link])+'</div>':"")+attribution+'</div>';
 }).join("");
-html+='<div class="add-on"><details class="add-on-details"><summary>'+escapeHtml(messages.purchase.extraTitle)+'</summary><div class="add-on-body">'+content+'</div></details></div>';
-}
-if(data.notes?.length)html+='<div class="note">'+data.notes.map(s=>'<p>'+escapeHtml(s)+'</p>').join("")+'</div>';
-return html;
+return '<div class="add-on"><details class="add-on-details"><summary>'+escapeHtml(messages.purchase.extraTitle)+'</summary><div class="add-on-body">'+content+'</div></details></div>';
 }
 function linkFor(name,url){return '<a href="'+escapeHtml(url)+'" target="_blank" rel="noopener noreferrer">'+escapeHtml(name)+' ↗</a>'}
 function storeFinderMarkup(){
@@ -191,10 +193,32 @@ p(messages.method.digitalMethod)+'<div class="site-links">'+linkFor("予約・�
 return html;
 }
 
-function supportMarkup(data){
-return card("音楽・サブスクで応援",data.streaming.map(x=>p(x)).join("")||p(messages.support.freeSpotify))+ (data.stationhead?card("Stationheadもおすすめ！",p(messages.support.stationhead)+linkFor("Stationheadを開く",config.links.stationhead)):"")+
-(data.unext?card("U-NEXT加入者さんへ！",p(messages.support.unext)+linkFor("タムごとDailyへ",config.links.daily)):"")+
-card("みんなでできる応援",listText([messages.support.youtube,messages.support.sns,messages.support.request])+linkFor("タムごとDailyを開く",config.links.daily));
+function supportMarkup(data,a){
+const selected=new Set(a.subs||[]);
+const appMap=[
+  ["spotify","Spotify Premium"],["prime","Amazon Music Prime"],["unlimited","Amazon Music Unlimited"],
+  ["line","LINE MUSIC"],["youtubeMusic","YouTube Music Premium"],["apple","Apple Music"]
+];
+const music=appMap.filter(([id])=>selected.has(id)&&!(id==="prime"&&selected.has("unlimited")));
+const heading='<p class="stream-intro">11/25〜先行配信される <strong>「'+escapeHtml(config.release?.digitalTitle||"本当のことを言うと")+'」</strong> をたくさん聴こう！</p>';
+const buttons=music.map(([id,name])=>linkFor(name+"を開く",config.links.musicApps[id])).join("");
+const musicBlock=heading+(music.length?'<div class="app-link-grid">'+buttons+'</div>':p(messages.support.freeSpotify)+'<div class="app-link-grid">'+linkFor("Spotifyを開く",config.links.musicApps.spotify)+'</div>');
+let html=card("新曲をサブスクで応援！",musicBlock,"support-music");
+if(data.stationhead){
+html+=card("ステヘにチャレンジしてみない？",
+p(messages.support.stationhead)+
+'<p class="detail">対象：Apple Music有料会員またはSpotify Premium会員・18歳以上</p>'+
+'<div class="site-links">'+linkFor("設定方法を見る",config.links.stationheadGuide)+linkFor("secondzチャンネル",config.links.stationhead)+'</div>'+
+'<div class="site-links">'+linkFor("iPhoneアプリ",config.links.stationheadIOS)+linkFor("Androidアプリ",config.links.stationheadAndroid)+'</div>');
+}
+if(data.unext){
+html+=card("U-NEXT加入者さんへ！",p(messages.support.unext)+
+'<div class="app-link-grid">'+linkFor("タムごとDailyでリクエスト",config.links.daily)+'</div>');
+}
+html+=card("みんなでできる応援",
+listText([messages.support.youtube,messages.support.sns,messages.support.request])+
+'<div class="app-link-grid">'+linkFor("タムごとDailyを開く",config.links.daily)+'</div>');
+return html;
 }
 function section(index,title,body){return '<section class="section"><h2 class="section-title"><span class="number">'+index+'</span>'+escapeHtml(title)+'</h2>'+body+'</section>'}
 function resultSummary(a){
@@ -214,7 +238,7 @@ const oldAnswers=answers;answers=a;
 const html='<div class="result-meta"><p class="pill">MY NEW RELEASE SUPPORT PLAN</p><h1>あなたの新曲応援プラン</h1><p class="release-title">'+escapeHtml(config.release?.cdTitle||"ザユウノメイ／本当のことを言うと")+'</p></div>'+resultSummary(a)+
 section("01","これを買うのがおすすめ！",purchaseMarkup(data.purchase))+
 section("02","こんな買い方がおすすめ！",methodMarkup(data.method,print))+
-section("03",messages.headings.support,supportMarkup(data.support))+
+section("03",messages.headings.support,supportMarkup(data.support,a)+addOnMarkup(data.purchase))+
 '<hr class="divider"><p class="small" style="text-align:center">非公式ファンツール｜タムごとDaily<br>集計・購入条件は必ず公式・販売店の最新情報をご確認ください。</p>';
 answers=oldAnswers;return html;
 }
