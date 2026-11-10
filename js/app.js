@@ -376,7 +376,7 @@ supports.push("YouTubeでMVを視聴・高評価しよう！","SNSでの拡散�
 return '<div class="compact-header"><p class="pill">タムごと新曲応援ナビ</p><h1>あなたの新曲応援プラン</h1><p>予算：'+escapeHtml(budget)+'</p></div>'+
 (a.budget==="zero"?"":'<section class="compact-section"><h2>01｜これを買うのがおすすめ！</h2>'+purchaseCards+optional+'</section>')+
 (methods.length?'<section class="compact-section"><h2>02｜こんな買い方がおすすめ！</h2>'+listText(methods)+'</section>':"")+
-'<section class="compact-section"><h2>'+(a.budget==="zero"?"01":methods.length?"03":"02")+'｜'+escapeHtml(messages.headings.support)+</h2>'+listText(supports)+'</section>'+
+'<section class="compact-section"><h2>'+(a.budget==="zero"?"01":methods.length?"03":"02")+'｜'+escapeHtml(messages.headings.support)+'</h2>'+listText(supports)+'</section>'+
 '<p class="compact-footer">詳細・購入リンクはタムごと新曲応援ナビで確認してね！<br>タムごと新曲応援ナビ<br>タムごと新曲応援ナビは非公式のファンツールです。<br>集計・購入・特典に関する情報は必ず公式・販売店の最新情報をご確認ください。</p>';
 }
 function showResult(){
