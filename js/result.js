@@ -12,8 +12,8 @@ export function buildPurchase(a,c,m){
   const baseId=({songs:"regular",dance:"a",visual:"b",variety:"fc"})[choice];
   const names=ids=>ids.map(id=>product(id).label).join("＋");
   const parts=m.purchase.extraParts;
-  const finish=()=>{if(a.store!=="no")extra.push({text:parts.storeChecker,link:"storeList",credit:true});return {items,extra,notes,secondaries};};
-  const add=(key,link=null)=>extra.push({text:parts[key],link});
+  const finish=()=>{if(a.store!=="no")extra.push({key:"storeChecker",text:parts.storeChecker,link:"storeList",credit:true});return {items,extra,notes,secondaries};};
+  const add=(key,link=null)=>extra.push({key,text:parts[key],link});
   if(level==="zero")return finish();
   if(level==="300"){
     item(product("digital").label,255,m.purchase.digital,["digital"]);
