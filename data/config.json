@@ -136,5 +136,9 @@
     "fc": "",
     "daily": "https://seachicken-sz.github.io/secondzDailyRoutine/app/",
     "stationhead": "https://www.stationhead.com/"
+  },
+  "release": {
+    "cdTitle": "ザユウノメイ／本当のことを言うと",
+    "digitalTitle": "本当のことを言うと"
   }
 }
