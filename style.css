@@ -311,3 +311,7 @@ body{background:radial-gradient(ellipse 90% 250px at 50% 0%,#f6e8f8 0%,transpare
 /* Question navigation: smooth progress bar transitions */
 .progress>span{transition:width 420ms cubic-bezier(.22,.75,.25,1);will-change:width}
 @media(prefers-reduced-motion:reduce){.progress>span{transition:none}}
+
+/* Animate progress when moving between questions; respect reduced motion */
+.progress>span{transition:width 420ms cubic-bezier(.22,1,.36,1)}
+@media(prefers-reduced-motion:reduce){.progress>span{transition:none}}
