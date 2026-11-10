@@ -58,8 +58,8 @@ export function buildPurchase(a,c,m){
       const total=price+product(id).price;
       if(total<=3600)secondaries.push({id,label:product(id).label,total});
     });
-    add(first==="regular"?"threeSetSongs3600":"threeSet3600");
-    add("threeSetBonus");add("consider");
+    if(first!=="fc")add(first==="regular"?"threeSetSongs3600":"threeSet3600");
+    if(first!=="fc"){add("threeSetBonus");add("consider");}
   }
   if(level==="5000"){
     item(product("set").label,4920,m.purchase.set,["set"]);
@@ -74,7 +74,7 @@ export function buildPurchase(a,c,m){
     notes.push(m.purchase.setCaution);
     if(eligible&&!a.fc)notes.push(m.purchase.fcJoin);
     add("iphoneGift");
-    add("spotifyPremium","spotifyPremium");
+    if(!(a.subs||[]).includes("spotify")&&!(a.subs||[]).includes("apple"))add("spotifyPremium","spotifyPremium");
     add("discs");
     if(level==="more"&&eligible&&!a.fc)add("joinFc","joinFc");
   }
