@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "releaseId": "timelesz-next-single",
+  "deadline": "2026-12-21",
+  "products": {
+    "digital": {
+      "label": "デジタル楽曲",
+      "price": 255
+    },
+    "regular": {
+      "label": "通常盤",
+      "price": 1320
+    },
+    "a": {
+      "label": "初回限定盤A",
+      "price": 1800
+    },
+    "b": {
+      "label": "初回限定盤B",
+      "price": 1800
+    },
+    "fc": {
+      "label": "FC限定盤",
+      "price": 1800
+    },
+    "set": {
+      "label": "3形態セット（専用特典付き）",
+      "price": 4920
+    }
+  },
+  "budgetOptions": [
+    {
+      "id": "zero",
+      "label": "0円",
+      "value": 0
+    },
+    {
+      "id": "300",
+      "label": "300円くらいまで",
+      "value": 300
+    },
+    {
+      "id": "1400",
+      "label": "1,400円くらいまで",
+      "value": 1400
+    },
+    {
+      "id": "1800",
+      "label": "1,800円くらいまで",
+      "value": 1800
+    },
+    {
+      "id": "3600",
+      "label": "3,600円くらいまで",
+      "value": 3600
+    },
+    {
+      "id": "5000",
+      "label": "5,000円くらいまで",
+      "value": 5000
+    },
+    {
+      "id": "7000",
+      "label": "7,000円くらいまで",
+      "value": 7000
+    },
+    {
+      "id": "more",
+      "label": "7,000円以上でもOK！",
+      "value": null
+    }
+  ],
+  "subscriptions": [
+    {
+      "id": "spotify",
+      "label": "Spotify Premium"
+    },
+    {
+      "id": "prime",
+      "label": "Amazon Prime"
+    },
+    {
+      "id": "unlimited",
+      "label": "Amazon Music Unlimited"
+    },
+    {
+      "id": "line",
+      "label": "LINE MUSIC"
+    },
+    {
+      "id": "youtubeMusic",
+      "label": "YouTube Music Premium"
+    },
+    {
+      "id": "apple",
+      "label": "Apple Music"
+    },
+    {
+      "id": "unext",
+      "label": "U-NEXT"
+    }
+  ],
+  "priorities": [
+    {
+      "id": "songs",
+      "label": "とにかく曲をたくさん聴きたい！",
+      "product": "regular"
+    },
+    {
+      "id": "dance",
+      "label": "timeleszの踊っているところを見たい！",
+      "product": "a"
+    },
+    {
+      "id": "visual",
+      "label": "ビジュアルをじっくり楽しみたい！",
+      "product": "b"
+    },
+    {
+      "id": "variety",
+      "label": "timeleszのわちゃわちゃが大好き！",
+      "product": "fc"
+    },
+    {
+      "id": "complete",
+      "label": "いずれ全部揃えたい！",
+      "product": null
+    }
+  ],
+  "links": {
+    "storeList": "",
+    "rakuten": "https://books.rakuten.co.jp/",
+    "hmv": "https://www.hmv.co.jp/",
+    "tower": "https://tower.jp/",
+    "seven": "https://7net.omni7.jp/",
+    "fc": "",
+    "daily": "https://seachicken-sz.github.io/secondzDailyRoutine/app/",
+    "stationhead": "https://www.stationhead.com/"
+  }
+}
