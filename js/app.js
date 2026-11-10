@@ -24,10 +24,10 @@ function home(){
 view="home";
 const draft=load(DRAFT_KEY);
 const result=load(RESULT_KEY);
-frame('<section class="card"><div class="intro"><img class="home-brand-logo" src="./img/new-release-nav-logo.svg?v=20261110-logo-fix2" width="440" height="121" style="display:block;width:100%;max-width:440px;height:auto;max-height:145px;object-fit:contain;margin:0 auto 12px" alt="タムごと新曲応援ナビ"><p class="home-release-copy">2/3 発売<br>「ザユウノメイ/本当のことを言うと」<br>を応援しよう！<br>予算や好みに応じた応援プランを<br>チェックできます！</p><div class="home-cautions"><p>※特典情報・受け取り・支払いについては必ず購入先で確認してください。</p><p>※特典内容は変更される可能性があります。<br>必ず購入前に公式サイトで確認をしてください。</p></div></div><div class="actions"><button class="btn" data-action="start">ナビをはじめる</button>'+
+frame('<section class="card"><div class="intro"><img class="home-brand-logo" src="./img/new-release-nav-logo.svg?v=20261110-logo-fix2" width="440" height="121" style="display:block;width:100%;max-width:440px;height:auto;max-height:145px;object-fit:contain;margin:0 auto 12px" alt="タムごと新曲応援ナビ"><p class="home-release-copy">2/3 発売<br><strong class="home-release-emphasis" style="color:#A148AC">「ザユウノメイ/本当のことを言うと」</strong><br>を応援しよう！<br>予算や好みに応じた応援プランを<br>チェックできます！</p><div class="home-cautions"><p>※特典情報・受け取り・支払いについては必ず購入先で確認してください。</p><p>※特典内容は変更される可能性があります。<br>必ず購入前に公式サイトで確認をしてください。</p></div></div><div class="actions"><button class="btn" data-action="start">ナビをはじめる</button>'+
 (draft&&draft.releaseId===config.releaseId?'<button class="btn secondary" data-action="resume">前回の続きから</button>':"")+
 (result&&result.releaseId===config.releaseId?'<button class="btn secondary" data-action="saved">前回の結果を見る</button>':"")+
-'</div><p class="small" style="text-align:center;margin-top:22px">回答はこの端末のブラウザにのみ保存します。</p></section>');
+'</div><p class="small" style="text-align:center;margin-top:22px">回答内容はご利用の端末に保存し、送信は行いません。</p></section>');
 }
 function start(resume=false){
 const d=resume?load(DRAFT_KEY):null;
@@ -142,7 +142,7 @@ b:{intro:"ビジュアルをじっくり楽しむならこれ！",sections:[
 fc:{intro:"わちゃわちゃを楽しみたいならFC限定盤！",sections:[
 {title:"CD",items:[["ザユウノメイ"],["本当のことを言うと"]]},
 {title:"DVD or Blu-ray",items:[["バラエティ映像「人生は一度きり！timeleszミッションすごろく！」",true]]},
-{title:"その他",items:[["メッセージ入りメンバーフォトカード（7種）"],["直筆メッセージ＋付属の二次元コードからメンバーコメント動画も！",true]]}]}
+{title:"その他",items:[["メッセージ入りメンバーフォトカード（7種） 直筆メッセージ＋付属の二次元コードからメンバーコメント動画も！",true]]}]}
 };
 const editionLabels={regular:"通常盤",a:"初回限定盤A",b:"初回限定盤B",fc:"FC限定盤"};
 function editionContents(id){
@@ -237,7 +237,7 @@ return '<div class="delivery-item"><h4>'+escapeHtml(title)+'</h4><p>'+linkFor(ti
 function sevenMarkup(){
 const m=messages.method;
 return card(m.sevenTitle,
-'<p class="seven-info">'+escapeHtml(m.sevenInfo)+'</p>'+
+'<p class="seven-info">'+escapeHtml(m.sevenInfo)+'</p>'+ '<p class="seven-caution" style="color:#777;font-weight:700">※フラゲするためには予約の締切があることも！確認して早めに予約しよう！</p>'+
 '<div class="site-links">'+linkFor("タワレコオンライン",config.links.tower)+linkFor("セブンネット",config.links.seven)+'</div>');
 }
 function onlineMarkup(showSeven){
@@ -247,9 +247,10 @@ let html=card(m.onlineTitle,listText([m.onlineCheck,m.onlinePickup,m.onlineSet])
 if(showSeven)html+=sevenMarkup();
 return html;
 }
-function storeMarkup(){
+function storeMarkup(showFinder=false){
 const m=messages.method;
-return card(m.storeTitle,listText([m.storeBenefit1,m.storeBenefit2,m.storePickup]));
+return card(m.storeTitle,listText([m.storeBenefit1,m.storeBenefit2,m.storePickup])+
+(showFinder?'<div class="store-finder"><p>対象店舗の確認や在庫の確認・共有にはこのサイトが便利だよ！</p>'+linkFor(config.storeFinder?.name||"TSZ在庫チェッカー",config.links.storeList)+'<p class="detail">'+escapeHtml(config.storeFinder?.credit||"作成・運営：chino様")+'</p><p class="detail">'+escapeHtml(config.storeFinder?.notice||"※外部サイトに移動します")+'</p></div>':""));
 }
 function methodMarkup(data,print=false){
 let html="";
@@ -258,7 +259,7 @@ if(isSmallBudget(answers.budget)){
     p(messages.method.digitalMethod)+'<div class="site-links">'+linkFor("予約・購入ページ",config.links.digital)+'</div>');
   return "";
 }
-if(answers.store==="yes")html=storeMarkup();
+if(answers.store==="yes")html=storeMarkup(true);
 else if(answers.store==="no")html=onlineMarkup(answers.seven==="yes");
 else{
 html=card(messages.method.unknownTitle,storeFinderMarkup());
@@ -307,7 +308,9 @@ html+=card("U-NEXT会員の方へ！",p(messages.support.unext)+
 '<div class="site-links">'+linkFor("詳しくはこちら",config.links.unextCampaign)+'</div>');
 }
 html+=card("みんなでできる応援",
-listText([messages.support.youtube,messages.support.sns,messages.support.request])+
+'<ul><li>'+escapeHtml(messages.support.youtube)+'</li></ul><div class="app-link-grid">'+linkFor("YouTube公式チャンネル","https://youtube.com/@timelesz_official?si=Mn0Jxa2dxpRjfqyB")+'</div>'+
+'<ul><li>'+escapeHtml(messages.support.sns)+'</li></ul><div class="app-link-grid">'+linkFor("X公式アカウント","https://x.com/ovtt_official?s=21&t=BbGDP467n_oSf2L69POfqA")+linkFor("Instagram公式アカウント","https://www.instagram.com/timelesz_official")+linkFor("TikTok公式アカウント","https://www.tiktok.com/@timelesz_overthetop")+'</div>'+
+listText([messages.support.request])+
 '<div class="app-link-grid">'+linkFor("タムごとDailyで応援する",config.links.daily)+'</div>');
 return html;
 }
@@ -329,10 +332,10 @@ const a=result.answers;
 const data={purchase:buildPurchase(a,config,messages),method:buildMethod(a,config),support:buildSupport(a,messages)};
 const oldAnswers=answers;answers=a;
 const html='<div class="result-meta"><p class="pill">MY NEW RELEASE SUPPORT PLAN</p><h1>あなたの新曲応援プラン</h1><p class="release-title">'+escapeHtml(config.release?.cdTitle||"ザユウノメイ／本当のことを言うと")+'</p></div>'+resultSummary(a)+
-section("01","これを買うのがおすすめ！",purchaseMarkup(data.purchase))+
+(a.budget==="zero"?"":section("01","これを買うのがおすすめ！",purchaseMarkup(data.purchase)))+
 (a.budget==="zero"?"":section("02","こんな買い方がおすすめ！",methodMarkup(data.method,print)))+
-section(a.budget==="zero"?"02":"03",messages.headings.support,supportMarkup(data.support,a)+addOnMarkup(data.purchase))+
-'<hr class="divider"><p class="small" style="text-align:center">非公式ファンツール｜タムごとDaily<br>集計・購入条件は必ず公式・販売店の最新情報をご確認ください。</p>';
+section(a.budget==="zero"?"01":"03",messages.headings.support,supportMarkup(data.support,a)+addOnMarkup(data.purchase))+
+'<hr class="divider"><p class="small" style="text-align:center">タムごと新曲応援ナビ<br>タムごと新曲応援ナビは非公式のファンツールです。<br>集計・購入・特典に関する情報は必ず公式・販売店の最新情報をご確認ください。</p>';
 answers=oldAnswers;return html;
 }
 function compactResultContent(result){
@@ -365,16 +368,16 @@ if(purchase.items.some(item=>item.productIds?.includes("set")))methods.push("3�
 if(purchase.items.some(item=>item.productIds?.includes("fc")))methods.push("FC限定盤は12/21 23:59までに予約しよう！");
 if(purchase.items.some(item=>item.productIds?.includes("digital")))methods.push("デジタル配信「本当のことを言うと」もチェック！");
 const selected=(a.subs||[]).filter(id=>id!=="unext").map(id=>config.subscriptions.find(x=>x.id===id)?.label).filter(Boolean);
-const music=selected.length?selected.join("・")+"で新曲を聴こう！":"Spotifyの無料プランでも新曲を聴こう！";
+const music=selected.length?selected.join("・")+"で新曲を聴こう！":"Spotifyのフリープランなら無料で聴けるよ！";
 const supports=[music];
 if(support.stationhead)supports.push("Stationheadのsecondzチャンネルにも参加しよう！");
 if(support.unext)supports.push("U-NEXT会員はUSEN推し活リクエストを追加でできるよ！");
 supports.push("YouTubeでMVを視聴・高評価しよう！","SNSでの拡散やラジオ・推し活リクエストも応援に！");
 return '<div class="compact-header"><p class="pill">タムごと新曲応援ナビ</p><h1>あなたの新曲応援プラン</h1><p>予算：'+escapeHtml(budget)+'</p></div>'+
-'<section class="compact-section"><h2>01｜これを買うのがおすすめ！</h2>'+purchaseCards+optional+'</section>'+
+(a.budget==="zero"?"":'<section class="compact-section"><h2>01｜これを買うのがおすすめ！</h2>'+purchaseCards+optional+'</section>')+
 (methods.length?'<section class="compact-section"><h2>02｜こんな買い方がおすすめ！</h2>'+listText(methods)+'</section>':"")+
-'<section class="compact-section"><h2>'+(methods.length?"03":"02")+'｜他にこんなこともできるよ！</h2>'+listText(supports)+'</section>'+
-'<p class="compact-footer">詳細・購入リンクはタムごと新曲応援ナビで確認してね！<br>非公式ファンツール｜購入条件・期限は公式情報をご確認ください。</p>';
+'<section class="compact-section"><h2>'+(a.budget==="zero"?"01":methods.length?"03":"02")+'｜'+escapeHtml(messages.headings.support)+</h2>'+listText(supports)+'</section>'+
+'<p class="compact-footer">詳細・購入リンクはタムごと新曲応援ナビで確認してね！<br>タムごと新曲応援ナビ<br>タムごと新曲応援ナビは非公式のファンツールです。<br>集計・購入・特典に関する情報は必ず公式・販売店の最新情報をご確認ください。</p>';
 }
 function showResult(){
 view="result";
