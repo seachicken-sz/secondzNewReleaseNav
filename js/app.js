@@ -172,7 +172,6 @@ return '<div class="delivery-item"><h4>'+escapeHtml(title)+'</h4><p>'+linkFor(ti
 function sevenMarkup(){
 const m=messages.method;
 return card(m.sevenTitle,
-'<p class="detail">セブン-イレブン受取は送料無料！ 対象商品・受取日などは各販売サイトで確認してね。</p>'+
 '<div class="site-links">'+linkFor("タワレコオンライン",config.links.tower)+linkFor("セブンネット",config.links.seven)+'</div>');
 }
 function onlineMarkup(showSeven){
