@@ -315,3 +315,14 @@ body{background:radial-gradient(ellipse 90% 250px at 50% 0%,#f6e8f8 0%,transpare
 /* Animate progress when moving between questions; respect reduced motion */
 .progress>span{transition:width 420ms cubic-bezier(.22,1,.36,1)}
 @media(prefers-reduced-motion:reduce){.progress>span{transition:none}}
+
+/* Clearly labeled first/second edition candidates */
+.panel.highlight h3{color:#8846a7;font-weight:850}
+.option-card{margin:10px 0;padding:14px 15px}
+.option-card .option-description{font-size:13px;line-height:1.7;color:#594a62;margin:6px 0}
+.compact-description{font-size:19px;line-height:1.6;margin:10px 0;color:#51435a}
+.compact-digital-title{font-size:23px;font-weight:800;color:#46324f;margin:4px 0 12px}
+.compact-choice-title{font-size:21px!important;font-weight:850;color:#8443a6;margin:2px 0 10px}
+.compact-secondaries{border-top:1px solid #e4cbe4;margin-top:19px;padding-top:17px}
+.compact-secondaries p:not(.compact-choice-title){font-size:20px;line-height:1.6;margin:8px 0}
+.compact-alternatives-card{background:#faf0fa;border:1px solid #e7cfe8;border-radius:20px;padding:16px 25px;margin-top:12px}
