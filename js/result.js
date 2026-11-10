@@ -10,7 +10,7 @@ export function buildPurchase(a,c,m){
   const choice=a.priority;
   const items=[],extra=[],notes=[],secondaries=[];
   const product=id=>c.products[id];
-  const item=(title,price,description="")=>items.push({title,price,description});
+  const item=(title,price,description="",productIds=[])=>items.push({title,price,description,productIds});
   const baseId=({songs:"regular",dance:"a",visual:"b",variety:"fc"})[choice];
   const names=ids=>ids.map(id=>product(id).label).join("＋");
   const addFcNotes=()=>{
@@ -20,15 +20,15 @@ export function buildPurchase(a,c,m){
     }
   };
   if(level==="zero")return {items,extra,notes,secondaries};
-  if(level==="300"){item(product("digital").label,255,m.purchase.digital);return {items,extra,notes,secondaries}}
-  if(level==="1400"){item(product("regular").label,1320,m.purchase.regular);return {items,extra,notes,secondaries}}
+  if(level==="300"){item(product("digital").label,255,m.purchase.digital,["digital"]);return {items,extra,notes,secondaries}}
+  if(level==="1400"){item(product("regular").label,1320,m.purchase.regular,["regular"]);return {items,extra,notes,secondaries}}
   if(level==="1800"){
     if(choice==="complete"){
-      if(canFc)item("FC限定盤",1800,m.purchase.completeBefore);
-      else {item("初回限定盤A または B",1800,eligible?m.purchase.completeBefore:m.purchase.completeAfter);if(eligible&&!a.fc)addFcNotes()}
+      if(canFc)item("FC限定盤",1800,m.purchase.completeBefore,["fc"]);
+      else {item("初回限定盤A または B",1800,eligible?m.purchase.completeBefore:m.purchase.completeAfter,["a","b"]);if(eligible&&!a.fc)addFcNotes()}
     }else{
       const id=baseId==="fc"&&!canFc?"a":baseId||"a";
-      item(product(id).label,product(id).price,m.purchase[id]||"");
+      item(product(id).label,product(id).price,m.purchase[id]||"",[id]);
     }
     extra.push("購入前にプランを変更するなら、あと"+money(4920-items[0].price)+"で3形態セットも選べるよ！");
   }
@@ -41,7 +41,7 @@ export function buildPurchase(a,c,m){
     }
     if(!first||first==="fc"&&!canFc)first="a";
     const price=product(first).price;
-    item(product(first).label,price,m.purchase[first]||"");
+    item(product(first).label,price,m.purchase[first]||"",[first]);
     ["regular","a","b","fc"].filter(id=>id!==first&&(! (id==="fc")||canFc)).forEach(id=>{
       const total=price+product(id).price;
       if(total<=3600)secondaries.push({id,label:product(id).label,total});
@@ -50,7 +50,7 @@ export function buildPurchase(a,c,m){
     if(canFc)notes.push(m.purchase.deadline);
   }
   if(level==="5000"){
-    item(product("set").label,4920,m.purchase.set);
+    item(product("set").label,4920,m.purchase.set,["set"]);
     notes.push(m.purchase.setCaution);
     if(eligible){
       extra.push("＋1,800円でFC限定盤も購入できるよ！ 4形態で合計6,720円。");
@@ -59,8 +59,8 @@ export function buildPurchase(a,c,m){
     if(choice==="complete")notes.push(eligible?m.purchase.completeBefore:m.purchase.completeAfter);
   }
   if(level==="7000"||level==="more"){
-    if(canFc)item(names(["regular","a","b","fc","digital"]),6975,"3形態セットの専用特典もチェック！");
-    else item(names(["regular","a","b","digital"]),5175,"3形態セットの専用特典もチェック！");
+    if(canFc)item(names(["regular","a","b","fc","digital"]),6975,"3形態セットの専用特典もチェック！",["set","fc","digital"]);
+    else item(names(["regular","a","b","digital"]),5175,"3形態セットの専用特典もチェック！",["set","digital"]);
     notes.push(m.purchase.setCaution);
     if(eligible&&!a.fc)addFcNotes();
     if(level==="7000"){
