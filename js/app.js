@@ -222,7 +222,7 @@ return '<div class="add-on"><details class="add-on-details"><summary>'+escapeHtm
 function linkFor(name,url){return '<a href="'+escapeHtml(url)+'" target="_blank" rel="noopener noreferrer">'+escapeHtml(name)+' ↗</a>'}
 function storeFinderMarkup(){
 const finder=config.storeFinder||{};
-return '<div class="store-finder"><p>'+escapeHtml(messages.method.storeFinder||"対象店舗をチェックしよう！")+'</p>'+linkFor(finder.name||"TSZ在庫チェッカー",config.links.storeList)+'<p class="detail">'+escapeHtml(finder.credit||"作成・運営：chino様")+'</p><p class="detail">'+escapeHtml(finder.notice||"※外部サイトに移動します")+'</p></div>';
+return '<div class="store-finder"><p>'+escapeHtml(messages.method.storeFinder||"近所のオリコン・ビルボ加盟店を探してみよう！")+'</p>'+linkFor(finder.name||"TSZ在庫チェッカー",config.links.storeList)+'<p class="detail">'+escapeHtml(finder.credit||"作成・運営：chino様")+'</p><p class="detail">'+escapeHtml(finder.notice||"※外部サイトに移動します")+'</p></div>';
 }
 function deliveryDetails(kind){
 const info=config.delivery?.[kind];if(!info)return "";
@@ -249,7 +249,7 @@ return html;
 }
 function storeMarkup(){
 const m=messages.method;
-return card(m.storeTitle,listText([m.storeBenefit1,m.storeBenefit2,m.storePickup])+p(m.storeLink)+storeFinderMarkup());
+return card(m.storeTitle,listText([m.storeBenefit1,m.storeBenefit2,m.storePickup]));
 }
 function methodMarkup(data,print=false){
 let html="";
@@ -261,7 +261,7 @@ if(isSmallBudget(answers.budget)){
 if(answers.store==="yes")html=storeMarkup();
 else if(answers.store==="no")html=onlineMarkup(answers.seven==="yes");
 else{
-html=card(messages.method.unknownTitle,p(messages.method.unknownNote)+storeFinderMarkup());
+html=card(messages.method.unknownTitle,storeFinderMarkup());
 if(print){
 html+=card("対象店舗があった場合",storeMarkup())+card("対象店舗がなかった場合",onlineMarkup(answers.seven==="yes"));
 }else{
