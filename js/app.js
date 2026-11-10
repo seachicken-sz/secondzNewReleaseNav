@@ -171,9 +171,9 @@ return '<div class="delivery-item"><h4>'+escapeHtml(title)+'</h4><p>'+linkFor(ti
 }
 function sevenMarkup(){
 const m=messages.method;
-return card(m.sevenTitle,p(m.sevenInfo)+p(m.sevenUse)+
-deliveryDetails("tower")+deliveryDetails("seven")+
-'<p class="detail">'+escapeHtml(m.sevenCaution)+'</p>');
+return card(m.sevenTitle,
+'<p class="detail">セブン-イレブン受取は送料無料！ 対象商品・受取日などは各販売サイトで確認してね。</p>'+
+'<div class="site-links">'+linkFor("タワレコオンライン",config.links.tower)+linkFor("セブンネット",config.links.seven)+'</div>');
 }
 function onlineMarkup(showSeven){
 const m=messages.method;
@@ -301,7 +301,7 @@ function showResult(){
 view="result";
 const result=lastResult||load(RESULT_KEY);if(!result||result.releaseId!==config.releaseId){home();return}
 lastResult=result;
-frame('<div id="result-view" class="card">'+resultContent(result)+'</div><section class="card footer-actions"><div class="actions"><button class="btn" data-action="export">簡易版を画像で保存</button><button class="btn secondary" data-action="home">トップへ戻る</button><button class="btn ghost" data-action="restart">もう一度診断する</button></div><p class="small">診断結果はこの端末に保存済み。再診断が完了すると上書きされます。</p></section>');
+frame('<div id="result-view" class="card">'+resultContent(result)+'</div><section class="card footer-actions"><div class="actions"><button class="btn" data-action="export">画像で保存</button><button class="btn secondary" data-action="home">トップへ戻る</button><button class="btn ghost" data-action="restart">もう一度診断する</button></div><p class="small">診断結果はこの端末に保存済み。再診断が完了すると上書きされます。</p></section>');
 }
 async function exportImage(button){
 const result=lastResult||load(RESULT_KEY);if(!result)return;
@@ -323,7 +323,7 @@ try{await navigator.share({files:[file],title:"新曲応援プラン"});return}c
 }
 const url=URL.createObjectURL(blob);
 const a=document.createElement("a");a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
-}catch(err){console.error(err);alert("画像の保存ができませんでした。通信環境を確認して再度お試しください。");}finally{node.remove();button.disabled=false;button.textContent="簡易版を画像で保存"}
+}catch(err){console.error(err);alert("画像の保存ができませんでした。通信環境を確認して再度お試しください。");}finally{node.remove();button.disabled=false;button.textContent="画像で保存"}
 }
 document.addEventListener("click",event=>{
 const toggle=event.target.closest("[data-store-toggle]");
