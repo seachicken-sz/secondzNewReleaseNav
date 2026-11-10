@@ -1,4 +1,4 @@
-import {buildPurchase,buildMethod,buildSupport,isBeforeDeadline} from "./result.js";
+import {buildPurchase,buildMethod,buildSupport,isBeforeDeadline} from "./result.js?v=20261111-stationhead-condition";
 const DRAFT_KEY="secondzReleaseNav:draft:v1";
 const RESULT_KEY="secondzReleaseNav:result:v1";
 const $=s=>document.querySelector(s);
