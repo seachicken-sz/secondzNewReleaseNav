@@ -36,7 +36,7 @@ saveDraft();showQuestion();
 }
 function saveDraft(){save(DRAFT_KEY,{releaseId:config.releaseId,version:1,step,answers});}
 function choice(name,value,label,checked,multiple=false){
-return '<button type="button" class="choice '+(multiple?"checkbox ":"")+(checked?"active":"")+'" data-choice="'+escapeHtml(name)+'" data-value="'+escapeHtml(value)+'" aria-pressed="'+checked+'"><span class="dot"></span><span>'+escapeHtml(label)+'</span></button>';
+return '<button type="button" class="choice '+(multiple?"checkbox ":"")+(checked?"active":"")+'" data-choice="'+escapeHtml(name)+'" data-value="'+escapeHtml(value)+'" aria-pressed="'+checked+'"><span>'+escapeHtml(label)+'</span></button>';
 }
 function showQuestion(){
 view="question";
