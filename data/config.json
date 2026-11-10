@@ -128,17 +128,40 @@
     }
   ],
   "links": {
-    "storeList": "",
+    "storeList": "https://timelesz-zaiko-static.pages.dev",
     "rakuten": "https://books.rakuten.co.jp/",
     "hmv": "https://www.hmv.co.jp/",
     "tower": "https://tower.jp/",
     "seven": "https://7net.omni7.jp/",
-    "fc": "",
+    "fc": "https://famikura-store.jp/s/j/page/top",
     "daily": "https://seachicken-sz.github.io/secondzDailyRoutine/app/",
-    "stationhead": "https://www.stationhead.com/"
+    "stationhead": "https://www.stationhead.com/",
+    "fcSpecial": "https://famikura-store.jp/s/j/page/PROS-5056?ima=2702",
+    "digital": "https://timelesz.lnk.to/honkoto_1125"
   },
   "release": {
     "cdTitle": "ザユウノメイ／本当のことを言うと",
     "digitalTitle": "本当のことを言うと"
+  },
+  "storeFinder": {
+    "name": "TSZ在庫チェッカー",
+    "credit": "作成・運営：chino様",
+    "notice": "※外部サイトに移動します"
+  },
+  "delivery": {
+    "tower": {
+      "name": "タワレコオンライン",
+      "freeSeven": true,
+      "home": "宅配でのお届け（北海道・山口県・九州・沖縄県を除く）：2027年1月31日午前中までのご注文で2027年2月1日出荷",
+      "seven": "セブン-イレブン受け取り：2027年1月29日午前中までのご注文で2027年2月1日出荷",
+      "other": "北海道・中国地方・四国・九州・沖縄県は発売日前日までに発送",
+      "caution": "フラゲ対象。受取日・予約締切は対象商品や地域の条件をご確認ください。"
+    },
+    "seven": {
+      "name": "セブンネット",
+      "freeSeven": true,
+      "seven": "セブン-イレブン受取り（送料無料）：発売日前日～2日で発送",
+      "home": "宅配（送料550円・税込）：発売日前日～2日で発送"
+    }
   }
 }
