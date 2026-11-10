@@ -12,15 +12,16 @@ export function buildPurchase(a,c,m){
   const baseId=({songs:"regular",dance:"a",visual:"b",variety:"fc"})[choice];
   const names=ids=>ids.map(id=>product(id).label).join("＋");
   const parts=m.purchase.extraParts;
+  const finish=()=>{if(a.store!=="no")extra.push({text:parts.storeChecker,link:"storeList",credit:true});return {items,extra,notes,secondaries};};
   const add=(key,link=null)=>extra.push({text:parts[key],link});
-  if(level==="zero")return {items,extra,notes,secondaries};
+  if(level==="zero")return finish();
   if(level==="300"){
     item(product("digital").label,255,m.purchase.digital,["digital"]);
-    return {items,extra,notes,secondaries};
+    return finish();
   }
   if(level==="1400"){
     item(product("regular").label,1320,m.purchase.regular,["regular"]);
-    return {items,extra,notes,secondaries};
+    return finish();
   }
   if(level==="1800"){
     if(choice==="complete"){
@@ -70,10 +71,7 @@ export function buildPurchase(a,c,m){
     add("discs");
     if(level==="more"&&eligible&&!a.fc)add("joinFc","joinFc");
   }
-  if(["1800","3600","5000","7000","more"].includes(level)&&a.store!=="no"){
-    extra.push({text:m.purchase.extraParts.storeChecker,link:"storeList",credit:true});
-  }
-  return {items,extra,notes,secondaries};
+  return finish();
 }
 export function buildMethod(a,c){
   const budget=a.budget;
