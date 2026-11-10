@@ -20,7 +20,7 @@ function home(){
 view="home";
 const draft=load(DRAFT_KEY);
 const result=load(RESULT_KEY);
-frame('<section class="card"><div class="intro"><img class="home-brand-logo" src="./img/new-release-nav-logo.svg" alt="タムごと新曲応援ナビ"><p class="lead muted">自分にぴったりの新曲応援方法を見つけよう！<br>予算も楽しみ方も、あなたのペースで。</p></div><div class="actions"><button class="btn" data-action="start">ナビをはじめる</button>'+
+frame('<section class="card"><div class="intro"><img class="home-brand-logo" src="./img/new-release-nav-logo.svg?v=20261110-logo-fix2" width="440" height="121" style="display:block;width:100%;max-width:440px;height:auto;max-height:145px;object-fit:contain;margin:0 auto 12px" alt="タムごと新曲応援ナビ"><p class="lead muted">自分にぴったりの新曲応援方法を見つけよう！<br>予算も楽しみ方も、あなたのペースで。</p></div><div class="actions"><button class="btn" data-action="start">ナビをはじめる</button>'+
 (draft&&draft.releaseId===config.releaseId?'<button class="btn secondary" data-action="resume">前回の続きから</button>':"")+
 (result&&result.releaseId===config.releaseId?'<button class="btn secondary" data-action="saved">前回の結果を見る</button>':"")+
 '</div><p class="small" style="text-align:center;margin-top:22px">回答はこの端末のブラウザにのみ保存します。</p></section>');
