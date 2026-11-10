@@ -13,7 +13,7 @@ const p=txt=>"<p>"+escapeHtml(txt)+"</p>";
 const money=value=>Number(value).toLocaleString("ja-JP")+"円";
 const deadline=()=>isBeforeDeadline(config.deadline);
 const fcAvailable=()=>answers.fc===true&&deadline();
-const steps=()=>QUESTIONS.filter(q=>(q!=="seven"||answers.store!=="yes")&&(q!=="priority"||["1800","3600","5000","7000"].includes(answers.budget)));
+const steps=()=>QUESTIONS.filter(q=>(q!=="seven"||answers.store!=="yes")&&(q!=="priority"||["1800","3600","5000"].includes(answers.budget)));
 const question=()=>steps()[step];
 function frame(content){$("#app").innerHTML=content;window.scrollTo({top:0,behavior:"instant"})}
 function home(){
@@ -30,6 +30,7 @@ const d=resume?load(DRAFT_KEY):null;
 answers=d&&d.releaseId===config.releaseId?{...defaultAnswers(),...d.answers}:defaultAnswers();
 step=resume?Math.max(0,Math.min(Number(d.step)||0,steps().length-1)):0;
 if(answers.budget===null)answers.budget="zero";
+if(!["1800","3600","5000"].includes(answers.budget))answers.priority=null;
 answers.subs=answers.subs.filter(x=>x!=="none");
 saveDraft();showQuestion();
 }
@@ -121,7 +122,16 @@ html+=card(heading,'<div class="product-heading"><span class="product-name">'+es
 if(data.secondaries?.length){
 html+=card("もう1枚はここから選ぼう！",data.secondaries.map(s=>'<div class="option-card"><span class="product-name">'+escapeHtml(cdTitle)+'</span><strong class="edition-name">'+escapeHtml(s.label)+'</strong><div class="detail">合計 '+money(s.total)+'</div></div>').join(""));
 }
-if(data.extra?.length)html+=card(messages.purchase.extra,data.extra.map(s=>'<p>'+escapeHtml(s)+'</p>').join(""));
+if(data.extra?.length){
+const content=data.extra.map(part=>{
+  const text=typeof part==="string"?part:part.text;
+  const link=typeof part==="string"?null:part.link;
+  const links={digital:config.links.digital,fcSpecial:config.links.fcSpecial,joinFc:config.links.joinFc,spotifyPremium:config.links.spotifyPremium};
+  const names={digital:"購入はこちら！",fcSpecial:"購入はこちら！",joinFc:"FC加入ページはこちら！",spotifyPremium:"Spotify Premiumはこちら！"};
+  return '<div class="add-on-item"><p>'+escapeHtml(text)+'</p>'+(link&&links[link]?'<div class="addon-link">'+linkFor(names[link],links[link])+'</div>':"")+'</div>';
+}).join("");
+html+='<div class="add-on"><details class="add-on-details"><summary>'+escapeHtml(messages.purchase.extraTitle)+'</summary><div class="add-on-body">'+content+'</div></details></div>';
+}
 if(data.notes?.length)html+='<div class="note">'+data.notes.map(s=>'<p>'+escapeHtml(s)+'</p>').join("")+'</div>';
 return html;
 }
@@ -221,6 +231,7 @@ const node=document.createElement("div");
 node.className="image-canvas";
 node.id="result-image-export";
 node.innerHTML=resultContent(result,true);
+node.querySelectorAll(".add-on-details").forEach(el=>el.open=true);
 document.body.appendChild(node);
 try{
 await document.fonts?.ready;
@@ -265,7 +276,7 @@ case "export":exportImage(button);break;
 document.addEventListener("input",event=>{
 if(event.target.id==="budget-range"){
 const id=config.budgetOptions[Number(event.target.value)].id;
-answers.budget=id;if(!["1800","3600","5000","7000"].includes(id))answers.priority=null;
+answers.budget=id;if(!["1800","3600","5000"].includes(id))answers.priority=null;
 saveDraft();$("#budget-label").textContent=config.budgetOptions[Number(event.target.value)].label;
 $("#next").disabled=false;
 }
