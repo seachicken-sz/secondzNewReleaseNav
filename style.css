@@ -91,3 +91,28 @@ body{background:radial-gradient(ellipse 90% 250px at 50% 0%,#f6e8f8 0%,transpare
 .image-canvas .add-on-details summary::after{display:none}
 .image-canvas .add-on-item{padding:18px 0}
 .image-canvas .addon-link a{font-size:20px}
+
+/* タムごとDaily のボタン・カード設計に合わせた UI */
+:root{--radius-card:16px;--radius-button:999px;--shadow-card:0 4px 14px rgba(70,37,82,.07)}
+.card{border-radius:var(--radius-card);box-shadow:var(--shadow-card)}
+.btn{border-radius:var(--radius-button);font-size:16px;min-height:51px;padding:14px 16px;font-weight:700}
+.btn:not(.secondary):not(.ghost){background:var(--accent);box-shadow:none}
+.btn.secondary{border:1px solid #ddd;background:#fff;color:#34273e}
+.btn:active,.choice:active{transform:scale(.985)}
+.choice{border-radius:16px;box-shadow:0 4px 14px rgba(55,30,65,.045)}
+.choice.active{background:#f8edf9}
+.panel{border-radius:var(--radius-card);box-shadow:0 3px 12px rgba(76,36,82,.045)}
+.site-links a,.app-link-grid a,.addon-link a{border-radius:999px;text-decoration:none;display:flex;align-items:center;justify-content:center;text-align:center;min-height:42px;line-height:1.4;font-weight:700}
+.site-links a{padding:12px 14px}
+.app-link-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:15px 0}
+.app-link-grid a{border:1px solid #e4cde9;background:#fff;color:#83529b;font-size:13px;padding:10px 12px}
+.support-music{background:linear-gradient(140deg,#f9effb,#fff3f9);border:1px solid #efd9eb}
+.stream-intro{font-size:16px;line-height:1.8;margin:7px 0 12px}
+.stream-intro strong{color:#9c4bb0;font-weight:850;background:linear-gradient(transparent 65%,#f4cde9 65%);padding:0 2px}
+.add-on{margin-top:25px;margin-bottom:0}
+.add-on-details summary{border-radius:999px;background:#f7ecfa}
+.addon-link a{display:inline-flex;padding:10px 18px}
+.image-canvas .app-link-grid a{font-size:19px}
+.image-canvas .stream-intro{font-size:24px}
+.image-canvas .add-on-details summary{border-radius:30px}
+@media(max-width:370px){.app-link-grid{grid-template-columns:1fr 1fr}.app-link-grid a{font-size:12px;padding:9px 5px}}
