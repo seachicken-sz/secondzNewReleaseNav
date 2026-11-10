@@ -131,6 +131,36 @@ return '<ul class="product-list">'+ids.map(id=>id==="set"
 ?'<li><strong>3形態セット</strong><ul><li>初回限定盤A</li><li>初回限定盤B</li><li>通常盤</li></ul></li>'
 :'<li>'+escapeHtml(names[id]||id)+'</li>').join("")+'</ul>';
 }
+const editionDetails={
+regular:{intro:"カップリングが2曲入ってるよ！",sections:[{title:"収録内容（CDのみ）",items:[["ザユウノメイ"],["本当のことを言うと"],["45",true],["Still us",true]]}]},
+a:{intro:"ダンスを楽しみたいならこれ！",sections:[
+{title:"CD",items:[["ザユウノメイ"],["本当のことを言うと"],["大怪盗",true]]},
+{title:"DVD or Blu-ray",items:[["ザユウノメイ MV"],["ザユウノメイ MV Dance edit ver.",true],["ザユウノメイ MV撮影メイキング"],["ジャケット撮影メイキング"]]}]},
+b:{intro:"ビジュアルをじっくり楽しむならこれ！",sections:[
+{title:"CD",items:[["ザユウノメイ"],["本当のことを言うと"],["Avocado",true]]},
+{title:"DVD or Blu-ray",items:[["本当のことを言うと MV"],["本当のことを言うと MV メンバーソロver.7種",true],["本当のことを言うと MV撮影メイキング"]]}]},
+fc:{intro:"わちゃわちゃを楽しみたいならFC限定盤！",sections:[
+{title:"CD",items:[["ザユウノメイ"],["本当のことを言うと"]]},
+{title:"DVD or Blu-ray",items:[["バラエティ映像「人生は一度きり！timeleszミッションすごろく！」",true]]},
+{title:"その他",items:[["メッセージ入りメンバーフォトカード（7種）"],["直筆メッセージ＋付属の二次元コードからメンバーコメント動画も！",true]]}]}
+};
+const editionLabels={regular:"通常盤",a:"初回限定盤A",b:"初回限定盤B",fc:"FC限定盤"};
+function editionContents(id){
+const d=editionDetails[id];if(!d)return "";
+return '<div class="edition-details"><p class="edition-intro">'+escapeHtml(d.intro)+'</p><p class="edition-contents-label">収録内容</p>'+
+d.sections.map(section=>'<div class="edition-section"><h4>'+escapeHtml(section.title)+'</h4><ul>'+section.items.map(([name,emphasis])=>
+'<li'+(emphasis?' class="edition-emphasis"':'')+'>'+escapeHtml(name)+'</li>').join("")+'</ul></div>').join("")+'</div>';
+}
+function productContents(item){
+const ids=item.productIds||[];
+const single=ids.length===1?ids[0]:null;
+if(single&&editionDetails[single])return editionContents(single);
+if(ids.includes("set")){
+return '<div class="edition-set-contents">'+["a","b","regular"].map(id=>
+'<details class="edition-set-item"><summary>'+editionLabels[id]+'の収録内容</summary>'+editionContents(id)+'</details>').join("")+'</div>';
+}
+return ids.includes("fc")?editionContents("fc"):"";
+}
 function purchaseMarkup(data){
 const cdTitle=config.release?.cdTitle||"ザユウノメイ／本当のことを言うと";
 if(!data.items.length)return card("購入以外の応援を楽しもう！",p(messages.purchase.zero),"highlight");
@@ -140,7 +170,7 @@ const digital=item.productIds?.length===1&&item.productIds[0]==="digital";
 return '<div class="product-heading">'+
 (digital?'<span class="product-name">Digital shingle</span><strong class="edition-name">「'+escapeHtml(config.release?.digitalTitle||"本当のことを言うと")+'」</strong>':
 '<span class="product-name">'+escapeHtml(cdTitle)+'</span>'+productList(item))+
-'</div>'+(item.description?p(item.description):"")+'<div class="price">'+money(item.price)+'</div>';
+'</div>'+(productContents(item)||(item.description?p(item.description):""))+'<div class="price">'+money(item.price)+'</div>';
 };
 let html="";
 data.items.forEach((item,i)=>{
@@ -151,7 +181,7 @@ if(data.secondaries?.length){
 const secondTitle=is1800?"第二候補":"もう1枚はここから選ぼう！";
 html+=card(secondTitle,data.secondaries.map(alt=>{
 const price=alt.price??(alt.total-data.items[0].price);
-const detail=is1800?'<p class="option-description">'+escapeHtml(alt.description||"")+'</p><div class="detail">'+money(price)+'</div>':'<div class="detail">合計 '+money(alt.total)+'</div>';
+const detail=is1800?editionContents(alt.id)+'<div class="detail">'+money(price)+'</div>':editionContents(alt.id)+'<div class="detail">合計 '+money(alt.total)+'</div>';
 return '<div class="option-card">'+
 (is1800?'':'<span class="product-name">'+escapeHtml(cdTitle)+'</span>')+
 '<strong class="edition-name">'+escapeHtml(alt.label)+'</strong>'+detail+'</div>';
@@ -321,9 +351,9 @@ return '<div class="compact-product">'+
 (is1800?'<p class="compact-choice-title">'+(i===0?"第一候補":"第二候補")+'</p>':"")+
 '<p class="compact-cd-title">'+escapeHtml(digital?"Digital shingle":cdTitle)+'</p>'+
 (digital?'<p class="compact-digital-title">「'+escapeHtml(config.release?.digitalTitle||"本当のことを言うと")+'」</p>':productList(item))+
-(item.description?'<p class="compact-description">'+escapeHtml(item.description)+'</p>':"")+
+(productContents(item)||(item.description?'<p class="compact-description">'+escapeHtml(item.description)+'</p>':""))+
 '<p class="compact-price">'+money(item.price)+'</p>'+
-(is1800&&purchase.secondaries?.length?'<div class="compact-secondaries"><p class="compact-choice-title">第二候補</p>'+purchase.secondaries.map(x=>'<p>'+escapeHtml(x.label)+'（'+money(x.price)+'）</p>').join("")+'</div>':"")+
+(is1800&&purchase.secondaries?.length?'<div class="compact-secondaries"><p class="compact-choice-title">第二候補</p>'+purchase.secondaries.map(x=>'<div class="compact-alternative"><p><strong>'+escapeHtml(x.label)+'</strong>（'+money(x.price)+'）</p>'+editionContents(x.id)+'</div>').join("")+'</div>':"")+
 '</div>';
 }).join("") :'<p>購入なしでもできる応援を楽しもう！</p>';
 const optional=!is1800&&purchase.secondaries?.length?
