@@ -348,3 +348,9 @@ body{background:radial-gradient(ellipse 90% 250px at 50% 0%,#f6e8f8 0%,transpare
 .image-canvas .compact-alternative{border-top:1px solid #e8d8ec;padding:13px 0}
 .image-canvas .compact-alternative:first-of-type{border-top:0}
 .image-canvas .compact-alternative p{margin:3px 0}
+
+/* TSZ checker in unknown-store guidance: no colored container */
+.store-finder{background:transparent;border:0;border-radius:0;box-shadow:none;padding:0;margin:12px 0 5px}
+.store-finder>p:first-child{margin:0 0 12px;font-weight:700;line-height:1.7}
+.store-finder>a{display:flex;width:100%;justify-content:center;align-items:center;min-height:48px;border:1px solid #8951ba;border-radius:999px;background:#8951ba;color:#fff;padding:14px 16px;font-size:16px;font-weight:700;box-shadow:none}
+.store-finder .detail{margin:7px 0 0;color:#777;font-size:12px}
