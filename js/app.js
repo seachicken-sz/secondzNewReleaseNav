@@ -134,15 +134,30 @@ return '<ul class="product-list">'+ids.map(id=>id==="set"
 function purchaseMarkup(data){
 const cdTitle=config.release?.cdTitle||"ザユウノメイ／本当のことを言うと";
 if(!data.items.length)return card("購入以外の応援を楽しもう！",p(messages.purchase.zero),"highlight");
+const is1800=answers.budget==="1800";
+const mainDetails=item=>{
+const digital=item.productIds?.length===1&&item.productIds[0]==="digital";
+return '<div class="product-heading">'+
+(digital?'<span class="product-name">Digital shingle</span><strong class="edition-name">「'+escapeHtml(config.release?.digitalTitle||"本当のことを言うと")+'」</strong>':
+'<span class="product-name">'+escapeHtml(cdTitle)+'</span>'+productList(item))+
+'</div>'+(item.description?p(item.description):"")+'<div class="price">'+money(item.price)+'</div>';
+};
 let html="";
 data.items.forEach((item,i)=>{
-const heading=i===0?"":"もうひとつの候補";
-html+=card(heading,'<div class="product-heading"><span class="product-name">'+escapeHtml(item.productIds?.length===1&&item.productIds[0]==="digital"?(config.release?.digitalTitle||"本当のことを言うと"):cdTitle)+'</span>'+productList(item)+'</div>'+(item.description?p(item.description):"")+'<div class="price">'+money(item.price)+'</div>',i===0?"highlight purchase-feature":"");
+const heading=is1800?(i===0?"第一候補":"第二候補"):(i===0?"":"もうひとつの候補");
+html+=card(heading,mainDetails(item),i===0?"highlight purchase-feature":"");
 });
 if(data.secondaries?.length){
-html+=card("もう1枚はここから選ぼう！",data.secondaries.map(s=>'<div class="option-card"><span class="product-name">'+escapeHtml(cdTitle)+'</span><strong class="edition-name">'+escapeHtml(s.label)+'</strong><div class="detail">合計 '+money(s.total)+'</div></div>').join(""));
+const secondTitle=is1800?"第二候補":"もう1枚はここから選ぼう！";
+html+=card(secondTitle,data.secondaries.map(alt=>{
+const price=alt.price??(alt.total-data.items[0].price);
+const detail=is1800?'<p class="option-description">'+escapeHtml(alt.description||"")+'</p><div class="detail">'+money(price)+'</div>':'<div class="detail">合計 '+money(alt.total)+'</div>';
+return '<div class="option-card">'+
+(is1800?'':'<span class="product-name">'+escapeHtml(cdTitle)+'</span>')+
+'<strong class="edition-name">'+escapeHtml(alt.label)+'</strong>'+detail+'</div>';
+}).join(""));
 }
-if(data.notes?.length)html+='<div class="note">'+data.notes.map(s=>'<p>'+escapeHtml(s)+'</p>').join("")+'</div>';
+if(data.notes?.length)html+='<div class="note">'+data.notes.map(x=>'<p>'+escapeHtml(x)+'</p>').join("")+'</div>';
 return html;
 }
 function addOnMarkup(data){
@@ -299,14 +314,21 @@ const cdTitle=config.release?.cdTitle||"ザユウノメイ／本当のことを�
 const shopSummary=a.store==="yes"?"近くの対象店舗で早めに予約・購入しよう！":
 a.store==="no"?"集計対象の通販サイトで早めに予約・購入しよう！":
 "対象店舗を調べて、店舗か通販で予約・購入しよう！";
-const purchaseCards=purchase.items.length?purchase.items.map(item=>
-'<div class="compact-product">'+
-'<p class="compact-cd-title">'+escapeHtml(item.productIds?.length===1&&item.productIds[0]==="digital"?(config.release?.digitalTitle||"本当のことを言うと"):cdTitle)+'</p>'+
-productList(item)+'<p class="compact-price">'+money(item.price)+'</p></div>').join("") :
-'<p>購入なしでもできる応援を楽しもう！</p>';
-const optional=purchase.secondaries?.length?
-'<p class="compact-subheading">もう1枚の候補</p><ul class="compact-alternatives">'+
-purchase.secondaries.map(x=>'<li>'+escapeHtml(x.label)+'（合計 '+money(x.total)+'）</li>').join("")+'</ul>':"";
+const is1800=a.budget==="1800";
+const purchaseCards=purchase.items.length?purchase.items.map((item,i)=>{
+const digital=item.productIds?.length===1&&item.productIds[0]==="digital";
+return '<div class="compact-product">'+
+(is1800?'<p class="compact-choice-title">'+(i===0?"第一候補":"第二候補")+'</p>':"")+
+'<p class="compact-cd-title">'+escapeHtml(digital?"Digital shingle":cdTitle)+'</p>'+
+(digital?'<p class="compact-digital-title">「'+escapeHtml(config.release?.digitalTitle||"本当のことを言うと")+'」</p>':productList(item))+
+(item.description?'<p class="compact-description">'+escapeHtml(item.description)+'</p>':"")+
+'<p class="compact-price">'+money(item.price)+'</p>'+
+(is1800&&purchase.secondaries?.length?'<div class="compact-secondaries"><p class="compact-choice-title">第二候補</p>'+purchase.secondaries.map(x=>'<p>'+escapeHtml(x.label)+'（'+money(x.price)+'）</p>').join("")+'</div>':"")+
+'</div>';
+}).join("") :'<p>購入なしでもできる応援を楽しもう！</p>';
+const optional=!is1800&&purchase.secondaries?.length?
+'<div class="compact-alternatives-card"><p class="compact-subheading">もう1枚の候補</p><ul class="compact-alternatives">'+
+purchase.secondaries.map(x=>'<li>'+escapeHtml(x.label)+'（合計 '+money(x.total)+'）</li>').join("")+'</ul></div>':"";
 const methods=isSmallBudget(a.budget)?(a.budget==="300"?["デジタル配信「本当のことを言うと」を予約・購入しよう！"]:[]):[shopSummary];
 if(!isSmallBudget(a.budget)&&a.store!=="yes"&&a.seven==="yes")methods.push("対象商品はセブンイレブン受取もチェック（送料無料）。");
 if(purchase.items.some(item=>item.productIds?.includes("set")))methods.push("3形態の特典付きセットは専用の商品ページで購入しよう！");
