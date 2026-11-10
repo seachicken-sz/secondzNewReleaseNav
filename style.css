@@ -297,3 +297,6 @@ body{background:radial-gradient(ellipse 90% 250px at 50% 0%,#f6e8f8 0%,transpare
 .add-on-group .add-on-item p{margin:5px 0;line-height:1.85}
 .add-on-group+.add-on-group{border-top:1px solid #e9d5ef;padding-top:18px;margin-top:15px}
 .image-canvas .add-on-group .add-on-item{border-bottom:none;padding:6px 0}
+
+/* セブンイレブン受取案内は指定どおり2行で表示 */
+.seven-info{white-space:pre-line;line-height:1.85;margin:10px 0 15px}
