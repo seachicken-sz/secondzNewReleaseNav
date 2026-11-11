@@ -1,5 +1,5 @@
 import {buildPurchase,buildMethod,buildSupport,isBeforeDeadline} from "./result.js?v=20261111-all-budget-addon";
-import {createPurchaseFlow} from "./planner.js?v=20261111-shopnames-v11";
+import {createPurchaseFlow} from "./planner.js?v=20261111-theme-parts-v12";
 const DRAFT_KEY="secondzReleaseNav:draft:v1";
 const RESULT_KEY="secondzReleaseNav:result:v1";
 const $=s=>document.querySelector(s);
