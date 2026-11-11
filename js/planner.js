@@ -21,7 +21,7 @@ const initial=()=>({version:2,source:"count",name:"",originalBudget:null,budgetL
 const normalizePlace=p=>({id:String(p.id||"place_"+(++sequence)),type:p.type==="store"?"store":p.type==="unassigned"?"unassigned":"online",shopKey:String(p.shopKey||""),label:String(p.label||"").slice(0,10),items:Object.fromEntries(NON_FC.map(id=>[id,digits(p.items?.[id])])),sets:{dvd:p.type==="online"?digits(p.sets?.dvd):0,bd:p.type==="online"?digits(p.sets?.bd):0}});
 const plansafe=value=>value&&typeof value==="object"?{
  ...initial(),...value,version:2,
- places:Array.isArray(value.places)?value.places.map(normalizePlace):[],
+ places:Array.isArray(value.places)?value.places.map(normalizePlace).map(p=>p.type==="online"&&!p.shopKey&&!p.label?{...p,type:"unassigned",label:"未設定"}:p):[],
  fcItems:{fc_dvd:digits(value.fcItems?.fc_dvd),fc_bd:digits(value.fcItems?.fc_bd)},
  imageOptions:{...initial().imageOptions,...value.imageOptions}
 }:initial();
@@ -36,12 +36,9 @@ const setIngredients=format=>["regular","a_"+format,"b_"+format];
 const setNum=(p,format)=>digits(p.sets?.[format]);
 const reduceSets=(p,id,next)=>{
  const items={...p.items,[id]:next};
- let dvd=Math.min(setNum(p,"dvd"),items.a_dvd,items.b_dvd);
- let bd=Math.min(setNum(p,"bd"),items.a_bd,items.b_bd);
- const excess=Math.max(0,dvd+bd-items.regular);
- // Preserve Blu-ray sets first when the shared regular count is reduced.
- dvd-=Math.min(dvd,excess);bd-=Math.max(0,excess-setNum(p,"dvd"));
- return {dvd:Math.max(0,dvd),bd:Math.max(0,bd)};
+ const dvd=Math.max(0,Math.min(setNum(p,"dvd"),items.a_dvd,items.b_dvd,items.regular));
+ const bd=Math.max(0,Math.min(setNum(p,"bd"),items.a_bd,items.b_bd,items.regular-dvd));
+ return {dvd,bd};
 };
 
 const migrateOld=old=>{
@@ -342,7 +339,10 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
  }
  function removeSelectedFromCompare(id){
    if(isFc(id)){plan.fcItems[id]=0;return}
-   for(const p of plan.places)p.items[id]=0;
+   for(const p of plan.places){
+     p.items[id]=0;
+     if(p.type==="online")p.sets=reduceSets(p,id,0);
+   }
  }
  document.addEventListener("click",event=>{
    if(modal&&event.target===modal){closePreview();return}
