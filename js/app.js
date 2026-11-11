@@ -28,7 +28,7 @@ const result=load(RESULT_KEY);
 frame('<section class="card"><div class="intro"><img class="home-brand-logo" src="./img/new-release-nav-logo.svg?v=20261110-logo-fix2" width="440" height="121" style="display:block;width:100%;max-width:440px;height:auto;max-height:145px;object-fit:contain;margin:0 auto 12px" alt="タムごと新曲応援ナビ"><p class="home-release-copy">2/3 発売<br><strong class="home-release-emphasis" style="color:#A148AC">「ザユウノメイ/本当のことを言うと」</strong><br>を応援しよう！<br>予算や好みに応じた応援プランを<br>チェックできます！</p><div class="home-cautions"><p>※特典情報・受け取り・支払いについては必ず購入先で確認してください。</p><p>※特典内容は変更される可能性があります。<br>必ず購入前に公式サイトで確認をしてください。</p></div></div><div class="pf-home-choices"><article class="pf-home-choice"><h2>予算から選ぶ！</h2><p>予算に合わせておすすめのCDや応援方法をチェック！</p><button class="btn" data-action="start">始める</button></article><article class="pf-home-choice"><h2>枚数から選ぶ！</h2><p>CDの種類と枚数を選んで、合計金額をチェック！</p><button class="btn" data-action="plan-create">購入プランを作る</button></article><article class="pf-home-choice"><h2>特典から選ぶ！</h2><p>収録曲や映像特典を比較して、欲しい盤を見つけよう！</p><button class="btn" data-action="plan-compare">特典を比較する</button></article></div><div class="actions">'+
 (draft&&draft.releaseId===config.releaseId?'<button class="btn secondary" data-action="resume">前回の続きから</button>':"")+
 (result&&result.releaseId===config.releaseId?'<button class="btn secondary" data-action="saved">前回の結果を見る</button>':"")+
-(planner?.hasSaved()?'<button class="btn secondary" data-action="plan-resume">前回の購入プランを編集する</button>':"")+
+
 '</div><p class="small" style="text-align:center;margin-top:22px">回答内容はご利用の端末に保存し、送信は行いません。</p></section>');
 }
 function start(resume=false){
