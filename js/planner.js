@@ -400,7 +400,7 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
    const fcEntries=["fc_dvd","fc_bd"].filter(id=>plan.fcItems[id]>0).map(id=>[names[id],plan.fcItems[id]+"枚"]);
    if(fcEntries.length)sections.push({title:"ファミクラストアオンライン",entries:fcEntries});
    const title=plan.name.trim()?plan.name.trim()+"の購入プラン":"わたしの購入プラン";
-   const {renderPlanPng}=await import("./planCanvas.js?v=20261111-safari-fallback-v3");
+   const {renderPlanPng}=await import("./planCanvas.js?v=20261111-png-parts-v4");
    return renderPlanPng({sections,title,releaseTitle:"ザユウノメイ／本当のことを言うと",totalCount:qtyOf(plan),totalPrice:totalOf(plan,config),colors:themeVars(),theme:plan.imageOptions.theme});
  }
  async function saveOrShare(button,share){
