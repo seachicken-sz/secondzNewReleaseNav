@@ -243,7 +243,7 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
    const groups=[["regular","通常盤",["regular"]],["a","初回限定盤A",["a_dvd","a_bd"]],["b","初回限定盤B",["b_dvd","b_bd"]],["fc","FC限定盤",["fc_dvd","fc_bd"]]];
    render('<section class="card pf-root pf-with-footer"><button type="button" class="pf-back" data-pf="back">← 戻る</button><h1>わたしのCD購入プラン</h1>'+budget+
      '<div class="pf-total"><div><small>現在の合計金額</small><strong data-pf-total></strong></div><div><small>CD合計</small><strong data-pf-qty></strong></div><p class="pf-budget-diff" data-pf-budget></p></div>'+
-     '<section class="pf-channel"><h2>購入場所を設定する</h2><p class="pf-note">購入場所を追加してください。枚数は下の「枚数を設定する」から指定できます。</p>'+
+     '<section class="pf-channel"><h2>購入場所を設定する</h2><p class="pf-note">購入場所を追加してください。枚数は下の「枚数を設定する」から指定できます。</p><p class="pf-tsz-jump"><a href="#pf-tsz-card">どこで買えばいいかわからない方へ</a></p>'+
      '<div data-pf-place-list>'+placeListMarkup()+'</div><div class="pf-add-actions"><button type="button" class="btn secondary" data-pf="show-add-online">＋ ネット通販を追加</button><button type="button" class="btn secondary" data-pf="show-add-store">＋ 店舗を追加</button></div>'+
      '<div data-pf-add-form>'+addForm()+'</div></section>'+
      '<section class="pf-quantity"><h2>枚数を設定する</h2>'+
@@ -252,6 +252,13 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
        '<div class="pf-split">'+formatRow(id)+'</div></div>').join("")+(key==='fc'?'<div data-pf-fc-notice></div>':'')+'</article>').join("")+'</div></section>'+
      '<p class="pf-note pf-system-notes">※購入場所を削除するとそこに設定した枚数も削除されます。<br>※表示金額は定価の税込金額となります。送料や割引は各店舗、各通販サイトでご確認ください。</p>'+
      '<div class="pf-name"><label for="pf-name">シェアするときの名前（任意）</label><input id="pf-name" data-pf-name type="text" maxlength="30" value="'+safe(plan.name)+'"><p class="pf-note">名前や購入先はこの端末に保存されます。</p></div>'+
+     '<section id="pf-tsz-card" class="pf-tsz-card" aria-labelledby="pf-tsz-title"><h2 id="pf-tsz-title">TSZ在庫チェッカーを活用しよう！</h2>'+
+     '<p class="pf-tsz-intro">・オリコン・ビルボ加盟店の検索<br>・発売後の在庫状況の共有<br>ができる便利なサイトです！</p>'+
+     '<p class="pf-tsz-questions">「どこで買えばオリコンチャートに貢献できるの？」<br>「家の近くのあの店って加盟店？」<br>「ネット通販ならどこ？」</p>'+
+     '<p>そんなときはここからぜひ検索を！</p>'+
+     '<a class="btn pf-tsz-button" href="https://timelesz-zaiko-static.pages.dev/" target="_blank" rel="noopener noreferrer">TSZ在庫チェッカーで探す ↗</a>'+
+     '<p class="pf-tsz-credit">作成・運営：chino様<br>ファンの有志により運営されているサイトです。</p>'+
+     '<p class="pf-tsz-disclaimer">※TSZ在庫チェッカーは、ファンの有志による非公式サイトです。掲載情報は変更される場合があります。加盟状況や在庫状況など、購入に関する最新情報は各販売店・公式サイトでもご確認ください。</p></section>'+
      '<button type="button" class="btn secondary" data-pf="compare">特典を見る</button><button type="button" class="btn secondary pf-clear-button" data-pf="clear-plan">購入プランをクリア</button><button type="button" class="btn ghost" data-pf="home">トップへ戻る</button></section>'+
      '<nav class="pf-bottom-nav"><button type="button" class="btn" data-pf="preview" data-pf-generate>画像を生成</button></nav>');
    updatePlanDom();
