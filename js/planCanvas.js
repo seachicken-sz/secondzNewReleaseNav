@@ -47,6 +47,11 @@ export async function renderPlanPng({sections,title,releaseTitle,totalCount,tota
     g.font=font(size,weight);g.fillStyle=color;g.textAlign=align;g.textBaseline="top";g.fillText(String(str),x,y);
   };
   g.fillStyle=colors.bg;g.fillRect(0,0,width,imageHeight);
+  if(colors.pink){
+    // Violet and pink share the visual emphasis rather than just tinting the purple.
+    rounded(width-235,58,155,13,7,colors.pink);
+    rounded(82,58,155,13,7,colors.accent);
+  }
   rounded(margin,margin,width-margin*2,imageHeight-margin*2,36,colors.paper,colors.border);
   let y=margin+34;
   text("✧  ♡  ✧",width/2,y,34,650,colors.accent,"center");y+=55;
@@ -55,10 +60,10 @@ export async function renderPlanPng({sections,title,releaseTitle,totalCount,tota
   y+=12;
   releaseLines.forEach(line=>{text(line,width/2,y,21,500,colors.accent,"center");y+=33});
   y+=38;
-  for(const group of groups){
-    rounded(innerX,y,innerW,group.height,22,colors.paper,colors.border);
+  for(const [groupIndex,group] of groups.entries()){
+    rounded(innerX,y,innerW,group.height,22,colors.paper,groupIndex%2===0?colors.border:(colors.pink||colors.border));
     let offset=y+24;
-    for(const line of group.titleLines){text(line,innerX+26,offset,26,750,colors.accent);offset+=39}
+    for(const line of group.titleLines){text(line,innerX+26,offset,26,750,groupIndex%2===0?colors.accent:(colors.pink||colors.accent));offset+=39}
     offset+=13;
     for(const row of group.rows){
       g.strokeStyle=colors.border;g.lineWidth=1;
