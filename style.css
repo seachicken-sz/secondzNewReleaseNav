@@ -784,3 +784,45 @@ body:has(.pf-bottom-nav) .shell{padding-bottom:calc(145px + env(safe-area-inset-
 .pf-image-stars{color:var(--image-pink,var(--image-accent))}
 .pf-image-footer{background:linear-gradient(100deg,var(--image-soft),var(--image-bg))}
 .pf-image-place:nth-child(even){border-color:var(--image-pink,var(--image-border))}
+
+
+/* Compact shop management: shop name / edit / delete on one line */
+.pf-configured-item{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) auto auto!important;
+ align-items:center;column-gap:8px;row-gap:8px;
+ padding:10px 12px!important;
+}
+.pf-configured-item>.pf-shop-name{
+ min-width:0;overflow-wrap:anywhere;
+ font-size:14px;font-weight:750;color:#51425c;line-height:1.45;
+}
+.pf-configured-item>.pf-edit-place,.pf-configured-item>.pf-remove-place{
+ white-space:nowrap;min-height:35px;
+ padding:7px 11px;border-radius:10px;font-size:12px;font-weight:700;
+ background:#fff;border:1px solid #dbcce2;color:#78509a;
+}
+.pf-configured-item>.pf-remove-place{border-color:#e8d5df;color:#a15d78}
+.pf-configured-item>.pf-shop-editor{
+ grid-column:1/-1;grid-row:2;order:unset;
+ width:100%;margin:0;padding:12px;
+}
+.pf-configured-item>[hidden]{display:none!important}
+.pf-shop-editor .pf-editor-buttons{display:flex;gap:8px;margin-top:12px}
+.pf-shop-editor .pf-editor-buttons button{
+ flex:1;border:1px solid #d9c5e2;background:#fff;
+ padding:9px 12px;border-radius:10px;font-size:13px;font-weight:700;color:#8053a0;
+}
+.pf-shop-editor .pf-editor-buttons button:first-child{background:#8157aa;color:#fff;border-color:#8157aa}
+.pf-configured-item .pf-shop-editor [hidden]{display:none!important}
+/* Treat the set as another edition, with format totals then store counters. */
+.pf-set-product .pf-format-row{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:10px;row-gap:5px}
+.pf-set-product .pf-format-row .pf-split{grid-column:1/-1;padding:0;margin:7px 0 8px}
+.pf-set-product .pf-format-row .pf-edition-place-list{display:grid;gap:9px}
+.pf-set-product .pf-format-title{font-size:15px}
+.pf-total{
+ position:sticky!important;top:max(8px,env(safe-area-inset-top,0px))!important;
+ z-index:15!important;isolation:isolate;
+ background:linear-gradient(120deg,#f3e5fb,#ffeefa)!important;
+ box-shadow:0 4px 14px rgba(79,52,93,.1)!important;
+}
