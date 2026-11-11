@@ -93,7 +93,7 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
   }
   function resume(){plan=read()||initial();showPlan()}
   function comparison(){screen="comparison";render(compareMarkup())}
-  function back(){if(previous==="result")goResult();else if(previous==="comparison")comparison();else goHome()}
+  function back(){if(previous==="result")goResult();else if(previous==="comparison")comparison();else if(previous==="plan")showPlan();else goHome()}
   function openFromResult(result){previous="result";begin({result,reset:true})}
   function openFromHome(){previous="home";begin({reset:true})}
   function openCompare(){previous="home";plan=read()||initial();comparison()}
