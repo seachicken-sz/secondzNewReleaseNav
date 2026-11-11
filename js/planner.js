@@ -29,14 +29,14 @@ const detail={
     tracks:[["ザユウノメイ"],["本当のことを言うと"],["大怪盗",true],["大怪盗 -Inst-"]],
     videos:[["「ザユウノメイ」Music Video"],["「ザユウノメイ」Music Video Dance edit ver.",true],["Making of「ザユウノメイ」"],["Behind of Jacket Shooting"]],
     gifts:[["分けて使える！オリジナルステッカーシート ver.A",true],["シリアルコード入りプレイリストカード"]],
-    note:"DVD版とBlu-ray版は映像内容が同じで、盤面の色味が異なるよ。"
+    note:"DVD版とBlu-ray版は映像内容は同一ですが、盤面の色味が異なります。"
   },
   b:{
     description:"メンバーそれぞれの映像をじっくり楽しみたい人におすすめ！",
     tracks:[["本当のことを言うと"],["ザユウノメイ"],["Avocado",true],["Avocado -Inst-"]],
     videos:[["「本当のことを言うと」Music Video"],["「本当のことを言うと」Music Video メンバーソロver.×7種",true],["Making of「本当のことを言うと」"]],
     gifts:[["分けて使える！オリジナルステッカーシート ver.B",true],["シリアルコード入りプレイリストカード"]],
-    note:"DVD版とBlu-ray版は映像内容が同じで、盤面の色味が異なるよ。"
+    note:"DVD版とBlu-ray版は映像内容は同一ですが、盤面の色味が異なります。"
   },
   fc:{
     description:"メンバーのわちゃわちゃを楽しみたい人におすすめ！",
@@ -98,27 +98,31 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
   function openFromHome(){previous="home";begin({reset:true})}
   function openCompare(){previous="home";plan=read()||initial();comparison()}
   function compareMarkup(){
-    const name={regular:"通常盤",a:"初回限定盤A",b:"初回限定盤B",fc:"FC限定盤"};
+    const edNames={regular:"通常盤",a:"初回限定盤A",b:"初回限定盤B",fc:"FC限定盤"};
+    const addBtn=(id,label)=>{
+      const picked=qty(plan,id)>0;
+      return '<button type="button" class="pf-choice-btn'+(picked?" is-added":"")+'" aria-pressed="'+picked+'" data-pf="toggle" data-id="'+id+'">'+safe(label)+'<span>'+ (picked?"追加済み ✓":"追加する ＋")+'</span></button>';
+    };
     const cards=["regular","a","b","fc"].map(id=>{
-      const d=detail[id],formats=id==="regular"?'<button type="button" class="btn" data-pf="add" data-id="regular">この盤を追加する</button>':
-        '<div class="pf-formats"><button type="button" class="btn" data-pf="add" data-id="'+id+'_dvd">DVDを追加</button><button type="button" class="btn secondary" data-pf="add" data-id="'+id+'_bd">Blu-rayを追加</button></div>';
-      return '<article class="pf-edition"><div class="pf-edition-head"><h2>'+name[id]+'</h2><strong>'+format(priceFor(id==="regular"?id:id+"_dvd",config))+'円</strong></div>'+
+      const d=detail[id],buttons=id==="regular"?addBtn("regular","通常盤"):
+        '<div class="pf-formats">'+addBtn(id+"_dvd","DVD")+addBtn(id+"_bd","Blu-ray")+'</div>';
+      return '<article class="pf-edition"><div class="pf-edition-head"><h2>'+edNames[id]+'</h2><strong>'+format(priceFor(id==="regular"?id:id+"_dvd",config))+'円</strong></div>'+
        '<p class="pf-muted">'+(id==="regular"?"CDのみ":"CD＋DVD／Blu-ray")+'</p><p class="pf-description">'+safe(d.description)+'</p>'+
        '<h3>収録曲</h3>'+rows(d.tracks)+(d.videos.length?'<h3>映像特典</h3>'+rows(d.videos):"")+
        '<h3>'+(id==="regular"?"初回仕様封入特典":"封入特典")+'</h3>'+rows(d.gifts)+
-       '<p class="pf-note">'+safe(d.note)+'</p>'+formats+'</article>';
+       '<p class="pf-note">'+safe(d.note)+'</p>'+buttons+'</article>';
     }).join("");
-    return '<section class="card pf-root"><button type="button" class="pf-back" data-pf="back">← 戻る</button>'+
-      '<h1>どの盤にする？特典を比較しよう！</h1><p class="muted">収録曲や映像をチェックして、欲しい盤を購入プランに追加しよう！</p>'+
+    return '<section class="card pf-root pf-with-footer"><button type="button" class="pf-back" data-pf="back">← 戻る</button>'+
+      '<h1>どの盤にする？特典を比較しよう！</h1><p class="muted">収録曲や映像をチェックして、欲しい盤を購入プランに追加しよう！複数選べるよ。</p>'+
       cards+'<section class="pf-guide"><h2>CDの曲をスマホでも聴けるよ！</h2>'+
       '<p>全形態に「シリアルコード入りプレイリストカード」が封入されているよ！カードに記載されたシリアルコードを無料の「timeleSZアプリ」に登録すると、購入したCDに収録されている楽曲をスマホで楽しめるよ！</p>'+
-      '<p class="pf-note">※インストゥルメンタル（-Inst-）楽曲は再生対象外だよ。</p>'+
       '<div class="pf-formats">'+openLink("App Store",IOS)+openLink("Google Play",ANDROID)+'</div>'+
       '<p>'+openLink("アプリの使い方",APPGUIDE)+'</p></section>'+
       '<section class="pf-guide"><h2>3形態同時購入特典もチェック！</h2><p>初回限定盤A・初回限定盤B・通常盤の3形態を同時予約購入すると、専用特典が付く対象商品があるよ！</p>'+
       '<p>対象の組み合わせ：A（Blu-ray）＋B（Blu-ray）＋通常盤、またはA（DVD）＋B（DVD）＋通常盤。</p>'+
       '<p class="pf-note">※特典内容は後日発表。対象の商品・購入方法・特典の在庫状況は購入先で確認してね！</p></section>'+
-      '<button type="button" class="btn secondary" data-pf="home">トップへ戻る</button></section>';
+      '<button type="button" class="btn secondary" data-pf="home">トップへ戻る</button></section>'+
+      '<nav class="pf-bottom-nav"><button type="button" class="btn" data-pf="to-plan">購入プランを作る <span data-pf-selected-count>（'+qtyOf(plan)+'枚）</span></button></nav>';
   }
   function selectedGiftNotice(){
     const hasRegular=qty(plan,"regular")>0;
@@ -147,7 +151,7 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
       (selectedIds(plan).some(isFc)?'<div class="pf-caution">FC限定盤の購入にはFC加入が必要だよ！受注期限は2026年12月21日23:59まで。購入条件は公式サイトで確認してね。<p>'+openLink("FC限定盤の購入ページ",planLink())+'</p></div>':"")+
       selectedGiftNotice()+
       '<p class="pf-note">表示価格は税込の商品代金のみ。送料・手数料・割引は含まないよ。DVD版とBlu-ray版は別々にカウントするよ。</p>'+
-      '<div class="pf-name"><label for="pf-name">シェアするときの名前（任意）</label><input id="pf-name" data-pf-name type="text" maxlength="30" placeholder="例：ツナ缶" value="'+safe(plan.name)+'"><p class="pf-note">未入力なら「わたしの購入プラン」。名前はこの端末にのみ保存するよ。</p></div>'+
+      '<div class="pf-name"><label for="pf-name">シェアするときの名前（任意）</label><input id="pf-name" data-pf-name type="text" maxlength="30" placeholder="" value="'+safe(plan.name)+'"><p class="pf-note">未入力なら「わたしの購入プラン」。名前はこの端末にのみ保存するよ。</p></div>'+
       '<button type="button" class="btn" data-pf="share" '+(count?"":"disabled")+'>購入プランを画像で保存・シェア</button>'+
       '<button type="button" class="btn secondary" data-pf="compare">特典を比較する</button>'+
       '<button type="button" class="btn ghost" data-pf="home">トップへ戻る</button></section>');
