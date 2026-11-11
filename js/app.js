@@ -1,8 +1,9 @@
 import {buildPurchase,buildMethod,buildSupport,isBeforeDeadline} from "./result.js?v=20261111-all-budget-addon";
+import {createPurchaseFlow} from "./planner.js?v=20261111-plan-v1";
 const DRAFT_KEY="secondzReleaseNav:draft:v1";
 const RESULT_KEY="secondzReleaseNav:result:v1";
 const $=s=>document.querySelector(s);
-let config,messages,answers={},step=0,view="home",lastResult=null,progressPercent=0;
+let config,messages,answers={},step=0,view="home",lastResult=null,progressPercent=0,planner=null;
 const QUESTIONS=["budget","store","seven","fc","subs","priority"];
 const isSmallBudget=budget=>budget==="zero"||budget==="300";
 const defaultAnswers=()=>({store:null,seven:null,fc:null,subs:[],budget:"zero",priority:null});
@@ -24,9 +25,10 @@ function home(){
 view="home";
 const draft=load(DRAFT_KEY);
 const result=load(RESULT_KEY);
-frame('<section class="card"><div class="intro"><img class="home-brand-logo" src="./img/new-release-nav-logo.svg?v=20261110-logo-fix2" width="440" height="121" style="display:block;width:100%;max-width:440px;height:auto;max-height:145px;object-fit:contain;margin:0 auto 12px" alt="タムごと新曲応援ナビ"><p class="home-release-copy">2/3 発売<br><strong class="home-release-emphasis" style="color:#A148AC">「ザユウノメイ/本当のことを言うと」</strong><br>を応援しよう！<br>予算や好みに応じた応援プランを<br>チェックできます！</p><div class="home-cautions"><p>※特典情報・受け取り・支払いについては必ず購入先で確認してください。</p><p>※特典内容は変更される可能性があります。<br>必ず購入前に公式サイトで確認をしてください。</p></div></div><div class="actions"><button class="btn" data-action="start">ナビをはじめる</button>'+
+frame('<section class="card"><div class="intro"><img class="home-brand-logo" src="./img/new-release-nav-logo.svg?v=20261110-logo-fix2" width="440" height="121" style="display:block;width:100%;max-width:440px;height:auto;max-height:145px;object-fit:contain;margin:0 auto 12px" alt="タムごと新曲応援ナビ"><p class="home-release-copy">2/3 発売<br><strong class="home-release-emphasis" style="color:#A148AC">「ザユウノメイ/本当のことを言うと」</strong><br>を応援しよう！<br>予算や好みに応じた応援プランを<br>チェックできます！</p><div class="home-cautions"><p>※特典情報・受け取り・支払いについては必ず購入先で確認してください。</p><p>※特典内容は変更される可能性があります。<br>必ず購入前に公式サイトで確認をしてください。</p></div></div><div class="pf-home-choices"><article class="pf-home-choice"><h2>予算から選ぶ！</h2><p>予算に合わせておすすめのCDや応援方法をチェック！</p><button class="btn" data-action="start">始める</button></article><article class="pf-home-choice"><h2>枚数から選ぶ！</h2><p>CDの種類と枚数を選んで、合計金額をチェック！</p><button class="btn" data-action="plan-create">購入プランを作る</button></article><article class="pf-home-choice"><h2>特典から選ぶ！</h2><p>収録曲や映像特典を比較して、欲しい盤を見つけよう！</p><button class="btn" data-action="plan-compare">特典を比較する</button></article></div><div class="actions">'+
 (draft&&draft.releaseId===config.releaseId?'<button class="btn secondary" data-action="resume">前回の続きから</button>':"")+
 (result&&result.releaseId===config.releaseId?'<button class="btn secondary" data-action="saved">前回の結果を見る</button>':"")+
+(planner?.hasSaved()?'<button class="btn secondary" data-action="plan-resume">前回の購入プランを編集する</button>':"")+
 '</div><p class="small" style="text-align:center;margin-top:22px">回答内容はご利用の端末に保存し、送信は行いません。</p></section>');
 }
 function start(resume=false){
@@ -383,7 +385,7 @@ function showResult(){
 view="result";
 const result=lastResult||load(RESULT_KEY);if(!result||result.releaseId!==config.releaseId){home();return}
 lastResult=result;
-frame('<div id="result-view" class="card">'+resultContent(result)+'</div><section class="card footer-actions"><div class="actions"><button class="btn" data-action="export">画像で保存</button><button class="btn secondary" data-action="home">トップへ戻る</button><button class="btn ghost" data-action="restart">もう一度診断する</button></div><p class="small">診断結果はこの端末に保存済み。再診断が完了すると上書きされます。</p></section>');
+frame('<div id="result-view" class="card">'+resultContent(result)+'</div><section class="card footer-actions"><div class="actions"><button class="btn" data-action="export">画像で保存</button><button class="btn secondary" data-action="plan-from-result">CD購入プランを作る</button><button class="btn secondary" data-action="home">トップへ戻る</button><button class="btn ghost" data-action="restart">もう一度診断する</button></div><p class="small">診断結果はこの端末に保存済み。再診断が完了すると上書きされます。</p></section>');
 }
 async function exportImage(button){
 const result=lastResult||load(RESULT_KEY);if(!result)return;
@@ -426,6 +428,10 @@ if(choiceEl){setAnswer(choiceEl.dataset.choice,choiceEl.dataset.value);return}
 const button=event.target.closest("[data-action]");if(!button)return;
 switch(button.dataset.action){
 case "start":case "restart":start();break;
+case "plan-create":planner.openFromHome();break;
+case "plan-compare":planner.openCompare();break;
+case "plan-resume":planner.resume();break;
+case "plan-from-result":planner.openFromResult(lastResult||load(RESULT_KEY));break;
 case "resume":start(true);break;
 case "next":next();break;
 case "back":back();break;
@@ -449,6 +455,7 @@ try{
 const responses=await Promise.all([fetch("./data/config.json",{cache:"no-store"}),fetch("./data/messages.json",{cache:"no-store"})]);
 if(responses.some(r=>!r.ok))throw Error("データの取得に失敗しました");
 [config,messages]=await Promise.all(responses.map(r=>r.json()));
+planner=createPurchaseFlow({config,render:html=>frame(html),goHome:home,goResult:showResult});
 home();
 }catch(err){console.error(err);frame('<section class="card"><h1>読み込みに失敗しました</h1><p class="loading-error">通信状況を確認してページを再読み込みしてください。</p><button class="btn" onclick="location.reload()">再読み込み</button></section>')}
 }
