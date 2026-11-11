@@ -161,7 +161,8 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
  };
  function placeCard(p){
    const label=placeLabel(p),isOnline=p.type==="online";
-   return '<article class="pf-place-card" data-place-card="'+safe(p.id)+'"><div class="pf-place-heading"><div><small>'+(isOnline?"オンライン":"実店舗")+'</small><h3>'+safe(label)+'</h3></div><button type="button" class="pf-remove-place" data-pf="remove-place" data-place="'+safe(p.id)+'">削除</button></div>'+
+   return '<article class="pf-place-card" data-place-card="'+safe(p.id)+'"><div class="pf-place-heading"><div><small>'+(isOnline?"オンライン":"実店舗")+'</small><h3 data-pf-place-label="'+safe(p.id)+'">'+safe(label)+'</h3></div><button type="button" class="pf-remove-place" data-pf="remove-place" data-place="'+safe(p.id)+'">削除</button></div>'+
+    (isOnline?'<details class="pf-shop-editor"'+(!p.shopKey?' open':'')+'><summary>購入先を選択・変更</summary><select aria-label="オンライン購入先" data-pf-place-select="'+safe(p.id)+'"><option value="">選択してください</option>'+Object.entries(SHOP_NAMES).map(([key,name])=>'<option value="'+key+'"'+(p.shopKey===key?' selected':'')+'>'+name+'</option>').join("")+'</select><div data-pf-place-other="'+safe(p.id)+'"'+(p.shopKey==="other"?"":" hidden")+'><label>店舗名（10文字まで）<input maxlength="10" data-pf-place-custom="'+safe(p.id)+'" value="'+safe(p.shopKey==="other"?p.label:"")+'"></label></div></details>':'')+
     NON_FC.map(id=>'<div class="pf-format-row"><span class="pf-format-title">'+safe(names[id])+'</span>'+counter(p,id)+'</div>').join("")+
     '<div class="pf-place-subtotal">この購入先の小計 <strong data-pf-subtotal="'+safe(p.id)+'">'+format(NON_FC.reduce((sum,id)=>sum+p.items[id]*priceFor(id,config),0))+'円</strong></div></article>';
  }
@@ -338,11 +339,29 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
  document.addEventListener("change",event=>{
    const target=event.target;
    if(target.matches("[data-pf-shop-select]")){const wrap=document.querySelector("[data-pf-other-wrap]");if(wrap)wrap.hidden=target.value!=="other"}
+   if(target.matches("[data-pf-place-select]")){
+     const place=plan.places.find(p=>p.id===target.dataset.pfPlaceSelect);
+     if(!place)return;
+     place.shopKey=target.value;place.label=target.value==="other"?"":SHOP_NAMES[target.value]||"";
+     const card=target.closest("[data-place-card]");
+     const wrap=card?.querySelector("[data-pf-place-other]");if(wrap)wrap.hidden=target.value!=="other";
+     const custom=card?.querySelector("[data-pf-place-custom]");if(custom)custom.value="";
+     const title=card?.querySelector("[data-pf-place-label]");if(title)title.textContent=placeLabel(place);
+     persist();
+   }
    if(target.matches("[data-pf-option]")){plan.imageOptions[target.dataset.pfOption]=target.checked;persist();refreshPreview()}
    if(target.matches("[data-pf-theme]")){plan.imageOptions.theme=target.dataset.pfTheme;persist();refreshPreview()}
  });
  document.addEventListener("input",event=>{
    if(event.target.matches("[data-pf-name]")){plan.name=event.target.value.slice(0,30);persist()}
+   if(event.target.matches("[data-pf-place-custom]")){
+     const place=plan.places.find(p=>p.id===event.target.dataset.pfPlaceCustom);
+     if(!place)return;
+     place.label=event.target.value.slice(0,10);
+     const title=event.target.closest("[data-place-card]")?.querySelector("[data-pf-place-label]");
+     if(title)title.textContent=placeLabel(place);
+     persist();
+   }
  });
  document.addEventListener("keydown",event=>{if(event.key==="Escape"&&modal)closePreview()});
  return {openFromResult,openFromHome,openCompare,resume,hasSaved,showPlan};
