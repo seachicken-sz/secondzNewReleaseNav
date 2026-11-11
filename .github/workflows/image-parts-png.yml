@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'img/image parts/**/*.svg'
+      - 'img/new-release-nav-icon.svg'
       - '.github/workflows/image-parts-png.yml'
   workflow_dispatch:
 permissions:
@@ -35,11 +36,32 @@ jobs:
               img.save(output, format='PNG', optimize=True)
               print(f'{svg} -> {output}: {img.width}x{img.height}')
           PY
+      - name: Export iPhone and browser PNG icons
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from io import BytesIO
+          from PIL import Image
+          import cairosvg
+
+          source = Path('img/new-release-nav-icon.svg').read_bytes()
+          for size, output in [
+              (180, Path('apple-touch-icon.png')),
+              (192, Path('img/new-release-nav-icon-192.png')),
+              (512, Path('img/new-release-nav-icon-512.png')),
+          ]:
+              png = cairosvg.svg2png(bytestring=source, output_width=size, output_height=size)
+              foreground = Image.open(BytesIO(png)).convert('RGBA')
+              background = Image.new('RGBA', (size, size), '#ffffff')
+              background.alpha_composite(foreground)
+              background.convert('RGB').save(output, 'PNG', optimize=True)
+              print(f'{output}: {size}x{size}')
+          PY
       - name: Commit PNG files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add 'img/image parts'
+          git add 'img/image parts' apple-touch-icon.png img/new-release-nav-icon-192.png img/new-release-nav-icon-512.png
           if ! git diff --cached --quiet; then
             git commit -m "Regenerate PNG parts from SVG sources"
             git push
