@@ -480,3 +480,15 @@ body{background:radial-gradient(ellipse 90% 250px at 50% 0%,#f6e8f8 0%,transpare
 .pf-edition .pf-formats{margin-bottom:0}
 .pf-choice-btn:focus-visible,.pf-counter button:focus-visible{outline:3px solid #ad6bc7;outline-offset:2px}
 @media(max-width:420px){.pf-format-row{column-gap:6px}.pf-format-row .pf-counter{gap:7px}.pf-format-row .pf-counter button{min-width:35px;min-height:37px}.pf-format-title{font-size:14px}.pf-bottom-nav{padding-left:14px;padding-right:14px}}
+
+
+/* Three-edition bonus explanation */
+.pf-three-editions .pf-past-benefits{margin:18px 0;border:1px solid #e4d0ea;border-radius:14px;background:#fff;overflow:hidden}
+.pf-three-editions .pf-past-benefits>summary{cursor:pointer;padding:14px 16px;color:#82499f;font-weight:750;line-height:1.5}
+.pf-past-benefits-content{padding:2px 16px 17px;border-top:1px solid #f1e3f3}
+.pf-past-benefits-content h3{margin:17px 0 8px;color:#77458f}
+.pf-past-benefits-content ul{margin:7px 0;padding-left:23px;line-height:1.85}
+.pf-past-benefits-content ul ul{margin:5px 0 10px}
+.pf-purchase-advice{margin:15px 0;padding:15px 16px;background:#fff;border:1px solid #ebddeb;border-radius:14px}
+.pf-purchase-advice h3{color:#80499b;margin:0 0 9px;font-size:16px}
+.pf-purchase-advice p{margin:8px 0;line-height:1.75}
