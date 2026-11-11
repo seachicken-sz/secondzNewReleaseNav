@@ -195,7 +195,7 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
    return '<div class="pf-configured-list">'+shops.map(p=>'<div class="pf-configured-item" data-configured-place="'+safe(p.id)+'"><span><small>'+(p.type==="online"?"オンライン":"実店舗")+'</small><strong>'+safe(placeLabel(p))+'</strong></span>'+
     (p.type==="online"?'<details class="pf-shop-editor"><summary>変更</summary><select data-pf-place-select="'+safe(p.id)+'"><option value="">選択してください</option>'+Object.entries(SHOP_NAMES).map(([key,label])=>'<option value="'+key+'"'+(p.shopKey===key?' selected':'')+'>'+label+'</option>').join("")+'</select><div data-pf-place-other="'+safe(p.id)+'"'+(p.shopKey==="other"?"":" hidden")+'><input type="text" maxlength="10" aria-label="オンライン購入先の名前" data-pf-place-custom="'+safe(p.id)+'" value="'+safe(p.shopKey==="other"?p.label:"")+'"></div></details>':'')+
     '<button type="button" class="pf-remove-place" data-pf="remove-place" data-place="'+safe(p.id)+'">削除</button></div>').join("")+
-    '<div class="pf-configured-item pf-configured-fc"><span><small>FC限定・固定</small><strong>ファミクラストアオンライン</strong></span></div></div>';
+    '</div>';
  }
  function counter(place,id){
    const val=isFc(id)?plan.fcItems[id]:place.items[id];
@@ -210,8 +210,17 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
  function setRows(){
    const shops=registeredPlaces().filter(p=>p.type==="online");
    if(!shops.length)return "";
-   return '<section class="pf-sets"><h2>3形態同時購入特典付きセット</h2><p class="pf-note">オンライン購入先のみ設定できます。1セットで通常盤・初回A・初回Bが各1枚追加されます。</p>'+
-   shops.map(p=>'<div class="pf-set-place"><h3>'+safe(placeLabel(p))+'</h3>'+["dvd","bd"].map(format=>'<div class="pf-set-row"><span>'+(format==="dvd"?"DVDセット":"Blu-rayセット")+'</span><div class="pf-counter" data-pf-set-counter="'+safe(p.id)+'-'+format+'"><button type="button" data-pf="set-minus" data-place="'+safe(p.id)+'" data-format="'+format+'"'+(!setNum(p,format)?' disabled':'')+'>－</button><strong>'+setNum(p,format)+'</strong><button type="button" data-pf="set-plus" data-place="'+safe(p.id)+'" data-format="'+format+'"'+(setIngredients(format).some(id=>p.items[id]>=99)||setNum(p,format)>=99?' disabled':'')+'>＋</button></div></div>').join("")+'</div>').join("")+'</section>';
+   const count=shops.reduce((sum,p)=>sum+setNum(p,"dvd")+setNum(p,"bd"),0);
+   return '<article class="pf-product pf-product-group pf-set-product">'+
+    '<div class="pf-product-top"><div><h3>3形態同時購入特典付きセット</h3><span>4,920円</span></div>'+
+    '<strong data-pf-set-total>'+count+'セット</strong></div>'+
+    '<p class="pf-note">オンライン購入先のみ設定できます。1セットで通常盤・初回A・初回Bが各1枚追加されます。</p>'+
+    shops.map(p=>'<div class="pf-set-place"><h4>'+safe(placeLabel(p))+'</h4>'+
+      ["dvd","bd"].map(format=>'<div class="pf-set-row"><span>'+(format==="dvd"?"DVDセット":"Blu-rayセット")+'</span>'+
+      '<div class="pf-counter" data-pf-set-counter="'+safe(p.id)+'-'+format+'">'+
+      '<button type="button" data-pf="set-minus" data-place="'+safe(p.id)+'" data-format="'+format+'"'+(!setNum(p,format)?' disabled':'')+'>－</button>'+
+      '<strong>'+setNum(p,format)+'</strong>'+
+      '<button type="button" data-pf="set-plus" data-place="'+safe(p.id)+'" data-format="'+format+'"'+(setIngredients(format).some(id=>p.items[id]>=99)||setNum(p,format)>=99?' disabled':'')+'>＋</button></div></div>').join("")+'</div>').join("")+'</article>';
  }
  function showPlan(){
    screen="plan";ensureUnassigned(plan);
@@ -225,7 +234,7 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
      '<section class="pf-quantity"><h2>枚数を設定する</h2>'+
      '<div data-pf-sets>'+setRows()+'</div><div data-pf-set-notice></div><div data-pf-editions>'+groups.map(([key,title,ids])=>'<article class="pf-product pf-product-group"><div class="pf-product-top"><div><h3>'+title+'</h3><span>'+format(priceFor(ids[0],config))+'円'+(ids.some(id=>plan.recommended.includes(id))?' <em class="pf-recommended">診断おすすめ</em>':'')+'</span></div><strong data-pf-group-total="'+key+'">'+ids.reduce((sum,id)=>sum+qty(plan,id),0)+'枚</strong></div>'+
        ids.map(id=>'<div class="pf-format-row"><span class="pf-format-title">'+(id==="regular"?"CD":id.endsWith("_dvd")?"DVD":"Blu-ray")+'</span><div class="pf-primary-value" data-pf-row-total="'+id+'">'+qty(plan,id)+'枚</div>'+
-       '<details class="pf-split" open><summary>購入場所ごとの枚数</summary>'+formatRow(id)+'</details></div>').join("")+(key==='fc'?'<div data-pf-fc-notice></div>':'')+'</article>').join("")+'</div></section>'+
+       '<div class="pf-split">'+formatRow(id)+'</div></div>').join("")+(key==='fc'?'<div data-pf-fc-notice></div>':'')+'</article>').join("")+'</div></section>'+
      '<p class="pf-note pf-system-notes">※購入場所を削除するとそこに設定した枚数も削除されます。<br>※表示金額は定価の税込金額となります。送料や割引は各店舗、各通販サイトでご確認ください。</p>'+
      '<div class="pf-name"><label for="pf-name">シェアするときの名前（任意）</label><input id="pf-name" data-pf-name type="text" maxlength="30" value="'+safe(plan.name)+'"><p class="pf-note">名前や購入先はこの端末に保存されます。</p></div>'+
      '<button type="button" class="btn secondary" data-pf="compare">特典を見る</button><button type="button" class="btn secondary pf-clear-button" data-pf="clear-plan">購入プランをクリア</button><button type="button" class="btn ghost" data-pf="home">トップへ戻る</button></section>'+
@@ -258,6 +267,7 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
      const strong=el.querySelector("strong");if(strong)strong.textContent=val??0;
      if(minus)minus.disabled=!val;if(plus)plus.disabled=val>=99;
    });
+   set("[data-pf-set-total]",plan.places.reduce((sum,p)=>sum+setNum(p,"dvd")+setNum(p,"bd"),0)+"セット");
    root.querySelectorAll("[data-pf-set-counter]").forEach(el=>{
      const plus=el.querySelector("[data-pf='set-plus']"),minus=el.querySelector("[data-pf='set-minus']");
      const p=plan.places.find(p=>p.id===plus?.dataset.place),format=plus?.dataset.format;
@@ -277,20 +287,19 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
    const list=document.querySelector("[data-pf-place-list]");
    const editions=document.querySelector("[data-pf-editions]");
    const sets=document.querySelector("[data-pf-sets]");
-   const opened=[...document.querySelectorAll("details.pf-split")].map(el=>el.open);
    if(list)list.innerHTML=placeListMarkup();
    if(editions){
      const ids=[...ITEM_IDS];
      for(const id of ids){
        const section=editions.querySelector('[data-pf-row-total="'+id+'"]')?.closest(".pf-format-row");
-       const details=section?.querySelector("details.pf-split");
-       if(details){details.querySelector(".pf-edition-place-list").innerHTML=formatRow(id)}
+       const area=section?.querySelector(".pf-split");
+       if(area)area.innerHTML=formatRow(id)
      }
    }
    if(sets)sets.innerHTML=setRows();
    updatePlanDom();
  }
- const themeVars=()=>plan.imageOptions.theme==="movieMint"?{bg:"#d6f4ec",border:"#9fd5c9",accent:"#14877e",paper:"#fffef1",soft:"#f1f9e5"}:{bg:"#faeaf5",border:"#efb9d9",accent:"#b04b93",paper:"#ffffff",soft:"#fbe0f0"};
+ const themeVars=()=>plan.imageOptions.theme==="movieMint"?{bg:"#d6f4ec",border:"#9fd5c9",accent:"#14877e",paper:"#fffef1",soft:"#f1f9e5",pink:"#f3dbef"}:{bg:"#f2eafd",border:"#b68ce4",accent:"#7346b4",paper:"#fff4fa",soft:"#f9dce9",pink:"#e88bbd"};
  function imageMarkup(){
    const colors=themeVars(),opts=plan.imageOptions,title=plan.name.trim()?plan.name.trim()+"の購入プラン":"わたしの購入プラン";
    const active=plan.places.filter(p=>NON_FC.some(id=>p.items[id]>0));
@@ -308,7 +317,7 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
    }).join("");
    const fc=qty(plan,"fc_dvd")+qty(plan,"fc_bd");
    const fcMarkup=fc?'<div class="pf-image-place"><h3>ファミクラストアオンライン</h3>'+['fc_dvd','fc_bd'].filter(id=>plan.fcItems[id]>0).map(id=>'<div class="pf-image-line"><span>'+safe(names[id])+'</span><strong>'+plan.fcItems[id]+'枚</strong></div>').join("")+'</div>':"";
-   const vars='--image-bg:'+colors.bg+';--image-border:'+colors.border+';--image-accent:'+colors.accent+';--image-paper:'+colors.paper+';--image-soft:'+colors.soft+';';
+   const vars='--image-bg:'+colors.bg+';--image-border:'+colors.border+';--image-accent:'+colors.accent+';--image-paper:'+colors.paper+';--image-soft:'+colors.soft+';--image-pink:'+colors.pink+';';
    return '<div class="pf-image-card" style="'+vars+'"><div class="pf-image-stars">✧ ♡ ✧</div><small>MY CD PURCHASE PLAN</small><h2>'+safe(title)+'</h2><p class="pf-image-release">ザユウノメイ／本当のことを言うと</p>'+
    '<div class="pf-image-places">'+listing+fcMarkup+'</div><div class="pf-image-footer"><span>CD合計 '+qtyOf(plan)+'枚</span><strong>'+format(totalOf(plan,config))+'円</strong></div><p class="pf-image-credit">タムごと新曲応援ナビ</p></div>';
  }
