@@ -492,3 +492,63 @@ body{background:radial-gradient(ellipse 90% 250px at 50% 0%,#f6e8f8 0%,transpare
 .pf-purchase-advice{margin:15px 0;padding:15px 16px;background:#fff;border:1px solid #ebddeb;border-radius:14px}
 .pf-purchase-advice h3{color:#80499b;margin:0 0 9px;font-size:16px}
 .pf-purchase-advice p{margin:8px 0;line-height:1.75}
+
+
+/* 2026-11-11: align new-release navigation UI with Tamugoto Daily's simple
+   16px cards, quiet shadows, neutral surfaces and pill controls. */
+html{overflow-x:clip}
+body{overflow-x:clip}
+.pf-root{--pf-brand:#8951ba;--pf-soft:#f5f0f9;--pf-border:#e5dee9;--pf-text:#302c37;max-width:720px;min-width:0}
+.pf-root h1,.pf-root h2,.pf-root h3{letter-spacing:0;line-height:1.5}
+.pf-root h1{font-size:22px;color:var(--pf-text)}
+.pf-root h2{font-size:18px;color:var(--pf-text)}
+.pf-root h3{font-size:16px;color:var(--pf-text)}
+.pf-edition,.pf-product,.pf-guide,.pf-purchase-advice,.pf-home-choice{
+  background:#fff;border:1px solid var(--pf-border,#e5dee9);border-radius:16px;
+  box-shadow:0 4px 14px rgba(0,0,0,.04)
+}
+.pf-edition{padding:18px 16px;margin:14px 0}
+.pf-edition-head h2{font-size:18px;margin:0}
+.pf-edition-head strong{font-size:17px;color:#8951ba}
+.pf-muted{margin:6px 0 10px}
+.pf-description{margin:10px 0}
+.pf-detail-list{padding-left:23px;line-height:1.72;margin:6px 0 13px}
+.pf-detail-list li{margin:2px 0;overflow-wrap:anywhere}
+.pf-edition .pf-formats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0 0}
+.pf-choice-btn,.pf-choice-btn.is-added{
+  box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;
+  gap:6px;width:100%;min-width:0;min-height:52px;padding:10px 12px;
+  border-radius:999px;border:1.5px solid #d7c5e0;background:#fff;
+  color:#604a6c;font-size:15px;font-weight:750;box-shadow:none;
+}
+.pf-choice-btn.is-added{background:#f1e6f8;border-color:#8951ba;color:#78429a}
+.pf-choice-label{display:block;min-width:0;white-space:nowrap;word-break:keep-all;overflow-wrap:normal;flex:1;text-align:left;font-size:clamp(12px,3.7vw,16px)}
+.pf-choice-icon{display:grid;place-items:center;flex:0 0 26px;width:26px;height:26px;
+  border-radius:50%;background:#eee8f3;color:#764b91;font-size:20px;line-height:1;font-weight:800}
+.pf-choice-btn.is-added .pf-choice-icon{background:#8951ba;color:#fff;font-size:16px}
+.pf-edition>.pf-choice-btn{margin-top:14px}
+.pf-with-footer{padding-bottom:calc(132px + env(safe-area-inset-bottom))!important}
+.pf-bottom-nav{
+  position:fixed;left:0;right:0;top:auto;
+  bottom:var(--pf-viewport-bottom,0px);
+  z-index:9999;box-sizing:border-box;
+  display:flex;align-items:center;justify-content:center;
+  padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  background:rgba(255,255,255,.98);border-top:1px solid #e8e4e9;
+  box-shadow:0 -4px 14px rgba(0,0,0,.05);
+  transform:translateZ(0);
+}
+.pf-bottom-nav .btn{width:100%;max-width:680px;min-width:0;min-height:54px;
+  border-radius:999px;margin:0;display:flex;align-items:center;justify-content:center;
+  background:#8951ba;color:#fff;font-size:16px;font-weight:750;padding:12px 20px}
+.pf-bottom-nav [data-pf-selected-count]{font-size:inherit;white-space:nowrap;margin-left:4px}
+.pf-guide{background:#fff;padding:18px 16px}
+.pf-total{border-radius:16px;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.pf-product-group{border-radius:16px;box-shadow:0 4px 14px rgba(0,0,0,.04)}
+.pf-channel .pf-switch button{border-radius:999px}
+@media(max-width:390px){
+  .pf-edition{padding:16px 13px}
+  .pf-edition .pf-formats{gap:8px}
+  .pf-choice-btn,.pf-choice-btn.is-added{padding:9px 10px;min-height:50px}
+  .pf-choice-icon{width:24px;height:24px;flex-basis:24px}
+}
