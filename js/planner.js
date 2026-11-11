@@ -108,7 +108,7 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
        '<h3>'+(id==="regular"?"初回仕様封入特典":"封入特典")+'</h3>'+rows(d.gifts)+
        '<p class="pf-note">'+safe(d.note)+'</p>'+formats+'</article>';
     }).join("");
-    return '<section class="card pf-root"><button type="button" class="pf-back" data-pf="home">← トップへ戻る</button>'+
+    return '<section class="card pf-root"><button type="button" class="pf-back" data-pf="back">← 戻る</button>'+
       '<h1>どの盤にする？特典を比較しよう！</h1><p class="muted">収録曲や映像をチェックして、欲しい盤を購入プランに追加しよう！</p>'+
       cards+'<section class="pf-guide"><h2>CDの曲をスマホでも聴けるよ！</h2>'+
       '<p>全形態に「シリアルコード入りプレイリストカード」が封入されているよ！カードに記載されたシリアルコードを無料の「timeleSZアプリ」に登録すると、購入したCDに収録されている楽曲をスマホで楽しめるよ！</p>'+
