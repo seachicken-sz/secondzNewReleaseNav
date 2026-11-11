@@ -31,7 +31,29 @@ const totalOf=(plan,config)=>ITEM_IDS.reduce((sum,id)=>sum+qty(plan,id)*priceFor
 const selectedIds=plan=>ITEM_IDS.filter(id=>qty(plan,id)>0);
 const onlineLabel=p=>p.shopKey==="other"?p.label:(SHOP_NAMES[p.shopKey]||p.label||"購入先を選択");
 const placeLabel=p=>p.type==="unassigned"?"未設定":p.type==="online"?onlineLabel(p):(p.label||"店舗名未入力");
-const ensureUnassigned=plan=>{let p=plan.places.find(p=>p.type==="unassigned");if(!p){p=makePlace("unassigned","","未設定");plan.places.unshift(p)}return p};
+const ensureUnassigned=plan=>{
+  const registered=plan.places.find(p=>p.type==="online"||p.type==="store");
+  const pending=plan.places.filter(p=>p.type==="unassigned");
+  if(registered){
+    // Move all outstanding unassigned copies to the first registered place.
+    if(pending.length){
+      const fits=NON_FC.every(id=>registered.items[id]+pending.reduce((sum,p)=>sum+p.items[id],0)<=99);
+      if(fits){
+        for(const id of NON_FC)registered.items[id]+=pending.reduce((sum,p)=>sum+p.items[id],0);
+        plan.places=plan.places.filter(p=>p.type!=="unassigned");
+      }
+    }
+    return registered;
+  }
+  let p=pending[0];
+  if(!p){p=makePlace("unassigned","","未設定");plan.places.unshift(p)}
+  // Collapse older duplicated unassigned entries safely.
+  for(const duplicate of pending.slice(1)){
+    for(const id of NON_FC)p.items[id]+=duplicate.items[id];
+    plan.places=plan.places.filter(x=>x!==duplicate);
+  }
+  return p;
+};
 const setIngredients=format=>["regular","a_"+format,"b_"+format];
 const setNum=(p,format)=>digits(p.sets?.[format]);
 const reduceSets=(p,id,next)=>{
@@ -129,9 +151,9 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
  const persist=()=>{plan.updatedAt=new Date().toISOString();try{localStorage.setItem(STORAGE_KEY,JSON.stringify({...plan,releaseId:config.releaseId}));return true}catch{return false}};
  const hasSaved=()=>Boolean(read());
  const begin=result=>{plan=result?seededPlan(result,config):initial();ensureUnassigned(plan);addMode=null;persist();showPlan()};
- const resume=()=>{plan=read()||initial();ensureUnassigned(plan);addMode=null;showPlan()};
+ const resume=()=>{plan=read()||initial();ensureUnassigned(plan);addMode=null;persist();showPlan()};
  const openFromResult=result=>{previous="result";const saved=read();if(saved){plan=saved;ensureUnassigned(plan);showPlan()}else begin(result)};
- const openFromHome=()=>{previous="home";const saved=read();if(saved){plan=saved;ensureUnassigned(plan);addMode=null;showPlan()}else begin(null)};
+ const openFromHome=()=>{previous="home";const saved=read();if(saved){plan=saved;ensureUnassigned(plan);addMode=null;persist();showPlan()}else begin(null)};
  const openCompare=()=>{previous="home";plan=read()||initial();ensureUnassigned(plan);comparison()};
  const comparison=()=>{screen="comparison";render(compareMarkup())};
  const back=()=>{if(previous==="result")goResult();else if(previous==="comparison")comparison();else if(previous==="plan")showPlan();else goHome()};
@@ -182,7 +204,7 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
  }
  function formatRow(id){
    const entries=isFc(id)?[{id:"fc",type:"fc",label:"ファミクラストアオンライン"}]:plan.places.map(p=>({id:p.id,type:p.type,label:placeLabel(p),place:p}));
-   const visible=entries.filter(p=>!isFc(id)||p.type==="fc");
+   const visible=entries.filter(p=>!isFc(id)||p.type==="fc").filter(p=>p.type!=="unassigned"||!registeredPlaces().length);
    return '<div class="pf-edition-place-list">'+visible.map(entry=>'<div class="pf-edition-place-row"><span class="pf-edition-place-label">'+safe(entry.label)+'</span>'+counter(entry.place||null,id)+'</div>').join("")+'</div>';
  }
  function setRows(){
@@ -379,7 +401,7 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
      if(addMode==="online"&&!shop){alert("購入先を選択してください。");return}
      if((addMode==="store"||shop==="other")&&!name){alert("購入先の名前を入力してください。");return}
      const place=makePlace(addMode,addMode==="online"?shop:"",name);
-     plan.places.push(place);addMode=null;persist();
+     plan.places.push(place);ensureUnassigned(plan);addMode=null;persist();
      document.querySelector("[data-pf-add-form]").innerHTML="";
      refreshLocationUI();return;
    }
