@@ -458,3 +458,25 @@ body{background:radial-gradient(ellipse 90% 250px at 50% 0%,#f6e8f8 0%,transpare
 .compact-share-footer small{font-size:15px;color:#a28caa}
 .pf-share-export{padding:0;width:900px}
 .pf-share-card{min-height:1125px}
+
+
+/* Planner usability update: grouped formats and persistent navigation */
+.pf-with-footer{padding-bottom:112px}
+.pf-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:50;background:rgba(255,255,255,.97);border-top:1px solid #e8daeb;box-shadow:0 -5px 20px #68466e13;padding:12px max(16px,env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));display:flex;justify-content:center}
+.pf-bottom-nav .btn{max-width:680px;margin:0}
+.pf-product-group{padding:17px;margin:12px 0}
+.pf-format-row{display:grid;grid-template-columns:minmax(60px,1fr) auto;align-items:center;column-gap:12px;row-gap:4px;border-top:1px solid #f0e7f0;padding:12px 0}
+.pf-format-row:first-of-type{margin-top:12px}
+.pf-format-title{font-size:15px;font-weight:750;color:#634471}
+.pf-counter-holder{display:flex;justify-content:flex-end}
+.pf-format-row .pf-split{grid-column:1/-1;margin:2px 0 0;padding:7px 0 0}
+.pf-format-row .pf-fc-label{grid-column:1/-1;font-size:12px;color:#806e88}
+.pf-format-row .pf-counter{gap:11px}
+.pf-choice-btn{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:49px;padding:12px 14px;border-radius:13px;border:1px solid #b9a5c6;background:#fff;color:#5d4770;font-size:15px;font-weight:750;cursor:pointer}
+.pf-choice-btn span{font-size:12px;color:#8e6c9f;white-space:nowrap}
+.pf-choice-btn.is-added{background:#f2e5f9;border:2px solid #9855b7;padding:11px 13px;color:#7b4399}
+.pf-choice-btn.is-added span{color:#8445a4}
+.pf-edition>.pf-choice-btn{margin-top:15px}
+.pf-edition .pf-formats{margin-bottom:0}
+.pf-choice-btn:focus-visible,.pf-counter button:focus-visible{outline:3px solid #ad6bc7;outline-offset:2px}
+@media(max-width:420px){.pf-format-row{column-gap:6px}.pf-format-row .pf-counter{gap:7px}.pf-format-row .pf-counter button{min-width:35px;min-height:37px}.pf-format-title{font-size:14px}.pf-bottom-nav{padding-left:14px;padding-right:14px}}
