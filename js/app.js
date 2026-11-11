@@ -20,28 +20,7 @@ const steps=()=>QUESTIONS.filter(q=>{
   return (q!=="seven"||answers.store!=="yes")&&(q!=="priority"||["1800","3600"].includes(answers.budget));
 });
 const question=()=>steps()[step];
-// Keep fixed action bars inside the actually visible Safari viewport.
-let viewportUpdateScheduled=false;
-function syncVisibleViewport(){
-  viewportUpdateScheduled=false;
-  const viewport=window.visualViewport;
-  const covered=viewport?Math.max(0,window.innerHeight-viewport.height-viewport.offsetTop):0;
-  // iOS Safari can report the layout viewport height even while its bottom bar is visible.
-  const safariMobile=/iP(hone|od|ad)/.test(navigator.userAgent)&&/Safari/.test(navigator.userAgent)&&!/CriOS|FxiOS|EdgiOS/.test(navigator.userAgent);
-  const fallback=safariMobile?64:0;
-  document.documentElement.style.setProperty("--pf-viewport-bottom",Math.ceil(Math.max(covered,fallback))+"px");
-}
-function requestViewportSync(){
-  if(viewportUpdateScheduled)return;
-  viewportUpdateScheduled=true;
-  requestAnimationFrame(syncVisibleViewport);
-}
-window.visualViewport?.addEventListener("resize",requestViewportSync);
-window.visualViewport?.addEventListener("scroll",requestViewportSync);
-window.addEventListener("resize",requestViewportSync);
-window.addEventListener("orientationchange",requestViewportSync);
-requestViewportSync();
-function frame(content){$("#app").innerHTML=content;window.scrollTo({top:0,behavior:"instant"});requestViewportSync()}
+function frame(content){$("#app").innerHTML=content;window.scrollTo({top:0,behavior:"instant"})}
 function home(){
 view="home";
 const draft=load(DRAFT_KEY);
