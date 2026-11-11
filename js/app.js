@@ -343,43 +343,25 @@ answers=oldAnswers;return html;
 function compactResultContent(result){
 const a=result.answers;
 const purchase=buildPurchase(a,config,messages);
-const support=buildSupport(a,messages);
 const budget=config.budgetOptions.find(x=>x.id===a.budget)?.label||"0円";
 const cdTitle=config.release?.cdTitle||"ザユウノメイ／本当のことを言うと";
-const shopSummary=a.store==="yes"?"近くの対象店舗で早めに予約・購入しよう！":
-a.store==="no"?"集計対象の通販サイトで早めに予約・購入しよう！":
-"対象店舗を調べて、店舗か通販で予約・購入しよう！";
-const is1800=a.budget==="1800";
-const purchaseCards=purchase.items.length?purchase.items.map((item,i)=>{
-const digital=item.productIds?.length===1&&item.productIds[0]==="digital";
-return '<div class="compact-product">'+
-(is1800?'<p class="compact-choice-title">'+(i===0?"第一候補":"第二候補")+'</p>':"")+
-'<p class="compact-cd-title">'+escapeHtml(digital?"Digital shingle":cdTitle)+'</p>'+
-(digital?'<p class="compact-digital-title">「'+escapeHtml(config.release?.digitalTitle||"本当のことを言うと")+'」</p>':productList(item))+
-(productContents(item)||(item.description?'<p class="compact-description">'+escapeHtml(item.description)+'</p>':""))+
-'<p class="compact-price">'+money(item.price)+'</p>'+
-(is1800&&purchase.secondaries?.length?'<div class="compact-secondaries"><p class="compact-choice-title">第二候補</p>'+purchase.secondaries.map(x=>'<div class="compact-alternative"><p><strong>'+escapeHtml(x.label)+'</strong>（'+money(x.price)+'）</p>'+editionContents(x.id)+'</div>').join("")+'</div>':"")+
-'</div>';
-}).join("") :'<p>購入なしでもできる応援を楽しもう！</p>';
-const optional=!is1800&&purchase.secondaries?.length?
-'<div class="compact-alternatives-card"><p class="compact-subheading">もう1枚の候補</p><ul class="compact-alternatives">'+
-purchase.secondaries.map(x=>'<li>'+escapeHtml(x.label)+'（合計 '+money(x.total)+'）</li>').join("")+'</ul></div>':"";
-const methods=isSmallBudget(a.budget)?(a.budget==="300"?["デジタル配信「本当のことを言うと」を予約・購入しよう！"]:[]):[shopSummary];
-if(!isSmallBudget(a.budget)&&a.store!=="yes"&&a.seven==="yes")methods.push("対象商品はセブンイレブン受取もチェック（送料無料）。");
-if(purchase.items.some(item=>item.productIds?.includes("set")))methods.push("3形態の特典付きセットは専用の商品ページで購入しよう！");
-if(purchase.items.some(item=>item.productIds?.includes("fc")))methods.push("FC限定盤は12/21 23:59までに予約しよう！");
-if(purchase.items.some(item=>item.productIds?.includes("digital")))methods.push("デジタル配信「本当のことを言うと」もチェック！");
-const selected=(a.subs||[]).filter(id=>id!=="unext").map(id=>config.subscriptions.find(x=>x.id===id)?.label).filter(Boolean);
-const music=selected.length?selected.join("・")+"で新曲を聴こう！":"Spotifyのフリープランなら無料で聴けるよ！";
-const supports=[music];
-if(support.stationhead)supports.push("Stationheadのsecondzチャンネルにも参加しよう！");
-if(support.unext)supports.push("U-NEXT会員はUSEN推し活リクエストを追加でできるよ！");
-supports.push("YouTubeでMVを視聴・高評価しよう！","SNSでの拡散やラジオ・推し活リクエストも応援に！");
-return '<div class="compact-header"><p class="pill">タムごと新曲応援ナビ</p><h1>あなたの新曲応援プラン</h1><p>予算：'+escapeHtml(budget)+'</p></div>'+
-(a.budget==="zero"?"":'<section class="compact-section"><h2>01｜これを買うのがおすすめ！</h2>'+purchaseCards+optional+'</section>')+
-(methods.length?'<section class="compact-section"><h2>02｜こんな買い方がおすすめ！</h2>'+listText(methods)+'</section>':"")+
-'<section class="compact-section"><h2>'+(a.budget==="zero"?"01":methods.length?"03":"02")+'｜'+escapeHtml(messages.headings.support)+'</h2>'+listText(supports)+'</section>'+
-'<p class="compact-footer">詳細・購入リンクはタムごと新曲応援ナビで確認してね！<br>タムごと新曲応援ナビ<br>タムごと新曲応援ナビは非公式のファンツールです。<br>集計・購入・特典に関する情報は必ず公式・販売店の最新情報をご確認ください。</p>';
+const names={regular:"通常盤",a:"初回限定盤A",b:"初回限定盤B",fc:"FC限定盤",set:"3形態セット",digital:"デジタル配信"};
+const items=purchase.items.flatMap(item=>(item.productIds||[]).map(id=>names[id]||id));
+const unique=[...new Set(items)];
+const first=unique.length?unique.map(x=>'<span class="compact-plan-tag">'+escapeHtml(x)+'</span>').join(""):'<span class="compact-plan-tag">お金をかけずに応援！</span>';
+const secondary=purchase.secondaries?.length?'<p class="compact-plan-label">もう1枚選ぶなら…</p><div class="compact-plan-tags">'+purchase.secondaries.map(x=>'<span class="compact-plan-tag compact-plan-tag-secondary">'+escapeHtml(x.label)+'</span>').join("")+'</div>':"";
+const streaming=(a.subs||[]).map(id=>config.subscriptions.find(x=>x.id===id)?.label).filter(x=>x&&x!=="U-NEXT");
+const actions=[
+["♫","音楽を聴いて応援"],
+["▷","YouTubeでMVを楽しむ"],
+["♡","SNSやリクエストで応援"]
+];
+if(streaming.length)actions[0][1]=streaming.join("・")+"で応援";
+return '<div class="compact-share-summary"><div class="compact-share-stars">✧　♡　✧</div><p class="compact-share-eyebrow">MY NEW RELEASE SUPPORT PLAN</p><h1>わたしの新曲応援プラン</h1><p class="compact-share-release">'+escapeHtml(cdTitle)+'</p>'+
+'<div class="compact-share-budget"><small>MY BUDGET</small><strong>'+escapeHtml(budget)+'</strong></div>'+
+'<section class="compact-share-recommend"><h2>♡ おすすめの購入プラン</h2><div class="compact-plan-tags">'+first+'</div>'+secondary+'</section>'+
+'<section class="compact-share-support"><h2>✧ この応援がおすすめ！</h2><ul>'+actions.map(x=>'<li><span>'+x[0]+'</span>'+escapeHtml(x[1])+'</li>').join("")+'</ul></section>'+
+'<p class="compact-share-footer">タムごと新曲応援ナビ<br><small>非公式ファンツール｜詳細・購入条件は公式情報をご確認ください</small></p></div>';
 }
 function showResult(){
 view="result";
