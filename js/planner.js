@@ -197,7 +197,7 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
    const groups=[["regular","通常盤",["regular"]],["a","初回限定盤A",["a_dvd","a_bd"]],["b","初回限定盤B",["b_dvd","b_bd"]],["fc","FC限定盤",["fc_dvd","fc_bd"]]];
    render('<section class="card pf-root pf-with-footer"><button type="button" class="pf-back" data-pf="back">← 戻る</button><h1>わたしのCD購入プラン</h1>'+budget+
      '<div class="pf-total"><div><small>現在の合計金額</small><strong data-pf-total></strong></div><div><small>CD合計</small><strong data-pf-qty></strong></div><p class="pf-budget-diff" data-pf-budget></p></div>'+
-     '<section class="pf-channel"><h2>購入場所を設定する</h2><p class="pf-note">購入場所を追加してね。枚数の指定は下の「枚数を設定する」から！</p>'+
+     '<section class="pf-channel"><h2>購入場所を設定する</h2><p class="pf-note">購入場所を追加してください。枚数は下の「枚数を設定する」から指定できます。</p>'+
      '<div data-pf-place-list>'+placeListMarkup()+'</div><div class="pf-add-actions"><button type="button" class="btn secondary" data-pf="show-add-online">＋ オンラインを追加</button><button type="button" class="btn secondary" data-pf="show-add-store">＋ 実店舗を追加</button></div>'+
      '<div data-pf-add-form>'+addForm()+'</div></section>'+
      '<section class="pf-quantity"><h2>枚数を設定する</h2>'+
@@ -363,8 +363,8 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
    if(action==="add-place"){
      const field=document.querySelector("#pf-shop-custom"),shop=document.querySelector("#pf-shop-select")?.value||"";
      const name=(field?.value||"").trim().slice(0,10);
-     if(addMode==="online"&&!shop){alert("購入先を選択してね！");return}
-     if((addMode==="store"||shop==="other")&&!name){alert("購入先の名前を入力してね！");return}
+     if(addMode==="online"&&!shop){alert("購入先を選択してください。");return}
+     if((addMode==="store"||shop==="other")&&!name){alert("購入先の名前を入力してください。");return}
      const place=makePlace(addMode,addMode==="online"?shop:"",name);
      plan.places.push(place);addMode=null;persist();
      document.querySelector("[data-pf-add-form]").innerHTML="";
@@ -374,7 +374,7 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
      const place=plan.places.find(p=>p.id===placeId);
      if(!place||place.type==="unassigned")return;
      const count=NON_FC.reduce((sum,id)=>sum+place.items[id],0);
-     if(count&&!confirm("「"+placeLabel(place)+"」の購入予定 "+count+"枚と3形態セットも削除するよ。削除する？"))return;
+     if(count&&!confirm("「"+placeLabel(place)+"」の購入予定 "+count+"枚と3形態セットも削除されます。削除しますか？"))return;
      plan.places=plan.places.filter(p=>p.id!==placeId);persist();refreshLocationUI();return;
    }
    if(action==="set-plus"||action==="set-minus"){
@@ -398,7 +398,7 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
        if(place.type==="online"){
          const remaining=reduceSets(place,id,next);
          const reduction=(setNum(place,"dvd")-remaining.dvd)+(setNum(place,"bd")-remaining.bd);
-         if(reduction>0&&!confirm("この変更で3形態セットが"+reduction+"セット解除されるよ。続ける？"))return;
+         if(reduction>0&&!confirm("この変更により3形態セットが"+reduction+"セット解除されます。変更しますか？"))return;
          if(reduction>0)place.sets=remaining;
        }
        place.items[id]=next;
