@@ -12,7 +12,17 @@ export function buildPurchase(a,c,m){
   const baseId=({songs:"regular",dance:"a",visual:"b",variety:"fc"})[choice];
   const names=ids=>ids.map(id=>product(id).label).join("＋");
   const parts=m.purchase.extraParts;
-  const finish=()=>({items,extra,notes,secondaries});
+  const finish=()=>{
+    // Present the optional digital purchase first for these three budget bands.
+    if(["zero","1800","3600"].includes(level)){
+      extra.unshift({key:"digitalAdd1400Budget",text:parts.digitalAdd1400Budget,link:"digital"});
+    }
+    // Offer Premium only when neither Stationhead-compatible subscription is selected.
+    if(!(a.subs||[]).includes("spotify")&&!(a.subs||[]).includes("apple")){
+      extra.push({key:"spotifyPremium",text:parts.spotifyPremium,link:"spotifyPremium"});
+    }
+    return {items,extra,notes,secondaries};
+  };
   const add=(key,link=null)=>extra.push({key,text:parts[key],link});
   if(level==="zero")return finish();
   if(level==="300"){
@@ -74,7 +84,7 @@ export function buildPurchase(a,c,m){
     notes.push(m.purchase.setCaution);
     if(eligible&&!a.fc)notes.push(m.purchase.fcJoin);
     add("iphoneGift");
-    if(!(a.subs||[]).includes("spotify")&&!(a.subs||[]).includes("apple"))add("spotifyPremium","spotifyPremium");
+
     add("discs");
     if(level==="more"&&eligible&&!a.fc)add("joinFc","joinFc");
   }
