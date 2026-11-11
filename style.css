@@ -433,3 +433,28 @@ body{background:radial-gradient(ellipse 90% 250px at 50% 0%,#f6e8f8 0%,transpare
 .pf-share-total strong{font-size:41px;color:#8d4ba7;white-space:nowrap}
 .pf-share-footer{text-align:center;font-size:20px;color:#9a7aa7;margin:12px 0 0}
 @media(max-width:420px){.pf-root{padding:18px}.pf-item-actions{align-items:flex-end}.pf-item-actions small{max-width:46%}.pf-counter{gap:6px}.pf-counter button{min-width:34px;min-height:36px}.pf-meta{gap:7px}.pf-meta>div{padding:11px}.pf-total strong{font-size:22px}}
+
+
+/* Concise diagnosis share card, independent of detailed result page */
+.image-canvas:has(.compact-share-summary){width:1080px;height:1350px;padding:38px;background:#f8ecfa!important}
+.compact-share-summary{box-sizing:border-box;background:#fff;border:6px solid #f1d9f0;border-radius:44px;width:100%;height:100%;padding:70px 65px 45px;display:flex;flex-direction:column;gap:28px;color:#654376}
+.compact-share-stars{text-align:center;color:#c887bf;font-size:38px;letter-spacing:12px}
+.compact-share-eyebrow{margin:0;text-align:center;font-size:19px!important;font-weight:750;letter-spacing:3px;color:#b487bc}
+.compact-share-summary h1{margin:0;text-align:center;font-size:41px!important;color:#8b4ea6}
+.compact-share-release{font-size:23px!important;color:#9a7da5;text-align:center;margin:0 0 8px}
+.compact-share-budget{padding:24px 30px;background:linear-gradient(115deg,#f5e6fb,#fceaf4);border-radius:24px;display:flex;align-items:center;justify-content:space-between}
+.compact-share-budget small{font-size:21px;letter-spacing:2px;color:#91639c}
+.compact-share-budget strong{font-size:33px;color:#8750a7}
+.compact-share-recommend,.compact-share-support{border:2px solid #eeddec;background:#fff;border-radius:23px;padding:24px 28px}
+.compact-share-summary h2{font-size:27px!important;color:#8852a2;border:0;padding:0;margin:0 0 17px}
+.compact-plan-tags{display:flex;flex-wrap:wrap;gap:12px}
+.compact-plan-tag{display:inline-block;background:#f7eaf9;border-radius:999px;font-weight:750;color:#8b52a0;padding:10px 19px;font-size:21px}
+.compact-plan-tag-secondary{background:#fcf4fc;color:#8b6c97;border:1px solid #ead8ef;font-size:18px}
+.compact-plan-label{font-size:19px!important;color:#9675a4;margin:19px 0 11px!important}
+.compact-share-support ul{padding:0;margin:0;list-style:none}
+.compact-share-support li{font-size:21px!important;line-height:2.1;display:flex;align-items:center;gap:14px}
+.compact-share-support li span{color:#b26fbb;font-size:27px;min-width:24px}
+.compact-share-footer{margin:auto 0 0!important;text-align:center;color:#956fa5;font-size:22px!important}
+.compact-share-footer small{font-size:15px;color:#a28caa}
+.pf-share-export{padding:0;width:900px}
+.pf-share-card{min-height:1125px}
