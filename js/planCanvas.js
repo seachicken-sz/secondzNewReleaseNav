@@ -1,19 +1,19 @@
 // Draw the share image with native Canvas (safe for iOS Safari).
-// Assets are same-origin SVGs stored in img/image parts, not off-screen HTML.
+// Assets are same-origin transparent PNGs stored in img/image parts, not off-screen HTML.
 const FILES={
   purplePink:{
-    tile:"theme1/background-tile.svg",
-    top:"theme1/ribbon.svg",
-    left:"theme1/tape-purple.svg",
-    right:"theme1/tape-pink.svg",
-    sparkle:"theme1/sparkles.svg"
+    tile:"theme1/background-tile.png",
+    top:"theme1/ribbon.png",
+    left:"theme1/tape-purple.png",
+    right:"theme1/tape-pink.png",
+    sparkle:"theme1/sparkles.png"
   },
   movieMint:{
-    tile:"theme2/background-tile.svg",
-    top:"theme2/movie-camera.svg",
-    strip:"theme2/film-strip.svg",
-    reel:"theme2/film-reel.svg",
-    paw:"theme2/paw-prints.svg"
+    tile:"theme2/background-tile.png",
+    top:"theme2/movie-camera.png",
+    strip:"theme2/film-strip.png",
+    reel:"theme2/film-reel.png",
+    paw:"theme2/paw-prints.png"
   }
 };
 const cache=new Map();
@@ -78,7 +78,7 @@ const ticket=(g,x,y,w,h,bg,border)=>{
 };
 export async function renderPlanPng(params){
   try{return await renderPlanInternal(params)}catch(error){
-    console.warn("SVG装飾の出力に失敗したため基本デザインで再試行します",error);
+    console.warn("画像パーツの出力に失敗したため基本デザインで再試行します",error);
     return renderPlanInternal({...params,disableAssets:true});
   }
 }
