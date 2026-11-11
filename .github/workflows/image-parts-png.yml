@@ -5,6 +5,7 @@ on:
     paths:
       - 'img/image parts/**/*.svg'
       - 'img/new-release-nav-icon.svg'
+      - 'img/og-card.svg'
       - '.github/workflows/image-parts-png.yml'
   workflow_dispatch:
 permissions:
@@ -57,11 +58,24 @@ jobs:
               background.convert('RGB').save(output, 'PNG', optimize=True)
               print(f'{output}: {size}x{size}')
           PY
+      - name: Render social share image
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import cairosvg
+          from PIL import Image
+          from io import BytesIO
+          source = Path('img/og-card.svg')
+          raster = cairosvg.svg2png(bytestring=source.read_bytes(), output_width=1200, output_height=630)
+          image = Image.open(BytesIO(raster)).convert('RGB')
+          image.save('img/og-card.png', format='PNG', optimize=True)
+          print(f'Created img/og-card.png: {image.width}x{image.height}')
+          PY
       - name: Commit PNG files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add 'img/image parts' apple-touch-icon.png img/new-release-nav-icon-192.png img/new-release-nav-icon-512.png
+          git add 'img/image parts' apple-touch-icon.png img/new-release-nav-icon-192.png img/new-release-nav-icon-512.png img/og-card.png
           if ! git diff --cached --quiet; then
             git commit -m "Regenerate PNG parts from SVG sources"
             git push
