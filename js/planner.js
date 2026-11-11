@@ -168,10 +168,6 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
    (addMode==="online"?'<label for="pf-shop-select">購入先</label><select id="pf-shop-select" data-pf-shop-select><option value="">選択してください</option>'+Object.entries(SHOP_NAMES).map(([key,label])=>'<option value="'+key+'">'+label+'</option>').join("")+'</select><div data-pf-other-wrap hidden><label for="pf-shop-custom">購入先の名前（10文字まで）</label><input id="pf-shop-custom" maxlength="10" type="text"></div>':
    '<label for="pf-shop-custom">店舗名（10文字まで）</label><input id="pf-shop-custom" maxlength="10" type="text" placeholder="">')+
    '<div class="pf-add-actions"><button type="button" class="btn" data-pf="add-place">追加する</button><button type="button" class="btn secondary" data-pf="cancel-place">キャンセル</button></div></div>':"";
- const counter=(place,id)=>{
-   const val=isFc(id)?plan.fcItems[id]:place.items[id];
-   return '<div class="pf-counter" data-pf-count-for="'+(isFc(id)?"fc":safe(place.id))+'-'+id+'"><button type="button" data-pf="decrease" '+(isFc(id)?'data-fc="true"':'data-place="'+safe(place.id)+'"')+' data-id="'+id+'" aria-label="'+safe(names[id])+'を1枚減らす"'+(val===0?' disabled':'')+'>－</button><strong>'+val+'</strong><button type="button" data-pf="increase" '+(isFc(id)?'data-fc="true"':'data-place="'+safe(place.id)+'"')+' data-id="'+id+'" aria-label="'+safe(names[id])+'を1枚増やす"'+(val>=99?' disabled':'')+'>＋</button></div>';
- };
  function registeredPlaces(){
    return plan.places.filter(p=>p.type!=="unassigned");
  }
@@ -277,11 +273,18 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
  const themeVars=()=>plan.imageOptions.theme==="movieMint"?{bg:"#d6f4ec",border:"#9fd5c9",accent:"#14877e",paper:"#fffef1",soft:"#f1f9e5"}:{bg:"#f9effb",border:"#e9d5ee",accent:"#8e4fa5",paper:"#ffffff",soft:"#f5e5fa"};
  function imageMarkup(){
    const colors=themeVars(),opts=plan.imageOptions,title=plan.name.trim()?plan.name.trim()+"の購入プラン":"わたしの購入プラン";
-   const listing=plan.places.filter(p=>NON_FC.some(id=>p.items[id]>0)).map((p,i)=>{
-     const hidden=p.type==="online"?opts.hideOnlineStoreNames:opts.hidePhysicalStoreNames;
-     const order=plan.places.filter(k=>k.type===p.type&&NON_FC.some(id=>k.items[id]>0)).findIndex(k=>k.id===p.id)+1;
+   const active=plan.places.filter(p=>NON_FC.some(id=>p.items[id]>0));
+   const listing=active.map(p=>{
+     const hidden=p.type==="online"?opts.hideOnlineStoreNames:p.type==="store"?opts.hidePhysicalStoreNames:false;
+     const order=active.filter(k=>k.type===p.type).findIndex(k=>k.id===p.id)+1;
      const shown=hidden?(p.type==="online"?"オンライン購入先":"実店舗")+order:placeLabel(p);
-     return '<div class="pf-image-place"><h3>'+safe(shown)+'</h3>'+NON_FC.filter(id=>p.items[id]>0).map(id=>'<div class="pf-image-line"><span>'+safe(names[id])+'</span><strong>'+p.items[id]+'枚</strong></div>').join("")+'</div>';
+     const sets=p.type==="online"?["dvd","bd"].filter(format=>setNum(p,format)>0).map(format=>
+       '<div class="pf-image-line"><span>3形態セット（'+(format==="dvd"?"DVD":"Blu-ray")+'）</span><strong>'+setNum(p,format)+'セット</strong></div>').join(""):"";
+     const singles=NON_FC.map(id=>{
+       const included=p.type==="online"?(id==="regular"?setNum(p,"dvd")+setNum(p,"bd"):id.endsWith("_dvd")?setNum(p,"dvd"):setNum(p,"bd")):0;
+       return {id,count:Math.max(0,p.items[id]-included)};
+     }).filter(x=>x.count>0).map(x=>'<div class="pf-image-line"><span>'+safe(names[x.id])+'</span><strong>'+x.count+'枚</strong></div>').join("");
+     return '<div class="pf-image-place"><h3>'+safe(shown)+'</h3>'+sets+singles+'</div>';
    }).join("");
    const fc=qty(plan,"fc_dvd")+qty(plan,"fc_bd");
    const fcMarkup=fc?'<div class="pf-image-place"><h3>ファミクラストアオンライン</h3>'+['fc_dvd','fc_bd'].filter(id=>plan.fcItems[id]>0).map(id=>'<div class="pf-image-line"><span>'+safe(names[id])+'</span><strong>'+plan.fcItems[id]+'枚</strong></div>').join("")+'</div>':"";
@@ -334,9 +337,8 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
  }
  function addSelectedFromCompare(id){
    if(isFc(id)){plan.fcItems[id]=1;return}
-   let place=plan.places.find(p=>p.type==="online");
-   if(!place){place=makePlace("online");plan.places.push(place)}
-   place.items[id]=1;
+   const place=ensureUnassigned(plan);
+   place.items[id]=Math.max(1,place.items[id]);
  }
  function removeSelectedFromCompare(id){
    if(isFc(id)){plan.fcItems[id]=0;return}
@@ -357,19 +359,27 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
      const name=(field?.value||"").trim().slice(0,10);
      if(addMode==="online"&&!shop){alert("購入先を選択してね！");return}
      if((addMode==="store"||shop==="other")&&!name){alert("購入先の名前を入力してね！");return}
-     // Multiple entries, including the same named online shop, are permitted.
      const place=makePlace(addMode,addMode==="online"?shop:"",name);
      plan.places.push(place);addMode=null;persist();
      document.querySelector("[data-pf-add-form]").innerHTML="";
-     document.querySelector("[data-pf-places]").insertAdjacentHTML("beforeend",placeCard(place));return;
+     refreshLocationUI();return;
    }
    if(action==="remove-place"){
      const place=plan.places.find(p=>p.id===placeId);
-     if(!place)return;
+     if(!place||place.type==="unassigned")return;
      const count=NON_FC.reduce((sum,id)=>sum+place.items[id],0);
-     if(count&&!confirm("「"+placeLabel(place)+"」の購入予定 "+count+"枚も削除するよ。削除する？"))return;
-     plan.places=plan.places.filter(p=>p.id!==placeId);persist();
-     document.querySelector('[data-place-card="'+placeId+'"]')?.remove();updatePlanDom();return;
+     if(count&&!confirm("「"+placeLabel(place)+"」の購入予定 "+count+"枚と3形態セットも削除するよ。削除する？"))return;
+     plan.places=plan.places.filter(p=>p.id!==placeId);persist();refreshLocationUI();return;
+   }
+   if(action==="set-plus"||action==="set-minus"){
+     const place=plan.places.find(p=>p.id===placeId),format=button.dataset.format;
+     if(!place||place.type!=="online"||!["dvd","bd"].includes(format))return;
+     const delta=action==="set-plus"?1:-1;
+     const current=setNum(place,format),parts=setIngredients(format);
+     if(current+delta<0||current+delta>99||delta>0&&parts.some(id=>place.items[id]>=99))return;
+     place.sets[format]=current+delta;
+     parts.forEach(id=>{place.items[id]=digits(place.items[id]+delta)});
+     persist();updatePlanDom();return;
    }
    if(action==="increase"||action==="decrease"){
      const delta=action==="increase"?1:-1;
@@ -378,7 +388,14 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
      else{
        const place=plan.places.find(p=>p.id===placeId);
        if(!place||isFc(id))return;
-       place.items[id]=digits(place.items[id]+delta);
+       const next=digits(place.items[id]+delta);
+       if(place.type==="online"){
+         const remaining=reduceSets(place,id,next);
+         const reduction=(setNum(place,"dvd")-remaining.dvd)+(setNum(place,"bd")-remaining.bd);
+         if(reduction>0&&!confirm("この変更で3形態セットが"+reduction+"セット解除されるよ。続ける？"))return;
+         if(reduction>0)place.sets=remaining;
+       }
+       place.items[id]=next;
      }
      persist();updatePlanDom();return;
    }
@@ -405,11 +422,7 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
      const place=plan.places.find(p=>p.id===target.dataset.pfPlaceSelect);
      if(!place)return;
      place.shopKey=target.value;place.label=target.value==="other"?"":SHOP_NAMES[target.value]||"";
-     const card=target.closest("[data-place-card]");
-     const wrap=card?.querySelector("[data-pf-place-other]");if(wrap)wrap.hidden=target.value!=="other";
-     const custom=card?.querySelector("[data-pf-place-custom]");if(custom)custom.value="";
-     const title=card?.querySelector("[data-pf-place-label]");if(title)title.textContent=placeLabel(place);
-     persist();
+     persist();refreshLocationUI();
    }
    if(target.matches("[data-pf-option]")){plan.imageOptions[target.dataset.pfOption]=target.checked;persist();refreshPreview()}
    if(target.matches("[data-pf-theme]")){plan.imageOptions.theme=target.dataset.pfTheme;persist();refreshPreview()}
@@ -420,8 +433,13 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
      const place=plan.places.find(p=>p.id===event.target.dataset.pfPlaceCustom);
      if(!place)return;
      place.label=event.target.value.slice(0,10);
-     const title=event.target.closest("[data-place-card]")?.querySelector("[data-pf-place-label]");
-     if(title)title.textContent=placeLabel(place);
+     const el=document.querySelector('[data-configured-place="'+place.id+'"] strong');
+     if(el)el.textContent=placeLabel(place);
+     document.querySelectorAll(".pf-edition-place-row").forEach(row=>{
+       if(row.querySelector('[data-place="'+place.id+'"]')){
+         const label=row.querySelector(".pf-edition-place-label");if(label)label.textContent=placeLabel(place);
+       }
+     });
      persist();
    }
  });
