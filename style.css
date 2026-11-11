@@ -747,3 +747,7 @@ body:has(.pf-bottom-nav) .shell{
  #app{scroll-margin-top:20px}
  .pf-bottom-nav{padding-bottom:12px}
 }
+
+/* Single save/share action in the preview modal */
+.pf-modal-buttons{display:block}
+.pf-modal-buttons .btn{display:block;width:100%;min-height:54px;border-radius:999px}
