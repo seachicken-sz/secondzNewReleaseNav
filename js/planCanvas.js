@@ -76,10 +76,16 @@ const ticket=(g,x,y,w,h,bg,border)=>{
   g.moveTo(x+w-12,y+16);g.lineTo(x+w-12,y+h-16);g.stroke();
   g.restore();
 };
-export async function renderPlanPng({sections,title,releaseTitle,totalCount,totalPrice,colors,theme="purplePink"}){
-  await document.fonts?.ready;
+export async function renderPlanPng(params){
+  try{return await renderPlanInternal(params)}catch(error){
+    console.warn("SVG装飾の出力に失敗したため基本デザインで再試行します",error);
+    return renderPlanInternal({...params,disableAssets:true});
+  }
+}
+async function renderPlanInternal({sections,title,releaseTitle,totalCount,totalPrice,colors,theme="purplePink",disableAssets=false}){
+  if(document.fonts?.ready)await Promise.race([document.fonts.ready,new Promise(resolve=>setTimeout(resolve,2000))]);
   const themeKey=theme==="movieMint"?"movieMint":"purplePink";
-  const art=await loadTheme(themeKey);
+  const art=disableAssets?{}:await Promise.race([loadTheme(themeKey),new Promise((resolve)=>setTimeout(()=>resolve({}),6000))]);
   const isTicket=themeKey==="movieMint";
   const width=900,margin=38,innerX=79,innerW=742;
   const canvas=document.createElement("canvas");canvas.width=width;
@@ -206,7 +212,9 @@ export async function renderPlanPng({sections,title,releaseTitle,totalCount,tota
   drawText("タムごと新曲応援ナビ",width/2,creditY,21,750,colors.accent,"center");
   if(!isTicket){twinkle(237,creditY+11,11,colors.pink);twinkle(660,creditY+11,11,colors.pink)}
   const blob=await new Promise((resolve,reject)=>{
-    canvas.toBlob(value=>value?resolve(value):reject(new Error("PNGを生成できませんでした")),"image/png");
+    const timer=setTimeout(()=>reject(new Error("PNG生成がタイムアウトしました")),7000);
+    try{canvas.toBlob(value=>{clearTimeout(timer);value?resolve(value):reject(new Error("PNGを生成できませんでした"))},"image/png")}
+    catch(error){clearTimeout(timer);reject(error)}
   });
   if(blob.size<2000)throw new Error("画像データが正常に作成されませんでした");
   return blob;
