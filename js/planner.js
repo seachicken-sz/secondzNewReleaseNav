@@ -337,8 +337,32 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
    return '<div class="pf-image-card" style="'+vars+'"><div class="pf-image-stars">✧ ♡ ✧</div><small>MY CD PURCHASE PLAN</small><h2>'+safe(title)+'</h2><p class="pf-image-release">ザユウノメイ／本当のことを言うと</p>'+
    '<div class="pf-image-places">'+listing+fcMarkup+'</div><div class="pf-image-footer"><span>CD合計 '+qtyOf(plan)+'枚</span><strong>'+format(totalOf(plan,config))+'円</strong></div><p class="pf-image-credit">タムごと新曲応援ナビ</p></div>';
  }
- function closePreview(){if(modal){modal.remove();modal=null;document.body.classList.remove("pf-modal-open")}}
- function refreshPreview(){if(!modal)return;const target=modal.querySelector("[data-pf-image-preview]");if(target)target.innerHTML=imageMarkup()}
+ function closePreview(){previewVersion++;closePreviewAssets();if(modal){modal.remove();modal=null;document.body.classList.remove("pf-modal-open")}}
+ let previewVersion=0,previewUrl=null;
+ function closePreviewAssets(){if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null}}
+ async function refreshPreview(){
+   const current=modal;if(!current)return;
+   const version=++previewVersion;
+   const target=current.querySelector("[data-pf-image-preview]");
+   if(!target)return;
+   target.textContent="画像プレビューを生成中…";
+   try{
+     const blob=await generatePng();
+     if(version!==previewVersion||modal!==current)return;
+     closePreviewAssets();
+     previewUrl=URL.createObjectURL(blob);
+     target.innerHTML='<img class="pf-generated-preview" alt="購入プランの画像プレビュー">';
+     target.querySelector("img").src=previewUrl;
+   }catch(error){
+     console.error("購入プラン画像プレビューに失敗",error);
+     if(version===previewVersion&&modal===current){
+       target.innerHTML=imageMarkup();
+       const note=document.createElement("p");note.className="pf-note";
+       note.textContent="プレビュー画像の生成に失敗しました。表示中の内容は参考表示です。";
+       target.appendChild(note);
+     }
+   }
+ }
  function openPreview(){
    if(qtyOf(plan)===0)return;
    closePreview();
@@ -376,8 +400,8 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
    const fcEntries=["fc_dvd","fc_bd"].filter(id=>plan.fcItems[id]>0).map(id=>[names[id],plan.fcItems[id]+"枚"]);
    if(fcEntries.length)sections.push({title:"ファミクラストアオンライン",entries:fcEntries});
    const title=plan.name.trim()?plan.name.trim()+"の購入プラン":"わたしの購入プラン";
-   const {renderPlanPng}=await import("./planCanvas.js?v=20261111-canvas-v1");
-   return renderPlanPng({sections,title,releaseTitle:"ザユウノメイ／本当のことを言うと",totalCount:qtyOf(plan),totalPrice:totalOf(plan,config),colors:themeVars()});
+   const {renderPlanPng}=await import("./planCanvas.js?v=20261111-theme-parts-v2");
+   return renderPlanPng({sections,title,releaseTitle:"ザユウノメイ／本当のことを言うと",totalCount:qtyOf(plan),totalPrice:totalOf(plan,config),colors:themeVars(),theme:plan.imageOptions.theme});
  }
  async function saveOrShare(button,share){
    if(qtyOf(plan)===0)return;
