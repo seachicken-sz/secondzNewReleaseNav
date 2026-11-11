@@ -724,3 +724,26 @@ input,select,textarea{font-size:16px!important}
 .pf-with-footer{padding-bottom:28px!important}
 body:has(.pf-bottom-nav) .shell{padding-bottom:calc(132px + env(safe-area-inset-bottom))}
 @media(max-width:380px){.pf-edition-place-row{padding:8px 7px;gap:5px}.pf-edition-place-row .pf-counter{gap:5px}.pf-edition-place-label{font-size:12px}}
+
+
+/* Safari visual viewport stabilization across all page modes */
+:root{--pf-viewport-bottom:0px}
+.pf-bottom-nav{
+ bottom:var(--pf-viewport-bottom)!important;
+ transform:none!important;
+}
+body:has(.pf-bottom-nav) .shell{
+ padding-bottom:calc(168px + env(safe-area-inset-bottom) + var(--pf-viewport-bottom));
+}
+.pf-quantity>.pf-note{display:none}
+.pf-system-notes{margin:18px 0 25px;line-height:1.95}
+.pf-set-place + .pf-set-place{margin-top:12px}
+.pf-quantity .pf-sets{margin:14px 0 22px}
+.pf-quantity .pf-sets>h2{margin-top:10px}
+.pf-product-group [data-pf-fc-notice] .pf-caution{margin-top:13px}
+.pf-clear-button{margin-top:22px!important;border-color:#ead6df!important;color:#98566b!important}
+@media(max-width:600px){
+ .shell{padding-top:max(14px,env(safe-area-inset-top,0px));}
+ #app{scroll-margin-top:20px}
+ .pf-bottom-nav{padding-bottom:12px}
+}
