@@ -12,7 +12,6 @@ const FILES={
     tile:"theme2/background-tile.png",
     top:"theme2/movie-camera.png",
     strip:"theme2/film-strip.png",
-    reel:"theme2/film-reel.png",
     paw:"theme2/paw-prints.png"
   }
 };
@@ -148,7 +147,6 @@ async function renderPlanInternal({sections,title,releaseTitle,totalCount,totalP
   if(isTicket){
     asset(g,art.strip,-15,15,335,142,.75,-.10);
     asset(g,art.top,420,48,62,64,.95);
-    asset(g,art.reel,36,imageHeight-193,146,145,.92);
     asset(g,art.paw,width-295,imageHeight-175,256,127,.96);
   }else{
     asset(g,art.top,290,52,320,125,.98);
