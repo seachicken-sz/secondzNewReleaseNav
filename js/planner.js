@@ -78,6 +78,17 @@ function issueText(plan,config){
 }
 export function createPurchaseFlow({config,render,goHome,goResult}){
   let plan=initial(),screen="home",previous="home",saving=false;
+  // iOS Safari browser toolbars change the visual viewport during scroll.
+  // Keep the fixed bottom CTA inside the actually visible viewport.
+  const syncBottomNav=()=>{
+    const visual=window.visualViewport;
+    const offset=visual?Math.max(0,window.innerHeight-visual.offsetTop-visual.height):0;
+    document.documentElement.style.setProperty("--pf-viewport-bottom",offset+"px");
+  };
+  window.visualViewport?.addEventListener("resize",syncBottomNav);
+  window.visualViewport?.addEventListener("scroll",syncBottomNav);
+  window.addEventListener("resize",syncBottomNav);
+  syncBottomNav();
   const read=()=>{try{const item=JSON.parse(localStorage.getItem(STORAGE_KEY));return item?.releaseId===config.releaseId?plansafe(item):null}catch{return null}};
   const persist=()=>{
     plan.updatedAt=new Date().toISOString();
@@ -101,7 +112,7 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
     const edNames={regular:"通常盤",a:"初回限定盤A",b:"初回限定盤B",fc:"FC限定盤"};
     const addBtn=(id,label)=>{
       const picked=qty(plan,id)>0;
-      return '<button type="button" class="pf-choice-btn'+(picked?" is-added":"")+'" aria-pressed="'+picked+'" data-pf="toggle" data-id="'+id+'">'+safe(label)+'<span>'+ (picked?"追加済み ✓":"追加する ＋")+'</span></button>';
+      return '<button type="button" class="pf-choice-btn'+(picked?" is-added":"")+'" aria-pressed="'+picked+'" aria-label="'+safe(label)+(picked?" を選択解除":" を追加")+'" data-pf="toggle" data-id="'+id+'"><span class="pf-choice-label">'+safe(label)+'</span><span class="pf-choice-icon" aria-hidden="true">'+(picked?"✓":"＋")+'</span></button>';
     };
     const cards=["regular","a","b","fc"].map(id=>{
       const d=detail[id],buttons=id==="regular"?addBtn("regular","通常盤"):
@@ -255,7 +266,9 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
       persist();
       button.classList.toggle("is-added",!selected);
       button.setAttribute("aria-pressed",String(!selected));
-      const indicator=button.querySelector("span");if(indicator)indicator.textContent=selected?"追加する ＋":"追加済み ✓";
+      const indicator=button.querySelector(".pf-choice-icon");if(indicator)indicator.textContent=selected?"＋":"✓";
+      const label=button.querySelector(".pf-choice-label")?.textContent||"";
+      button.setAttribute("aria-label",label+(selected?" を追加":" を選択解除"));
       const current=document.querySelector("[data-pf-selected-count]");
       if(current)current.textContent="（"+qtyOf(plan)+"枚）";
       return;
