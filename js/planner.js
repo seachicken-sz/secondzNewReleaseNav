@@ -315,7 +315,7 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
    if(sets)sets.innerHTML=setRows();
    updatePlanDom();
  }
- const themeVars=()=>plan.imageOptions.theme==="movieMint"?{bg:"#d6f4ec",border:"#9fd5c9",accent:"#14877e",paper:"#fffef1",soft:"#f1f9e5",pink:"#f3dbef"}:{bg:"#f2eafd",border:"#b68ce4",accent:"#7346b4",paper:"#fff4fa",soft:"#f9dce9",pink:"#e88bbd"};
+ const themeVars=()=>plan.imageOptions.theme==="movieMint"?{bg:"#d6f4ec",border:"#9fd5c9",accent:"#14877e",paper:"#fffef1",soft:"#f1f9e5",pink:"#f3dbef"}:{bg:"#f3eefd",border:"#c6ace9",accent:"#7346b4",paper:"#fffafd",soft:"#faeaf4",pink:"#f2c7dd"};
  function imageMarkup(){
    const colors=themeVars(),opts=plan.imageOptions,title=plan.name.trim()?plan.name.trim()+"の購入プラン":"わたしの購入プラン";
    const active=plan.places.filter(p=>NON_FC.some(id=>p.items[id]>0));
