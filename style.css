@@ -552,3 +552,132 @@ body{overflow-x:clip}
   .pf-choice-btn,.pf-choice-btn.is-added{padding:9px 10px;min-height:50px}
   .pf-choice-icon{width:24px;height:24px;flex-basis:24px}
 }
+
+
+/* Cross-screen iPhone Safari safe-area and browser-chrome resilience */
+:root{--nav-top-space:env(safe-area-inset-top,0px);--nav-bottom-space:env(safe-area-inset-bottom,0px)}
+html{min-height:100%;scroll-padding-top:calc(16px + var(--nav-top-space));scroll-padding-bottom:calc(96px + var(--nav-bottom-space));overflow-x:clip}
+body{min-height:100%;margin:0;overflow-x:clip}
+.shell{max-width:640px;margin:0 auto;padding:
+  max(12px,var(--nav-top-space)) max(16px,env(safe-area-inset-right,0px))
+  calc(44px + var(--nav-bottom-space)) max(16px,env(safe-area-inset-left,0px))}
+.site-head{padding-top:12px;min-height:64px}
+#app{min-width:0;padding-bottom:var(--nav-bottom-space)}
+#app>.card,#app>.pf-root{scroll-margin-top:calc(15px + var(--nav-top-space))}
+body:has(.pf-bottom-nav) .shell{padding-bottom:calc(120px + var(--nav-bottom-space))}
+.pf-with-footer{padding-bottom:36px!important}
+.pf-bottom-nav{
+ position:fixed;bottom:0!important;top:auto;left:0;right:0;
+ z-index:1000;transform:none;
+ width:100%;max-width:100%;min-width:0;
+ box-sizing:border-box;display:flex;justify-content:center;align-items:center;
+ padding:12px max(16px,env(safe-area-inset-right,0px))
+  calc(12px + env(safe-area-inset-bottom,0px))
+  max(16px,env(safe-area-inset-left,0px));
+ background:rgba(255,255,255,.98);
+ border-top:1px solid #e7e2eb;
+ box-shadow:0 -5px 18px rgba(0,0,0,.06);
+}
+.pf-bottom-nav .btn{width:100%;max-width:608px;margin:0;min-height:54px;border-radius:999px}
+.pf-bottom-nav .btn:disabled{opacity:.45}
+.pf-places{margin-top:20px}
+.pf-place-card{
+ border:1px solid #e8deeb;background:#fff;border-radius:16px;
+ box-shadow:0 4px 14px rgba(0,0,0,.04);padding:16px;margin:13px 0 18px
+}
+.pf-place-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:12px}
+.pf-place-heading h3{font-size:17px;color:#49394f;margin:3px 0 0}
+.pf-place-heading small{font-size:12px;color:#8a7793}
+.pf-remove-place{border:1px solid #e6cfde;background:#fff;color:#985177;padding:8px 13px;white-space:nowrap;border-radius:999px;font-size:13px;font-weight:750}
+.pf-place-card .pf-format-row{grid-template-columns:minmax(0,1fr) auto;gap:8px;margin:0;padding:11px 0}
+.pf-place-card .pf-format-row>.pf-format-title{min-width:0;overflow-wrap:anywhere;font-size:13px;line-height:1.45}
+.pf-place-card .pf-counter{gap:7px}
+.pf-place-card .pf-counter button{min-width:34px;min-height:36px;border-radius:10px}
+.pf-place-card .pf-counter strong{min-width:20px}
+.pf-place-subtotal{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#f9f4fb;border-radius:10px;padding:12px;font-size:13px;margin-top:10px}
+.pf-place-subtotal strong{font-size:16px;color:#81449b}
+.pf-fc-place{border-color:#e0cfe7}
+.pf-fc-place .pf-format-title{font-size:14px}
+.pf-channel{margin:18px 0 22px}
+.pf-add-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.pf-add-actions .btn{min-width:0;font-size:13px;padding:11px 9px;min-height:46px;white-space:normal}
+.pf-add-form{padding:17px;margin:14px 0;border:1px solid #e8dcea;background:#fbf9fc;border-radius:16px}
+.pf-add-form h3{margin:0 0 12px}
+.pf-add-form label{display:block;font-size:14px;font-weight:750;margin:9px 0 6px}
+.pf-add-form input,.pf-add-form select,.pf-place-card select,.pf-place-card input{
+ width:100%;max-width:100%;min-height:45px;padding:10px 12px;
+ background:#fff;color:#34273e;font:inherit;font-size:16px;
+ border:1px solid #d8c9df;border-radius:12px
+}
+.pf-add-form [hidden]{display:none!important}
+.pf-add-form .pf-add-actions{margin-top:15px}
+.pf-bottom-nav:focus-within{z-index:1010}
+.pf-modal-open{overflow:hidden!important}
+.pf-modal-overlay{
+ position:fixed;inset:0;z-index:3000;display:flex;align-items:center;justify-content:center;
+ padding:max(10px,env(safe-area-inset-top,0px)) 10px max(10px,env(safe-area-inset-bottom,0px));
+ background:rgba(34,26,39,.67);box-sizing:border-box
+}
+.pf-modal{
+ display:flex;flex-direction:column;overflow:hidden;min-width:0;
+ width:min(100%,680px);max-height:calc(100dvh - 20px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
+ border-radius:18px;background:#fff;box-shadow:0 10px 34px rgba(0,0,0,.22)
+}
+.pf-modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px 16px;border-bottom:1px solid #eee5f0;flex:0 0 auto}
+.pf-modal-head h2{margin:0;font-size:18px;color:#48364f}
+.pf-modal-close{min-width:38px;min-height:38px;border:0;background:#f6f0f8;border-radius:50%;font-size:26px;color:#6f5482}
+.pf-modal-body{overflow-y:auto;overscroll-behavior:contain;min-height:0;padding:14px 15px 25px;-webkit-overflow-scrolling:touch}
+.pf-preview-frame{width:100%;margin:0 auto 16px;overflow:hidden}
+.pf-image-card{
+ --image-bg:#f9effb;--image-paper:#fff;--image-accent:#8e4fa5;--image-soft:#f5e5fa;--image-border:#e9d5ee;
+ width:100%;min-width:0;box-sizing:border-box;padding:22px 17px 17px;
+ background:var(--image-bg);border:5px solid var(--image-border);border-radius:22px;
+ color:#40334a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif
+}
+.pf-image-stars{text-align:center;color:var(--image-accent);font-size:24px;letter-spacing:7px}
+.pf-image-card>small{display:block;text-align:center;font-size:9px;letter-spacing:2px;color:var(--image-accent);margin:5px 0 8px}
+.pf-image-card h2{color:var(--image-accent);font-size:23px;line-height:1.4;text-align:center;overflow-wrap:anywhere;margin:0 0 8px}
+.pf-image-release{text-align:center;font-size:12px;color:var(--image-accent);margin:0 0 15px}
+.pf-image-places{display:grid;gap:10px}
+.pf-image-place{border:1px solid var(--image-border);background:var(--image-paper);padding:12px;border-radius:13px}
+.pf-image-place h3{margin:0 0 7px;font-size:15px;color:var(--image-accent)}
+.pf-image-line{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:5px 0;border-top:1px solid var(--image-border);font-size:12px}
+.pf-image-line span{min-width:0;overflow-wrap:anywhere}
+.pf-image-line strong{white-space:nowrap;color:var(--image-accent)}
+.pf-image-footer{background:var(--image-soft);border-radius:12px;padding:14px 12px;margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.pf-image-footer span{font-size:13px;font-weight:700;color:var(--image-accent)}
+.pf-image-footer strong{font-size:21px;color:var(--image-accent);white-space:nowrap}
+.pf-image-credit{text-align:center;font-size:11px;color:var(--image-accent);margin:13px 0 0}
+.pf-modal-options{border:1px solid #ebe0ee;border-radius:14px;margin:0 0 14px;padding:12px}
+.pf-modal-options legend{font-weight:750;font-size:14px;padding:0 6px}
+.pf-modal-options>label,.pf-theme-options>label{display:flex;align-items:center;gap:8px;font-size:14px;padding:8px 0}
+.pf-modal-options input{width:20px;height:20px;flex:0 0 20px;accent-color:#8750ad}
+.pf-modal-options>p{font-weight:700;margin:12px 0 4px}
+.pf-theme-options{display:flex;flex-wrap:wrap;gap:10px 20px}
+.pf-modal-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.pf-modal-buttons .btn{font-size:14px;min-height:49px;padding:11px 10px}
+.pf-export-node{
+ position:fixed;top:0;left:-12000px;width:900px;box-sizing:border-box;
+ background:#fff;pointer-events:none
+}
+.pf-export-node .pf-image-card{width:900px;min-width:900px;padding:42px 36px;border-width:8px;border-radius:38px}
+.pf-export-node .pf-image-stars{font-size:37px}
+.pf-export-node .pf-image-card>small{font-size:19px}
+.pf-export-node .pf-image-card h2{font-size:40px}
+.pf-export-node .pf-image-release{font-size:22px}
+.pf-export-node .pf-image-places{gap:18px}
+.pf-export-node .pf-image-place{padding:22px 25px;border-radius:23px}
+.pf-export-node .pf-image-place h3{font-size:27px}
+.pf-export-node .pf-image-line{font-size:22px;padding:10px 0}
+.pf-export-node .pf-image-footer{padding:22px;margin-top:23px}
+.pf-export-node .pf-image-footer span{font-size:24px}
+.pf-export-node .pf-image-footer strong{font-size:36px}
+.pf-export-node .pf-image-credit{font-size:19px}
+@media(max-width:380px){
+ .pf-place-card{padding:12px}
+ .pf-place-card .pf-format-title{font-size:12px}
+ .pf-place-card .pf-counter{gap:4px}
+ .pf-place-card .pf-counter button{min-width:30px;min-height:34px}
+ .pf-place-card .pf-counter strong{min-width:18px}
+ .pf-modal-buttons{gap:7px}
+}
