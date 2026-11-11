@@ -118,9 +118,20 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
       '<p>全形態に「シリアルコード入りプレイリストカード」が封入されているよ！カードに記載されたシリアルコードを無料の「timeleSZアプリ」に登録すると、購入したCDに収録されている楽曲をスマホで楽しめるよ！</p>'+
       '<div class="pf-formats">'+openLink("App Store",IOS)+openLink("Google Play",ANDROID)+'</div>'+
       '<p>'+openLink("アプリの使い方",APPGUIDE)+'</p></section>'+
-      '<section class="pf-guide"><h2>3形態同時購入特典もチェック！</h2><p>初回限定盤A・初回限定盤B・通常盤の3形態を同時予約購入すると、専用特典が付く対象商品があるよ！</p>'+
-      '<p>対象の組み合わせ：A（Blu-ray）＋B（Blu-ray）＋通常盤、またはA（DVD）＋B（DVD）＋通常盤。</p>'+
-      '<p class="pf-note">※特典内容は後日発表。対象の商品・購入方法・特典の在庫状況は購入先で確認してね！</p></section>'+
+      '<section class="pf-guide pf-three-editions"><h2>3形態同時購入特典もチェック！</h2>'+
+      '<p>初回限定盤A・初回限定盤B・通常盤の3形態を同時購入で専用特典がつくよ！</p>'+
+      '<p>専用特典は早期終了したこともあるから早めの予約がマスト！</p>'+
+      '<details class="pf-past-benefits"><summary>参考までに過去の特典はこんな感じ</summary>'+
+      '<div class="pf-past-benefits-content"><h3>MOMENTUM</h3><ul><li>トレーディングカード(全員分)</li>'+
+      '<li>ストリーミング映像<ul><li>バラエティ映像(ワンカードポーカー)</li><li>ユニット曲制作メイキング</li><li>あくびMV メンバーソロver</li></ul></li></ul>'+
+      '<h3>消えない花火</h3><ul><li>フレークシール(全員分)</li>'+
+      '<li>ストリーミング映像<ul><li>JALフェス出演時のライブ映像</li><li>消えない花火MV メンバーソロver</li></ul></li></ul></div></details>'+
+      '<div class="pf-purchase-advice"><h3>店頭購入・予約の場合</h3>'+
+      '<p>初回A+初回B+通常をまとめて予約しよう！</p>'+
+      '<p>初回Aと初回Bの映像の盤種(DVD/Blu-ray)は揃えてね！</p></div>'+
+      '<div class="pf-purchase-advice"><h3>オンラインの場合</h3>'+
+      '<p>「3形態同時購入特典付」と書かれているセットを選ぼう！</p>'+
+      '<p>定価は4,920円なのでそれより高いところは気をつけてね！</p></div></section>'+
       '<button type="button" class="btn secondary" data-pf="home">トップへ戻る</button></section>'+
       '<nav class="pf-bottom-nav"><button type="button" class="btn" data-pf="to-plan">購入プランを作る <span data-pf-selected-count>（'+qtyOf(plan)+'枚）</span></button></nav>';
   }
