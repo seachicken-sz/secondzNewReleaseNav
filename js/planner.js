@@ -13,7 +13,7 @@ const names={regular:"通常盤",a_dvd:"初回限定盤A（DVD）",a_bd:"初回�
 const baseKey=id=>id.split("_")[0];
 const isFc=id=>id.startsWith("fc_");
 const NON_FC=ITEM_IDS.filter(id=>!isFc(id));
-const SHOP_NAMES={amazon:"Amazon",rakuten:"楽天ブックス",hmv:"HMV",tower:"タワレコ",sevennet:"セブンネット",other:"その他"};
+const SHOP_NAMES={amazon:"Amazon.co.jp",rakuten:"楽天ブックス",hmv:"HMV&BOOKS online",tower:"タワーレコード オンライン",sevennet:"セブンネットショッピング",other:"その他"};
 const digits=n=>Math.max(0,Math.min(99,Math.floor(Number(n)||0)));
 let sequence=0;
 const makePlace=(type="online",shopKey="",label="")=>({id:"place_"+Date.now().toString(36)+"_"+(++sequence),type,shopKey,label,items:Object.fromEntries(NON_FC.map(id=>[id,0])),sets:{dvd:0,bd:0}});
