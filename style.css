@@ -870,3 +870,25 @@ body:has(.pf-bottom-nav) .shell{padding-bottom:calc(145px + env(safe-area-inset-
  .pf-root .pf-tsz-card{margin:36px 0 34px;padding:0 16px 18px;scroll-margin-top:150px}
  .pf-root .pf-tsz-card h2{margin:0 -16px 18px!important;padding:17px 16px;font-size:18px}
 }
+
+
+/* Compact actions stay inside the sticky total summary. */
+.pf-total .pf-total-actions{
+  grid-column:1/-1;
+  display:flex!important;flex-direction:row;justify-content:flex-end;align-items:center;
+  flex-wrap:wrap;gap:8px;width:100%;margin-top:3px;
+  padding-top:10px;border-top:1px solid rgba(137,81,186,.18);
+}
+.pf-total .pf-total-action{
+  width:auto;min-height:33px;max-width:100%;padding:6px 11px;
+  border:1px solid #c8a4db;border-radius:9px;
+  background:rgba(255,255,255,.85);color:#764694;
+  font-size:12px;font-weight:750;line-height:1.35;white-space:normal;
+  cursor:pointer;touch-action:manipulation;
+}
+.pf-total .pf-total-action:focus-visible{outline:3px solid #9350bd;outline-offset:2px}
+.pf-total .pf-total-action.pf-total-clear{border-color:#e6bdce;color:#95536d}
+@media(max-width:380px){
+  .pf-total .pf-total-actions{gap:6px}
+  .pf-total .pf-total-action{padding:6px 8px;font-size:11px}
+}
