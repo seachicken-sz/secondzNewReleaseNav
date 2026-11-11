@@ -1,4 +1,7 @@
-const STORAGE_KEY="secondzReleaseNav:purchasePlan:v1";
+const STORAGE_KEY="secondzReleaseNav:purchasePlan:v2";
+const OLD_STORAGE_KEY="secondzReleaseNav:purchasePlan:v1";
+const SHARE_URL="https://seachicken-sz.github.io/secondzNewReleaseNav/";
+const SHARE_TEXT="タムごと新曲応援ナビで購入プランを作ったよ！\n"+SHARE_URL;
 const IOS="https://apps.apple.com/app/id1553865678";
 const ANDROID="https://play.google.com/store/apps/details?id=com.timeleSZ.app";
 const APPGUIDE="https://ovtp.jp/app/info.html";
@@ -9,9 +12,37 @@ const ITEM_IDS=["regular","a_dvd","a_bd","b_dvd","b_bd","fc_dvd","fc_bd"];
 const names={regular:"通常盤",a_dvd:"初回限定盤A（DVD）",a_bd:"初回限定盤A（Blu-ray）",b_dvd:"初回限定盤B（DVD）",b_bd:"初回限定盤B（Blu-ray）",fc_dvd:"FC限定盤（DVD）",fc_bd:"FC限定盤（Blu-ray）"};
 const baseKey=id=>id.split("_")[0];
 const isFc=id=>id.startsWith("fc_");
-const emptyItems=()=>Object.fromEntries(ITEM_IDS.map(id=>[id,{online:0,store:0}]));
-const initial=()=>({version:1,source:"count",name:"",originalBudget:null,budgetLabel:"",recommended:[],defaultChannel:"online",items:emptyItems(),updatedAt:""});
-const plansafe=value=>value&&typeof value==="object"?{...initial(),...value,items:Object.fromEntries(ITEM_IDS.map(id=>[id,{online:Math.max(0,Math.min(99,Number(value.items?.[id]?.online)||0)),store:isFc(id)?0:Math.max(0,Math.min(99,Number(value.items?.[id]?.store)||0))}]))}:initial();
+const NON_FC=ITEM_IDS.filter(id=>!isFc(id));
+const SHOP_NAMES={amazon:"Amazon",rakuten:"楽天ブックス",hmv:"HMV",tower:"タワレコ",sevennet:"セブンネット",other:"その他"};
+const digits=n=>Math.max(0,Math.min(99,Math.floor(Number(n)||0)));
+let sequence=0;
+const makePlace=(type="online",shopKey="",label="")=>({id:"place_"+Date.now().toString(36)+"_"+(++sequence),type,shopKey,label,items:Object.fromEntries(NON_FC.map(id=>[id,0]))});
+const initial=()=>({version:2,source:"count",name:"",originalBudget:null,budgetLabel:"",recommended:[],places:[],fcItems:{fc_dvd:0,fc_bd:0},imageOptions:{hideOnlineStoreNames:false,hidePhysicalStoreNames:false,theme:"purplePink"},updatedAt:""});
+const normalizePlace=p=>({id:String(p.id||"place_"+(++sequence)),type:p.type==="store"?"store":"online",shopKey:String(p.shopKey||""),label:String(p.label||"").slice(0,10),items:Object.fromEntries(NON_FC.map(id=>[id,digits(p.items?.[id])]))});
+const plansafe=value=>value&&typeof value==="object"?{
+ ...initial(),...value,version:2,
+ places:Array.isArray(value.places)?value.places.map(normalizePlace):[],
+ fcItems:{fc_dvd:digits(value.fcItems?.fc_dvd),fc_bd:digits(value.fcItems?.fc_bd)},
+ imageOptions:{...initial().imageOptions,...value.imageOptions}
+}:initial();
+const qty=(plan,id)=>isFc(id)?digits(plan.fcItems[id]):plan.places.reduce((sum,p)=>sum+digits(p.items[id]),0);
+const qtyOf=plan=>ITEM_IDS.reduce((sum,id)=>sum+qty(plan,id),0);
+const totalOf=(plan,config)=>ITEM_IDS.reduce((sum,id)=>sum+qty(plan,id)*priceFor(id,config),0);
+const selectedIds=plan=>ITEM_IDS.filter(id=>qty(plan,id)>0);
+const onlineLabel=p=>p.shopKey==="other"?p.label:(SHOP_NAMES[p.shopKey]||p.label||"購入先を選択");
+const placeLabel=p=>p.type==="online"?onlineLabel(p):(p.label||"店舗名未入力");
+const migrateOld=old=>{
+ const result=initial();result.source=old.source||"count";result.name=old.name||"";
+ result.originalBudget=old.originalBudget??null;result.budgetLabel=old.budgetLabel||"";
+ result.recommended=old.recommended||[];
+ const online=makePlace("online","other","オンライン");
+ const store=makePlace("store","","実店舗");
+ for(const id of NON_FC){online.items[id]=digits(old.items?.[id]?.online);store.items[id]=digits(old.items?.[id]?.store)}
+ if(NON_FC.some(id=>online.items[id]>0))result.places.push(online);
+ if(NON_FC.some(id=>store.items[id]>0))result.places.push(store);
+ result.fcItems.fc_dvd=digits(old.items?.fc_dvd?.online);result.fcItems.fc_bd=digits(old.items?.fc_bd?.online);
+ return result;
+};
 const deadlineOk=date=>{
   const parts=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Tokyo",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
   return parts<=date;
@@ -48,13 +79,9 @@ const detail={
 };
 const rows=items=>'<ul class="pf-detail-list">'+items.map(([label,emphasis])=>'<li'+(emphasis?' class="pf-emphasis"':"")+'>'+safe(label)+'</li>').join("")+'</ul>';
 const priceFor=(id,config)=>Number(config.products[baseKey(id)]?.price)||0;
-const totalOf=(plan,config)=>ITEM_IDS.reduce((s,id)=>s+priceFor(id,config)*(plan.items[id].online+plan.items[id].store),0);
-const qtyOf=plan=>ITEM_IDS.reduce((s,id)=>s+plan.items[id].online+plan.items[id].store,0);
-const qty=(plan,id)=>plan.items[id].online+plan.items[id].store;
-const selectedIds=plan=>ITEM_IDS.filter(id=>qty(plan,id)>0);
 function seededPlan(result,config){
   const plan=initial();plan.source="budget";
-  const a=result.answers;const budget=config.budgetOptions.find(x=>x.id===a.budget);
+  const a=result.answers||{};const budget=config.budgetOptions.find(x=>x.id===a.budget);
   plan.originalBudget=budget?.value??null;plan.budgetLabel=budget?.label||"";
   const eligible=deadlineOk(config.deadline)&&a.fc===true;
   let picks=[];
@@ -67,221 +94,256 @@ function seededPlan(result,config){
     picks=["a_dvd","b_dvd","regular"];
     if(["7000","more"].includes(a.budget)&&eligible)picks.push("fc_dvd");
   }
-  picks.forEach(id=>plan.items[id].online=1);
+  const normal=picks.filter(id=>!isFc(id));
+  if(normal.length){const place=makePlace("online","", "");normal.forEach(id=>place.items[id]=1);plan.places.push(place)}
+  picks.filter(isFc).forEach(id=>plan.fcItems[id]=1);
   plan.recommended=picks;
   return plan;
 }
-function issueText(plan,config){
-  const rows=selectedIds(plan).map(id=>names[id]+" ×"+qty(plan,id)+"枚");
-  const userName=plan.name.trim();
-  return (userName?userName+"の":"わたしの")+"CD購入プラン\n"+rows.join("\n")+"\nCD合計 "+qtyOf(plan)+"枚｜"+format(totalOf(plan,config))+"円\nタムごと新曲応援ナビ";
-}
+
 export function createPurchaseFlow({config,render,goHome,goResult}){
-  let plan=initial(),screen="home",previous="home",saving=false;
-  // iOS Safari browser toolbars change the visual viewport during scroll.
-  // Keep the fixed bottom CTA inside the actually visible viewport.
-  const syncBottomNav=()=>{
-    const visual=window.visualViewport;
-    const offset=visual?Math.max(0,window.innerHeight-visual.offsetTop-visual.height):0;
-    document.documentElement.style.setProperty("--pf-viewport-bottom",offset+"px");
-  };
-  window.visualViewport?.addEventListener("resize",syncBottomNav);
-  window.visualViewport?.addEventListener("scroll",syncBottomNav);
-  window.addEventListener("resize",syncBottomNav);
-  syncBottomNav();
-  const read=()=>{try{const item=JSON.parse(localStorage.getItem(STORAGE_KEY));return item?.releaseId===config.releaseId?plansafe(item):null}catch{return null}};
-  const persist=()=>{
-    plan.updatedAt=new Date().toISOString();
-    try{localStorage.setItem(STORAGE_KEY,JSON.stringify({...plan,releaseId:config.releaseId}));return true}catch{return false}
-  };
-  const hasSaved=()=>Boolean(read());
-  const planLink=id=>config.links.fcSpecial;
-  function begin({result=null,reset=false,fromCompare=false}={}){
-    const prev=read();
-    plan=reset?(result?seededPlan(result,config):initial()):(prev||result?result?seededPlan(result,config):prev:initial());
-    if(fromCompare&&prev)plan=prev;
-    showPlan();
-  }
-  function resume(){plan=read()||initial();showPlan()}
-  function comparison(){screen="comparison";render(compareMarkup())}
-  function back(){if(previous==="result")goResult();else if(previous==="comparison")comparison();else if(previous==="plan")showPlan();else goHome()}
-  function openFromResult(result){previous="result";begin({result,reset:true})}
-  function openFromHome(){previous="home";begin({reset:true})}
-  function openCompare(){previous="home";plan=read()||initial();comparison()}
-  function compareMarkup(){
-    const edNames={regular:"通常盤",a:"初回限定盤A",b:"初回限定盤B",fc:"FC限定盤"};
-    const addBtn=(id,label)=>{
-      const picked=qty(plan,id)>0;
-      return '<button type="button" class="pf-choice-btn'+(picked?" is-added":"")+'" aria-pressed="'+picked+'" aria-label="'+safe(label)+(picked?" を選択解除":" を追加")+'" data-pf="toggle" data-id="'+id+'"><span class="pf-choice-label">'+safe(label)+'</span><span class="pf-choice-icon" aria-hidden="true">'+(picked?"✓":"＋")+'</span></button>';
-    };
-    const cards=["regular","a","b","fc"].map(id=>{
-      const d=detail[id],buttons=id==="regular"?addBtn("regular","通常盤"):
-        '<div class="pf-formats">'+addBtn(id+"_dvd","DVD")+addBtn(id+"_bd","Blu-ray")+'</div>';
-      return '<article class="pf-edition"><div class="pf-edition-head"><h2>'+edNames[id]+'</h2><strong>'+format(priceFor(id==="regular"?id:id+"_dvd",config))+'円</strong></div>'+
-       '<p class="pf-muted">'+(id==="regular"?"CDのみ":"CD＋DVD／Blu-ray")+'</p><p class="pf-description">'+safe(d.description)+'</p>'+
-       '<h3>収録曲</h3>'+rows(d.tracks)+(d.videos.length?'<h3>映像特典</h3>'+rows(d.videos):"")+
-       '<h3>'+(id==="regular"?"初回仕様封入特典":"封入特典")+'</h3>'+rows(d.gifts)+
-       '<p class="pf-note">'+safe(d.note)+'</p>'+buttons+'</article>';
-    }).join("");
-    return '<section class="card pf-root pf-with-footer"><button type="button" class="pf-back" data-pf="back">← 戻る</button>'+
-      '<h1>どの盤にする？特典を比較しよう！</h1><p class="muted">収録曲や映像をチェックして、欲しい盤を購入プランに追加しよう！複数選べるよ。</p>'+
-      cards+'<section class="pf-guide"><h2>CDの曲をスマホでも聴けるよ！</h2>'+
-      '<p>全形態に「シリアルコード入りプレイリストカード」が封入されているよ！カードに記載されたシリアルコードを無料の「timeleSZアプリ」に登録すると、購入したCDに収録されている楽曲をスマホで楽しめるよ！</p>'+
-      '<div class="pf-formats">'+openLink("App Store",IOS)+openLink("Google Play",ANDROID)+'</div>'+
-      '<p>'+openLink("アプリの使い方",APPGUIDE)+'</p></section>'+
-      '<section class="pf-guide pf-three-editions"><h2>3形態同時購入特典もチェック！</h2>'+
-      '<p>初回限定盤A・初回限定盤B・通常盤の3形態を同時購入で専用特典がつくよ！</p>'+
-      '<p>専用特典は早期終了したこともあるから早めの予約がマスト！</p>'+
-      '<details class="pf-past-benefits"><summary>参考までに過去の特典はこんな感じ</summary>'+
-      '<div class="pf-past-benefits-content"><h3>MOMENTUM</h3><ul><li>トレーディングカード(全員分)</li>'+
-      '<li>ストリーミング映像<ul><li>バラエティ映像(ワンカードポーカー)</li><li>ユニット曲制作メイキング</li><li>あくびMV メンバーソロver</li></ul></li></ul>'+
-      '<h3>消えない花火</h3><ul><li>フレークシール(全員分)</li>'+
-      '<li>ストリーミング映像<ul><li>JALフェス出演時のライブ映像</li><li>消えない花火MV メンバーソロver</li></ul></li></ul></div></details>'+
-      '<div class="pf-purchase-advice"><h3>店頭購入・予約の場合</h3>'+
-      '<p>初回A+初回B+通常をまとめて予約しよう！</p>'+
-      '<p>初回Aと初回Bの映像の盤種(DVD/Blu-ray)は揃えてね！</p></div>'+
-      '<div class="pf-purchase-advice"><h3>オンラインの場合</h3>'+
-      '<p>「3形態同時購入特典付」と書かれているセットを選ぼう！</p>'+
-      '<p>定価は4,920円なのでそれより高いところは気をつけてね！</p></div></section>'+
-      '<button type="button" class="btn secondary" data-pf="home">トップへ戻る</button></section>'+
-      '<nav class="pf-bottom-nav"><button type="button" class="btn" data-pf="to-plan">購入プランを作る <span data-pf-selected-count>（'+qtyOf(plan)+'枚）</span></button></nav>';
-  }
-  function selectedGiftNotice(){
-    const hasRegular=qty(plan,"regular")>0;
-    const sameFormat=(qty(plan,"a_dvd")>0&&qty(plan,"b_dvd")>0)||(qty(plan,"a_bd")>0&&qty(plan,"b_bd")>0);
-    return hasRegular&&sameFormat?'<div class="pf-caution">3形態同時購入特典を希望する場合は、購入先の「3形態特典付きセット」を確認してね！単品で購入した場合は特典対象外になることがあるよ！</div>':"";
-  }
-  function counter(id,channel){
-    const value=plan.items[id][channel];
-    return '<div class="pf-counter" data-pf-counter="'+id+'-'+channel+'"><button type="button" data-pf="minus" data-id="'+id+'" data-channel="'+channel+'" aria-label="'+safe(names[id])+' '+(channel==="online"?"オンライン":"実店舗")+'を1枚減らす" '+(value===0?"disabled":"")+'>−</button><strong data-pf-count="'+id+'-'+channel+'">'+value+'</strong><button type="button" data-pf="plus" data-id="'+id+'" data-channel="'+channel+'" aria-label="'+safe(names[id])+' '+(channel==="online"?"オンライン":"実店舗")+'を1枚増やす" '+(value>=99?"disabled":"")+'>＋</button></div>';
-  }
-  function productSection(id){
-    const regular=id==="regular";
-    const formats=regular?[id]:[id+"_dvd",id+"_bd"];
-    const title={regular:"通常盤",a:"初回限定盤A",b:"初回限定盤B",fc:"FC限定盤"}[id];
-    return '<article class="pf-product pf-product-group"><div class="pf-product-top"><div><h3>'+title+'</h3><span>'+(regular?"CDのみ":"DVD／Blu-ray")+' · '+format(priceFor(formats[0],config))+'円'+(formats.some(item=>plan.recommended.includes(item))?' <em class="pf-recommended">診断おすすめ</em>':"")+'</span></div><strong data-pf-group-total="'+id+'">'+formats.reduce((sum,item)=>sum+qty(plan,item),0)+'枚</strong></div>'+
-      formats.map(item=>{
-        const label=regular?"CD":item.endsWith("_dvd")?"DVD":"Blu-ray";
-        return '<div class="pf-format-row" data-pf-format="'+item+'"><span class="pf-format-title">'+label+'</span>'+
-          '<div class="pf-counter-holder" data-pf-primary="'+item+'">'+counter(item,isFc(item)?"online":plan.defaultChannel)+'</div>'+
-          (!isFc(item)?'<details class="pf-split" data-pf-split="'+item+'"><summary>購入場所を分けて入力する</summary><div class="pf-split-row"><span>オンライン</span>'+counter(item,"online")+'</div><div class="pf-split-row"><span>実店舗</span>'+counter(item,"store")+'</div></details>':'<span class="pf-fc-label">ファミクラストアオンライン限定</span>')+
-          '</div>';
-      }).join("")+'</article>';
-  }
-  function showPlan(){
-    screen="plan";
-    const budget=plan.source==="budget"?'<div class="pf-meta"><div><small>当初の予算</small><strong>'+safe(plan.budgetLabel||"未設定")+'</strong></div><div><small>診断のおすすめ</small><strong>'+safe(plan.recommended.map(id=>names[id]).join("・")||"なし")+'</strong></div></div>':"";
-    const total=totalOf(plan,config),count=qtyOf(plan);
-    render('<section class="card pf-root pf-with-footer"><button type="button" class="pf-back" data-pf="back">← 戻る</button><h1>わたしのCD購入プラン</h1>'+budget+
-      '<div class="pf-total"><div><small>現在の合計金額</small><strong data-pf-total>'+format(total)+'円</strong></div><div><small>CD合計</small><strong data-pf-qty>'+count+'枚</strong></div><p class="pf-budget-diff" data-pf-budget></p></div>'+
-      '<div class="pf-channel"><h2>購入場所の基本設定</h2><div class="pf-switch"><button type="button" data-pf="channel" data-channel="online" class="'+(plan.defaultChannel==="online"?"active":"")+'">オンライン</button><button type="button" data-pf="channel" data-channel="store" class="'+(plan.defaultChannel==="store"?"active":"")+'">実店舗</button></div><p class="pf-note">新たに追加するCDの購入場所の初期値。各盤の購入場所は個別にも調整できるよ！</p></div>'+
-      '<h2>CDの種類と枚数</h2>'+["regular","a","b","fc"].map(productSection).join("")+
-      '<div data-pf-notices></div>'+
-      '<p class="pf-note">表示価格は税込の商品代金のみ。送料・手数料・割引は含まないよ。DVD版とBlu-ray版は別々にカウントするよ。</p>'+
-      '<div class="pf-name"><label for="pf-name">シェアするときの名前（任意）</label><input id="pf-name" data-pf-name type="text" maxlength="30" placeholder="" value="'+safe(plan.name)+'"><p class="pf-note">未入力なら「わたしの購入プラン」。名前はこの端末にのみ保存するよ。</p></div>'+
-      '<button type="button" class="btn" data-pf="share" '+(count?"":"disabled")+'>購入プランを画像で保存・シェア</button>'+
-      '<button type="button" class="btn ghost" data-pf="home">トップへ戻る</button></section>'+
-      '<nav class="pf-bottom-nav"><button type="button" class="btn" data-pf="compare">特典を見る</button></nav>');
-    updatePlanDom();
-  }
-  // Only update the affected values in the existing DOM.
-  // This preserves the current scroll position, focused controls and expanded detail sections.
-  function updatePlanDom(){
-    if(screen!=="plan")return;
-    const root=document.querySelector(".pf-root");
-    if(!root)return;
-    const set=(sel,value)=>{const el=root.querySelector(sel);if(el)el.textContent=value};
-    set("[data-pf-total]",format(totalOf(plan,config))+"円");
-    set("[data-pf-qty]",qtyOf(plan)+"枚");
-    const diff=root.querySelector("[data-pf-budget]");
-    if(diff){
-      const amount=plan.originalBudget;
-      const total=totalOf(plan,config);
-      diff.textContent=amount===null?"":total>amount?"当初の予算より "+format(total-amount)+"円多いよ！":"予算の残り "+format(amount-total)+"円";
-    }
-    ["regular","a","b","fc"].forEach(group=>{
-      const ids=group==="regular"?["regular"]:[group+"_dvd",group+"_bd"];
-      set('[data-pf-group-total="'+group+'"]',ids.reduce((sum,id)=>sum+qty(plan,id),0)+"枚");
-    });
-    ITEM_IDS.forEach(id=>{
-      for(const channel of ["online","store"]){
-        root.querySelectorAll('[data-pf-count="'+id+'-'+channel+'"]').forEach(el=>el.textContent=plan.items[id][channel]);
-        root.querySelectorAll('[data-pf-counter="'+id+'-'+channel+'"]').forEach(el=>{
-          const minus=el.querySelector('[data-pf="minus"]'),plus=el.querySelector('[data-pf="plus"]');
-          if(minus)minus.disabled=plan.items[id][channel]===0;
-          if(plus)plus.disabled=plan.items[id][channel]>=99;
-        });
-      }
-      const holder=root.querySelector('[data-pf-primary="'+id+'"]');
-      if(holder){
-        const requested=isFc(id)?"online":plan.defaultChannel;
-        if(holder.firstElementChild?.dataset.pfCounter!==id+"-"+requested)holder.innerHTML=counter(id,requested);
-      }
-    });
-    root.querySelectorAll('[data-pf="channel"]').forEach(btn=>btn.classList.toggle("active",btn.dataset.channel===plan.defaultChannel));
-    const notices=root.querySelector("[data-pf-notices]");
-    if(notices){
-      notices.innerHTML=(selectedIds(plan).some(isFc)?'<div class="pf-caution">FC限定盤の購入にはFC加入が必要だよ！受注期限は2026年12月21日23:59まで。購入条件は公式サイトで確認してね。<p>'+openLink("FC限定盤の購入ページ",planLink())+'</p></div>':"")+selectedGiftNotice();
-    }
-    const share=root.querySelector('[data-pf="share"]');if(share)share.disabled=qtyOf(plan)===0;
-  }
-  function shareMarkup(){
-    const current=selectedIds(plan).map(id=>'<div class="pf-share-item"><span>'+safe(names[id])+'</span><b>'+qty(plan,id)+'枚</b></div>').join("");
-    const title=plan.name.trim()?plan.name.trim()+"の購入プラン":"わたしの購入プラン";
-    return '<div class="pf-share-card"><div class="pf-share-decor">✧　♡　✧</div><p class="pf-share-eyebrow">MY CD PURCHASE PLAN</p><h1>'+safe(title)+'</h1>'+
-      '<p class="pf-share-release">ザユウノメイ／本当のことを言うと</p><div class="pf-share-list">'+current+'</div>'+
-      '<div class="pf-share-total"><span>CD合計 <b>'+qtyOf(plan)+'枚</b></span><strong>'+format(totalOf(plan,config))+'円</strong></div>'+
-      '<p class="pf-share-footer">タムごと新曲応援ナビ</p></div>';
-  }
-  async function share(btn){
-    if(qtyOf(plan)===0)return;
-    btn.disabled=true;btn.textContent="画像を作成中…";
-    const node=document.createElement("div");node.className="pf-share-export";node.innerHTML=shareMarkup();document.body.appendChild(node);
-    try{
-      await document.fonts?.ready;
-      const {toBlob}=await import("https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/+esm");
-      const blob=await toBlob(node,{backgroundColor:"#f9effb",pixelRatio:1,cacheBust:true,style:{position:"static",left:"auto",top:"auto"}});
-      if(!blob)throw Error("画像が生成できませんでした");
-      const file=new File([blob],"タムごと_CD購入プラン.png",{type:"image/png"});
-      if(navigator.canShare?.({files:[file]})&&navigator.share){
-        try{await navigator.share({files:[file],title:"CD購入プラン"});return}catch(e){if(e.name==="AbortError")return}
-      }
-      const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
-    }catch(e){console.error(e);alert("画像の保存に失敗しました。通信状況を確認してもう一度お試しください。")}
-    finally{node.remove();btn.disabled=false;btn.textContent="購入プランを画像で保存・シェア"}
-  }
-  document.addEventListener("click",event=>{
-    const button=event.target.closest("[data-pf]");if(!button)return;
-    const action=button.dataset.pf,id=button.dataset.id,channel=button.dataset.channel;
-    if(action==="home"){goHome();return}
-    if(action==="back"){back();return}
-    if(action==="compare"){previous="plan";comparison();return}
-    if(action==="to-plan"){previous="comparison";persist();showPlan();return}
-    if(action==="channel"){plan.defaultChannel=channel;persist();updatePlanDom();return}
-    if(action==="toggle"){
-      if(!ITEM_IDS.includes(id))return;
-      const selected=qty(plan,id)>0;
-      if(selected){plan.items[id].online=0;plan.items[id].store=0}
-      else{plan.items[id][isFc(id)?"online":plan.defaultChannel]=1}
-      persist();
-      button.classList.toggle("is-added",!selected);
-      button.setAttribute("aria-pressed",String(!selected));
-      const indicator=button.querySelector(".pf-choice-icon");if(indicator)indicator.textContent=selected?"＋":"✓";
-      const label=button.querySelector(".pf-choice-label")?.textContent||"";
-      button.setAttribute("aria-label",label+(selected?" を追加":" を選択解除"));
-      const current=document.querySelector("[data-pf-selected-count]");
-      if(current)current.textContent="（"+qtyOf(plan)+"枚）";
-      return;
-    }
-    if(action==="plus"||action==="minus"){
-      if(!ITEM_IDS.includes(id)||!["online","store"].includes(channel)||(isFc(id)&&channel==="store"))return;
-      plan.items[id][channel]=Math.max(0,Math.min(99,plan.items[id][channel]+(action==="plus"?1:-1)));
-      persist();updatePlanDom();return;
-    }
-    if(action==="share")share(button);
-  });
-  document.addEventListener("input",event=>{
-    if(event.target.matches("[data-pf-name]")){plan.name=event.target.value.slice(0,30);persist()}
-  });
-  return {openFromResult,openFromHome,openCompare,resume,hasSaved,showPlan};
+ let plan=initial(),screen="home",previous="home",addMode=null,modal=null;
+ const read=()=>{
+   try{
+     const current=JSON.parse(localStorage.getItem(STORAGE_KEY));
+     if(current?.releaseId===config.releaseId)return plansafe(current);
+     const old=JSON.parse(localStorage.getItem(OLD_STORAGE_KEY));
+     if(old?.releaseId===config.releaseId){
+       const migrated=migrateOld(old);
+       localStorage.setItem(STORAGE_KEY,JSON.stringify({...migrated,releaseId:config.releaseId}));
+       return migrated;
+     }
+   }catch(e){console.warn("購入プランの読み込みに失敗",e)}
+   return null;
+ };
+ const persist=()=>{plan.updatedAt=new Date().toISOString();try{localStorage.setItem(STORAGE_KEY,JSON.stringify({...plan,releaseId:config.releaseId}));return true}catch{return false}};
+ const hasSaved=()=>Boolean(read());
+ const begin=result=>{plan=result?seededPlan(result,config):initial();addMode=null;persist();showPlan()};
+ const resume=()=>{plan=read()||initial();addMode=null;showPlan()};
+ const openFromResult=result=>{previous="result";begin(result)};
+ const openFromHome=()=>{previous="home";begin(null)};
+ const openCompare=()=>{previous="home";plan=read()||initial();comparison()};
+ const comparison=()=>{screen="comparison";render(compareMarkup())};
+ const back=()=>{if(previous==="result")goResult();else if(previous==="comparison")comparison();else if(previous==="plan")showPlan();else goHome()};
+ const mark=(id,label)=>{
+   const picked=qty(plan,id)>0;
+   return '<button type="button" class="pf-choice-btn'+(picked?' is-added':'')+'" aria-pressed="'+picked+'" aria-label="'+safe(label)+(picked?' を選択解除':' を追加')+'" data-pf="toggle" data-id="'+id+'"><span class="pf-choice-label">'+safe(label)+'</span><span class="pf-choice-icon" aria-hidden="true">'+(picked?'✓':'＋')+'</span></button>';
+ };
+ function compareMarkup(){
+   const edNames={regular:"通常盤",a:"初回限定盤A",b:"初回限定盤B",fc:"FC限定盤"};
+   const cards=["regular","a","b","fc"].map(id=>{
+     const d=detail[id],buttons=id==="regular"?mark("regular","通常盤"):'<div class="pf-formats">'+mark(id+"_dvd","DVD")+mark(id+"_bd","Blu-ray")+'</div>';
+     return '<article class="pf-edition"><div class="pf-edition-head"><h2>'+edNames[id]+'</h2><strong>'+format(priceFor(id==="regular"?id:id+"_dvd",config))+'円</strong></div>'+
+     '<p class="pf-muted">'+(id==="regular"?"CDのみ":"CD＋DVD／Blu-ray")+'</p><p class="pf-description">'+safe(d.description)+'</p>'+
+     '<h3>収録曲</h3>'+rows(d.tracks)+(d.videos.length?'<h3>映像特典</h3>'+rows(d.videos):"")+
+     '<h3>'+(id==="regular"?"初回仕様封入特典":"封入特典")+'</h3>'+rows(d.gifts)+
+     '<p class="pf-note">'+safe(d.note)+'</p>'+buttons+'</article>';
+   }).join("");
+   return '<section class="card pf-root pf-with-footer"><button class="pf-back" type="button" data-pf="back">← 戻る</button><h1>どの盤にする？特典を比較しよう！</h1><p class="muted">収録曲や映像をチェックして、欲しい盤を購入プランに追加しよう！複数選べるよ。</p>'+
+    cards+'<section class="pf-guide"><h2>CDの曲をスマホでも聴けるよ！</h2><p>全形態に「シリアルコード入りプレイリストカード」が封入されているよ！カードに記載されたシリアルコードを無料の「timeleSZアプリ」に登録すると、購入したCDに収録されている楽曲をスマホで楽しめるよ！</p>'+
+    '<div class="pf-formats">'+openLink("App Store",IOS)+openLink("Google Play",ANDROID)+'</div><p>'+openLink("アプリの使い方",APPGUIDE)+'</p></section>'+
+    '<section class="pf-guide pf-three-editions"><h2>3形態同時購入特典もチェック！</h2>'+
+    '<p>初回限定盤A・初回限定盤B・通常盤の3形態を同時購入で専用特典がつくよ！</p><p>専用特典は早期終了したこともあるから早めの予約がマスト！</p>'+
+    '<details class="pf-past-benefits"><summary>参考までに過去の特典はこんな感じ</summary><div class="pf-past-benefits-content"><h3>MOMENTUM</h3><ul><li>トレーディングカード(全員分)</li><li>ストリーミング映像<ul><li>バラエティ映像(ワンカードポーカー)</li><li>ユニット曲制作メイキング</li><li>あくびMV メンバーソロver</li></ul></li></ul>'+
+    '<h3>消えない花火</h3><ul><li>フレークシール(全員分)</li><li>ストリーミング映像<ul><li>JALフェス出演時のライブ映像</li><li>消えない花火MV メンバーソロver</li></ul></li></ul></div></details>'+
+    '<div class="pf-purchase-advice"><h3>店頭購入・予約の場合</h3><p>初回A+初回B+通常をまとめて予約しよう！</p><p>初回Aと初回Bの映像の盤種(DVD/Blu-ray)は揃えてね！</p></div>'+
+    '<div class="pf-purchase-advice"><h3>オンラインの場合</h3><p>「3形態同時購入特典付」と書かれているセットを選ぼう！</p><p>定価は4,920円なのでそれより高いところは気をつけてね！</p></div></section>'+
+    '<button class="btn secondary" type="button" data-pf="home">トップへ戻る</button></section>'+
+    '<nav class="pf-bottom-nav" aria-label="画面操作"><button type="button" class="btn" data-pf="to-plan">購入プランを作る <span data-pf-selected-count>（'+qtyOf(plan)+'枚）</span></button></nav>';
+ }
+ const addForm=()=>addMode?'<div class="pf-add-form"><h3>'+(addMode==="online"?"オンラインの購入先を追加":"実店舗を追加")+'</h3>'+
+   (addMode==="online"?'<label for="pf-shop-select">購入先</label><select id="pf-shop-select" data-pf-shop-select><option value="">選択してください</option>'+Object.entries(SHOP_NAMES).map(([key,label])=>'<option value="'+key+'">'+label+'</option>').join("")+'</select><div data-pf-other-wrap hidden><label for="pf-shop-custom">購入先の名前（10文字まで）</label><input id="pf-shop-custom" maxlength="10" type="text"></div>':
+   '<label for="pf-shop-custom">店舗名（10文字まで）</label><input id="pf-shop-custom" maxlength="10" type="text" placeholder="">')+
+   '<div class="pf-add-actions"><button type="button" class="btn" data-pf="add-place">追加する</button><button type="button" class="btn secondary" data-pf="cancel-place">キャンセル</button></div></div>':"";
+ const counter=(place,id)=>{
+   const val=isFc(id)?plan.fcItems[id]:place.items[id];
+   return '<div class="pf-counter" data-pf-count-for="'+(isFc(id)?"fc":safe(place.id))+'-'+id+'"><button type="button" data-pf="decrease" '+(isFc(id)?'data-fc="true"':'data-place="'+safe(place.id)+'"')+' data-id="'+id+'" aria-label="'+safe(names[id])+'を1枚減らす"'+(val===0?' disabled':'')+'>－</button><strong>'+val+'</strong><button type="button" data-pf="increase" '+(isFc(id)?'data-fc="true"':'data-place="'+safe(place.id)+'"')+' data-id="'+id+'" aria-label="'+safe(names[id])+'を1枚増やす"'+(val>=99?' disabled':'')+'>＋</button></div>';
+ };
+ function placeCard(p){
+   const label=placeLabel(p),isOnline=p.type==="online";
+   return '<article class="pf-place-card" data-place-card="'+safe(p.id)+'"><div class="pf-place-heading"><div><small>'+(isOnline?"オンライン":"実店舗")+'</small><h3>'+safe(label)+'</h3></div><button type="button" class="pf-remove-place" data-pf="remove-place" data-place="'+safe(p.id)+'">削除</button></div>'+
+    NON_FC.map(id=>'<div class="pf-format-row"><span class="pf-format-title">'+safe(names[id])+'</span>'+counter(p,id)+'</div>').join("")+
+    '<div class="pf-place-subtotal">この購入先の小計 <strong data-pf-subtotal="'+safe(p.id)+'">'+format(NON_FC.reduce((sum,id)=>sum+p.items[id]*priceFor(id,config),0))+'円</strong></div></article>';
+ }
+ function showPlan(){
+   screen="plan";
+   const budget=plan.source==="budget"?'<div class="pf-meta"><div><small>当初の予算</small><strong>'+safe(plan.budgetLabel||"未設定")+'</strong></div><div><small>診断のおすすめ</small><strong>'+safe(plan.recommended.map(id=>names[id]).join("・")||"なし")+'</strong></div></div>':"";
+   render('<section class="card pf-root pf-with-footer"><button class="pf-back" type="button" data-pf="back">← 戻る</button><h1>わたしのCD購入プラン</h1>'+budget+
+   '<div class="pf-total"><div><small>現在の合計金額</small><strong data-pf-total></strong></div><div><small>CD合計</small><strong data-pf-qty></strong></div><p class="pf-budget-diff" data-pf-budget></p></div>'+
+   '<section class="pf-channel"><h2>購入場所を設定する</h2><p class="pf-note">購入先を追加して、その購入先で購入するCDの枚数を入力してね！</p>'+
+   '<div class="pf-add-actions"><button class="btn secondary" type="button" data-pf="show-add-online">＋ オンラインを追加</button><button class="btn secondary" type="button" data-pf="show-add-store">＋ 実店舗を追加</button></div>'+
+   '<div data-pf-add-form>'+addForm()+'</div></section>'+
+   '<section class="pf-places"><h2>購入先ごとの枚数</h2><div data-pf-places>'+plan.places.map(placeCard).join("")+'</div></section>'+
+   '<article class="pf-place-card pf-fc-place"><div class="pf-place-heading"><div><small>ファンクラブ限定</small><h3>ファミクラストアオンライン</h3></div></div>'+
+   ['fc_dvd','fc_bd'].map(id=>'<div class="pf-format-row"><span class="pf-format-title">'+safe(names[id])+'</span>'+counter(null,id)+'</div>').join("")+'</article>'+
+   '<div data-pf-notices></div>'+
+   '<p class="pf-note">購入先を削除すると、その購入先に入力した枚数も削除されるよ。表示金額は税込の商品代金のみ。送料・手数料・割引は含まないよ。</p>'+
+   '<div class="pf-name"><label for="pf-name">シェアするときの名前（任意）</label><input id="pf-name" data-pf-name type="text" maxlength="30" value="'+safe(plan.name)+'"><p class="pf-note">未入力なら「わたしの購入プラン」。名前や購入先はこの端末に保存されるよ。</p></div>'+
+   '<button class="btn secondary" type="button" data-pf="compare">特典を見る</button><button class="btn ghost" type="button" data-pf="home">トップへ戻る</button></section>'+
+   '<nav class="pf-bottom-nav" aria-label="画面操作"><button class="btn" type="button" data-pf="preview" data-pf-generate>画像を生成</button></nav>');
+   updatePlanDom();
+ }
+ function giftNotice(){
+   const matching=(qty(plan,"a_dvd")&&qty(plan,"b_dvd"))||(qty(plan,"a_bd")&&qty(plan,"b_bd"));
+   return qty(plan,"regular")&&matching?'<div class="pf-caution">3形態同時購入特典を希望する場合は、購入先の「3形態特典付きセット」を確認してね！単品で購入した場合は特典対象外になることがあるよ！</div>':"";
+ }
+ function updatePlanDom(){
+   if(screen!=="plan")return;
+   const root=document.querySelector(".pf-root");if(!root)return;
+   const set=(selector,value)=>{const el=root.querySelector(selector);if(el)el.textContent=value};
+   set("[data-pf-total]",format(totalOf(plan,config))+"円");
+   set("[data-pf-qty]",qtyOf(plan)+"枚");
+   const budget=root.querySelector("[data-pf-budget]");if(budget){
+     const amount=plan.originalBudget,total=totalOf(plan,config);
+     budget.textContent=amount===null?"":total>amount?"当初の予算より "+format(total-amount)+"円多いよ！":"予算の残り "+format(amount-total)+"円";
+   }
+   root.querySelectorAll("[data-pf-count-for]").forEach(el=>{
+     const id=el.querySelector("[data-pf='increase']")?.dataset.id;
+     const placeId=el.querySelector("[data-pf='increase']")?.dataset.place;
+     const val=placeId?plan.places.find(p=>p.id===placeId)?.items[id]:plan.fcItems[id];
+     el.querySelector("strong").textContent=val??0;
+     const minus=el.querySelector("[data-pf='decrease']"),plus=el.querySelector("[data-pf='increase']");
+     if(minus)minus.disabled=!val;
+     if(plus)plus.disabled=val>=99;
+   });
+   for(const p of plan.places)set('[data-pf-subtotal="'+p.id+'"]',format(NON_FC.reduce((sum,id)=>sum+p.items[id]*priceFor(id,config),0))+"円");
+   const notices=root.querySelector("[data-pf-notices]");
+   if(notices)notices.innerHTML=(qty(plan,"fc_dvd")+qty(plan,"fc_bd")?'<div class="pf-caution">FC限定盤の購入にはFC加入が必要だよ！受注期限は2026年12月21日23:59まで。</div>':"")+giftNotice();
+   const button=document.querySelector("[data-pf-generate]");if(button)button.disabled=qtyOf(plan)===0;
+ }
+ const themeVars=()=>plan.imageOptions.theme==="movieMint"?{bg:"#d6f4ec",border:"#9fd5c9",accent:"#14877e",paper:"#fffef1",soft:"#f1f9e5"}:{bg:"#f9effb",border:"#e9d5ee",accent:"#8e4fa5",paper:"#ffffff",soft:"#f5e5fa"};
+ function imageMarkup(){
+   const colors=themeVars(),opts=plan.imageOptions,title=plan.name.trim()?plan.name.trim()+"の購入プラン":"わたしの購入プラン";
+   const listing=plan.places.filter(p=>NON_FC.some(id=>p.items[id]>0)).map((p,i)=>{
+     const hidden=p.type==="online"?opts.hideOnlineStoreNames:opts.hidePhysicalStoreNames;
+     const order=plan.places.filter(k=>k.type===p.type&&NON_FC.some(id=>k.items[id]>0)).findIndex(k=>k.id===p.id)+1;
+     const shown=hidden?(p.type==="online"?"オンライン購入先":"実店舗")+order:placeLabel(p);
+     return '<div class="pf-image-place"><h3>'+safe(shown)+'</h3>'+NON_FC.filter(id=>p.items[id]>0).map(id=>'<div class="pf-image-line"><span>'+safe(names[id])+'</span><strong>'+p.items[id]+'枚</strong></div>').join("")+'</div>';
+   }).join("");
+   const fc=qty(plan,"fc_dvd")+qty(plan,"fc_bd");
+   const fcMarkup=fc?'<div class="pf-image-place"><h3>ファミクラストアオンライン</h3>'+['fc_dvd','fc_bd'].filter(id=>plan.fcItems[id]>0).map(id=>'<div class="pf-image-line"><span>'+safe(names[id])+'</span><strong>'+plan.fcItems[id]+'枚</strong></div>').join("")+'</div>':"";
+   const vars='--image-bg:'+colors.bg+';--image-border:'+colors.border+';--image-accent:'+colors.accent+';--image-paper:'+colors.paper+';--image-soft:'+colors.soft+';';
+   return '<div class="pf-image-card" style="'+vars+'"><div class="pf-image-stars">✧ ♡ ✧</div><small>MY CD PURCHASE PLAN</small><h2>'+safe(title)+'</h2><p class="pf-image-release">ザユウノメイ／本当のことを言うと</p>'+
+   '<div class="pf-image-places">'+listing+fcMarkup+'</div><div class="pf-image-footer"><span>CD合計 '+qtyOf(plan)+'枚</span><strong>'+format(totalOf(plan,config))+'円</strong></div><p class="pf-image-credit">タムごと新曲応援ナビ</p></div>';
+ }
+ function closePreview(){if(modal){modal.remove();modal=null;document.body.classList.remove("pf-modal-open")}}
+ function refreshPreview(){if(!modal)return;const target=modal.querySelector("[data-pf-image-preview]");if(target)target.innerHTML=imageMarkup()}
+ function openPreview(){
+   if(qtyOf(plan)===0)return;
+   closePreview();
+   modal=document.createElement("div");modal.className="pf-modal-overlay";
+   const opts=plan.imageOptions;
+   modal.innerHTML='<section class="pf-modal" role="dialog" aria-modal="true" aria-labelledby="pf-modal-heading"><div class="pf-modal-head"><h2 id="pf-modal-heading">購入プランの画像プレビュー</h2><button class="pf-modal-close" type="button" data-pf="close-modal" aria-label="閉じる">×</button></div>'+
+   '<div class="pf-modal-body"><div class="pf-preview-frame" data-pf-image-preview></div>'+
+   '<fieldset class="pf-modal-options"><legend>画像のオプション</legend>'+
+   '<label><input type="checkbox" data-pf-option="hideOnlineStoreNames"'+(opts.hideOnlineStoreNames?" checked":"")+'>オンラインの店名を隠す</label>'+
+   '<label><input type="checkbox" data-pf-option="hidePhysicalStoreNames"'+(opts.hidePhysicalStoreNames?" checked":"")+'>実店舗の店名を隠す</label>'+
+   '<p>カラー</p><div class="pf-theme-options"><label><input type="radio" name="pf-image-theme" data-pf-theme="purplePink"'+(opts.theme==="purplePink"?" checked":"")+'>紫×ピンク</label>'+
+   '<label><input type="radio" name="pf-image-theme" data-pf-theme="movieMint"'+(opts.theme==="movieMint"?" checked":"")+'>ミント×淡いイエロー</label></div></fieldset>'+
+   '<div class="pf-modal-buttons"><button type="button" class="btn secondary" data-pf="save-image">画像を保存</button><button type="button" class="btn" data-pf="share-image">共有する</button></div></div></section>';
+   document.body.appendChild(modal);document.body.classList.add("pf-modal-open");
+   refreshPreview();
+   modal.querySelector(".pf-modal-close")?.focus();
+ }
+ async function generatePng(){
+   const wrapper=document.createElement("div");wrapper.className="pf-export-node";wrapper.innerHTML=imageMarkup();document.body.appendChild(wrapper);
+   try{
+     await document.fonts?.ready;
+     const {toBlob}=await import("https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/+esm");
+     const blob=await toBlob(wrapper,{backgroundColor:themeVars().bg,pixelRatio:1,cacheBust:true});
+     if(!blob)throw Error("画像を生成できませんでした");
+     return blob;
+   }finally{wrapper.remove()}
+ }
+ async function saveOrShare(button,share){
+   if(qtyOf(plan)===0)return;
+   button.disabled=true;const label=button.textContent;button.textContent="画像を作成中…";
+   try{
+     const blob=await generatePng();
+     const file=new File([blob],"タムごと_購入プラン.png",{type:"image/png"});
+     if(share&&navigator.share&&navigator.canShare?.({files:[file]})){
+       try{await navigator.share({files:[file],text:SHARE_TEXT,title:"購入プラン"});return}catch(e){if(e.name==="AbortError")return}
+     }
+     const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
+     if(share){try{await navigator.clipboard.writeText(SHARE_TEXT);alert("画像を保存しました。共有用テキストをコピーしたよ！")}catch{alert("画像を保存しました。共有テキスト：\n"+SHARE_TEXT)}}
+   }catch(err){console.error(err);alert("画像の生成に失敗しました。通信状況を確認して再度お試しください。")}
+   finally{button.disabled=false;button.textContent=label}
+ }
+ function addSelectedFromCompare(id){
+   if(isFc(id)){plan.fcItems[id]=1;return}
+   let place=plan.places.find(p=>p.type==="online");
+   if(!place){place=makePlace("online");plan.places.push(place)}
+   place.items[id]=1;
+ }
+ function removeSelectedFromCompare(id){
+   if(isFc(id)){plan.fcItems[id]=0;return}
+   for(const p of plan.places)p.items[id]=0;
+ }
+ document.addEventListener("click",event=>{
+   if(modal&&event.target===modal){closePreview();return}
+   const button=event.target.closest("[data-pf]");if(!button)return;
+   const action=button.dataset.pf,id=button.dataset.id,placeId=button.dataset.place;
+   if(action==="home"){closePreview();goHome();return}
+   if(action==="back"){closePreview();back();return}
+   if(action==="compare"){previous="plan";comparison();return}
+   if(action==="to-plan"){previous="comparison";persist();showPlan();return}
+   if(action==="show-add-online"||action==="show-add-store"){addMode=action==="show-add-online"?"online":"store";document.querySelector("[data-pf-add-form]").innerHTML=addForm();return}
+   if(action==="cancel-place"){addMode=null;document.querySelector("[data-pf-add-form]").innerHTML="";return}
+   if(action==="add-place"){
+     const field=document.querySelector("#pf-shop-custom"),shop=document.querySelector("#pf-shop-select")?.value||"";
+     const name=(field?.value||"").trim().slice(0,10);
+     if(addMode==="online"&&!shop){alert("購入先を選択してね！");return}
+     if((addMode==="store"||shop==="other")&&!name){alert("購入先の名前を入力してね！");return}
+     // Multiple entries, including the same named online shop, are permitted.
+     const place=makePlace(addMode,addMode==="online"?shop:"",name);
+     plan.places.push(place);addMode=null;persist();
+     document.querySelector("[data-pf-add-form]").innerHTML="";
+     document.querySelector("[data-pf-places]").insertAdjacentHTML("beforeend",placeCard(place));return;
+   }
+   if(action==="remove-place"){
+     const place=plan.places.find(p=>p.id===placeId);
+     if(!place)return;
+     const count=NON_FC.reduce((sum,id)=>sum+place.items[id],0);
+     if(count&&!confirm("「"+placeLabel(place)+"」の購入予定 "+count+"枚も削除するよ。削除する？"))return;
+     plan.places=plan.places.filter(p=>p.id!==placeId);persist();
+     document.querySelector('[data-place-card="'+placeId+'"]')?.remove();updatePlanDom();return;
+   }
+   if(action==="increase"||action==="decrease"){
+     const delta=action==="increase"?1:-1;
+     if(!ITEM_IDS.includes(id))return;
+     if(button.dataset.fc==="true")plan.fcItems[id]=digits(plan.fcItems[id]+delta);
+     else{
+       const place=plan.places.find(p=>p.id===placeId);
+       if(!place||isFc(id))return;
+       place.items[id]=digits(place.items[id]+delta);
+     }
+     persist();updatePlanDom();return;
+   }
+   if(action==="toggle"){
+     if(!ITEM_IDS.includes(id))return;
+     const selected=qty(plan,id)>0;
+     if(selected)removeSelectedFromCompare(id);else addSelectedFromCompare(id);
+     persist();
+     button.classList.toggle("is-added",!selected);button.setAttribute("aria-pressed",String(!selected));
+     const icon=button.querySelector(".pf-choice-icon");if(icon)icon.textContent=selected?"＋":"✓";
+     const label=button.querySelector(".pf-choice-label")?.textContent||"";
+     button.setAttribute("aria-label",label+(selected?" を追加":" を選択解除"));
+     const current=document.querySelector("[data-pf-selected-count]");if(current)current.textContent="（"+qtyOf(plan)+"枚）";
+     return;
+   }
+   if(action==="preview"){openPreview();return}
+   if(action==="close-modal"){closePreview();return}
+   if(action==="save-image"||action==="share-image"){saveOrShare(button,action==="share-image");return}
+ });
+ document.addEventListener("change",event=>{
+   const target=event.target;
+   if(target.matches("[data-pf-shop-select]")){const wrap=document.querySelector("[data-pf-other-wrap]");if(wrap)wrap.hidden=target.value!=="other"}
+   if(target.matches("[data-pf-option]")){plan.imageOptions[target.dataset.pfOption]=target.checked;persist();refreshPreview()}
+   if(target.matches("[data-pf-theme]")){plan.imageOptions.theme=target.dataset.pfTheme;persist();refreshPreview()}
+ });
+ document.addEventListener("input",event=>{
+   if(event.target.matches("[data-pf-name]")){plan.name=event.target.value.slice(0,30);persist()}
+ });
+ document.addEventListener("keydown",event=>{if(event.key==="Escape"&&modal)closePreview()});
+ return {openFromResult,openFromHome,openCompare,resume,hasSaved,showPlan};
 }
