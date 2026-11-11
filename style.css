@@ -681,3 +681,11 @@ body:has(.pf-bottom-nav) .shell{padding-bottom:calc(120px + var(--nav-bottom-spa
  .pf-place-card .pf-counter strong{min-width:18px}
  .pf-modal-buttons{gap:7px}
 }
+
+
+.pf-shop-editor{border:1px solid #eee4ee;border-radius:12px;background:#fcf9fc;padding:10px 12px;margin:2px 0 12px}
+.pf-shop-editor summary{color:#795195;font-size:13px;font-weight:750;cursor:pointer}
+.pf-shop-editor select{margin:10px 0 3px}
+.pf-shop-editor label{display:block;margin:8px 0 2px;font-size:12px;color:#69556f}
+.pf-shop-editor [hidden]{display:none!important}
+.pf-shop-editor input{margin-top:5px}
