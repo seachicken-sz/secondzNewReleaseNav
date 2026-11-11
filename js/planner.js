@@ -268,7 +268,7 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
    if(sets)sets.innerHTML=setRows();
    updatePlanDom();
  }
- const themeVars=()=>plan.imageOptions.theme==="movieMint"?{bg:"#d6f4ec",border:"#9fd5c9",accent:"#14877e",paper:"#fffef1",soft:"#f1f9e5"}:{bg:"#f9effb",border:"#e9d5ee",accent:"#8e4fa5",paper:"#ffffff",soft:"#f5e5fa"};
+ const themeVars=()=>plan.imageOptions.theme==="movieMint"?{bg:"#d6f4ec",border:"#9fd5c9",accent:"#14877e",paper:"#fffef1",soft:"#f1f9e5"}:{bg:"#faeaf5",border:"#efb9d9",accent:"#b04b93",paper:"#ffffff",soft:"#fbe0f0"};
  function imageMarkup(){
    const colors=themeVars(),opts=plan.imageOptions,title=plan.name.trim()?plan.name.trim()+"の購入プラン":"わたしの購入プラン";
    const active=plan.places.filter(p=>NON_FC.some(id=>p.items[id]>0));
@@ -302,22 +302,35 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
    '<fieldset class="pf-modal-options"><legend>画像のオプション</legend>'+
    '<label><input type="checkbox" data-pf-option="hideOnlineStoreNames"'+(opts.hideOnlineStoreNames?" checked":"")+'>オンラインの店名を隠す</label>'+
    '<label><input type="checkbox" data-pf-option="hidePhysicalStoreNames"'+(opts.hidePhysicalStoreNames?" checked":"")+'>実店舗の店名を隠す</label>'+
-   '<p>カラー</p><div class="pf-theme-options"><label><input type="radio" name="pf-image-theme" data-pf-theme="purplePink"'+(opts.theme==="purplePink"?" checked":"")+'>紫×ピンク</label>'+
-   '<label><input type="radio" name="pf-image-theme" data-pf-theme="movieMint"'+(opts.theme==="movieMint"?" checked":"")+'>ミント×淡いイエロー</label></div></fieldset>'+
-   '<div class="pf-modal-buttons"><button type="button" class="btn secondary" data-pf="save-image">画像を保存</button><button type="button" class="btn" data-pf="share-image">共有する</button></div></div></section>';
+   '<p>カラー</p><div class="pf-theme-options"><label><input type="radio" name="pf-image-theme" data-pf-theme="purplePink"'+(opts.theme==="purplePink"?" checked":"")+'>カラー①</label>'+
+   '<label><input type="radio" name="pf-image-theme" data-pf-theme="movieMint"'+(opts.theme==="movieMint"?" checked":"")+'>カラー②</label></div></fieldset>'+
+   '<div class="pf-modal-buttons"><button type="button" class="btn" data-pf="share-image">画像を保存・共有する</button></div></div></section>';
    document.body.appendChild(modal);document.body.classList.add("pf-modal-open");
    refreshPreview();
    modal.querySelector(".pf-modal-close")?.focus();
  }
  async function generatePng(){
-   const wrapper=document.createElement("div");wrapper.className="pf-export-node";wrapper.innerHTML=imageMarkup();document.body.appendChild(wrapper);
-   try{
-     await document.fonts?.ready;
-     const {toBlob}=await import("https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/+esm");
-     const blob=await toBlob(wrapper,{backgroundColor:themeVars().bg,pixelRatio:1,cacheBust:true});
-     if(!blob)throw Error("画像を生成できませんでした");
-     return blob;
-   }finally{wrapper.remove()}
+   const sections=[];
+   const active=plan.places.filter(p=>NON_FC.some(id=>p.items[id]>0));
+   for(const p of active){
+     const hidden=p.type==="online"?plan.imageOptions.hideOnlineStoreNames:p.type==="store"?plan.imageOptions.hidePhysicalStoreNames:false;
+     const order=active.filter(k=>k.type===p.type).findIndex(k=>k.id===p.id)+1;
+     const title=hidden?(p.type==="online"?"オンライン購入先":"実店舗")+order:placeLabel(p);
+     const entries=[];
+     if(p.type==="online")for(const format of ["dvd","bd"])if(setNum(p,format)>0)
+       entries.push(["3形態セット（"+(format==="dvd"?"DVD":"Blu-ray")+"）",setNum(p,format)+"セット"]);
+     for(const id of NON_FC){
+       const allocated=p.type==="online"?(id==="regular"?setNum(p,"dvd")+setNum(p,"bd"):id.endsWith("_dvd")?setNum(p,"dvd"):setNum(p,"bd")):0;
+       const count=Math.max(0,p.items[id]-allocated);
+       if(count)entries.push([names[id],count+"枚"]);
+     }
+     sections.push({title,entries});
+   }
+   const fcEntries=["fc_dvd","fc_bd"].filter(id=>plan.fcItems[id]>0).map(id=>[names[id],plan.fcItems[id]+"枚"]);
+   if(fcEntries.length)sections.push({title:"ファミクラストアオンライン",entries:fcEntries});
+   const title=plan.name.trim()?plan.name.trim()+"の購入プラン":"わたしの購入プラン";
+   const {renderPlanPng}=await import("./planCanvas.js?v=20261111-canvas-v1");
+   return renderPlanPng({sections,title,releaseTitle:"ザユウノメイ／本当のことを言うと",totalCount:qtyOf(plan),totalPrice:totalOf(plan,config),colors:themeVars()});
  }
  async function saveOrShare(button,share){
    if(qtyOf(plan)===0)return;
@@ -419,7 +432,7 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
    }
    if(action==="preview"){openPreview();return}
    if(action==="close-modal"){closePreview();return}
-   if(action==="save-image"||action==="share-image"){saveOrShare(button,action==="share-image");return}
+   if(action==="share-image"){saveOrShare(button,true);return}
  });
  document.addEventListener("change",event=>{
    const target=event.target;
