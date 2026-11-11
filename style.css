@@ -826,3 +826,8 @@ body:has(.pf-bottom-nav) .shell{padding-bottom:calc(145px + env(safe-area-inset-
  background:linear-gradient(120deg,#f3e5fb,#ffeefa)!important;
  box-shadow:0 4px 14px rgba(79,52,93,.1)!important;
 }
+
+
+/* Share preview uses the exact Canvas-generated PNG, not a separate HTML approximation. */
+.pf-preview-frame .pf-generated-preview{display:block;width:100%;height:auto;max-width:100%;border-radius:15px;box-shadow:0 3px 14px rgba(55,35,69,.10)}
+.pf-preview-frame{min-height:80px}
