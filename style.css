@@ -846,3 +846,27 @@ body:has(.pf-bottom-nav) .shell{padding-bottom:calc(145px + env(safe-area-inset-
 .pf-tsz-credit{font-size:13px;color:#775d82}
 .pf-tsz-disclaimer{font-size:12px;line-height:1.7!important;color:#716878;border-top:1px solid #e9dced;padding-top:12px}
 @media(max-width:600px){.pf-tsz-card{padding:18px 15px;scroll-margin-top:150px}.pf-tsz-card h2{font-size:18px}}
+
+
+/* TSZ is a distinct standalone card, not another paragraph inside the plan form. */
+.pf-root .pf-tsz-card{
+ display:block;position:relative;box-sizing:border-box;overflow:hidden;
+ margin:42px 0 38px;padding:0 20px 20px;
+ border:2px solid #ae79d0;border-radius:22px;
+ background:#fff!important;
+ box-shadow:0 7px 0 rgba(189,148,210,.20),0 12px 26px rgba(91,49,122,.14);
+ scroll-margin-top:175px;
+}
+.pf-root .pf-tsz-card h2{
+ margin:0 -20px 20px!important;padding:20px 22px;
+ background:linear-gradient(105deg,#ebdcfa 0%,#fce4f1 100%);
+ border-bottom:2px solid #d6b4e9;
+ font-size:20px;line-height:1.5;font-weight:800;color:#75409c!important;
+}
+.pf-root .pf-tsz-card .pf-tsz-intro{margin-top:0}
+.pf-root .pf-tsz-card .pf-tsz-credit{margin-top:22px}
+.pf-root .pf-tsz-card+.btn{margin-top:10px}
+@media(max-width:600px){
+ .pf-root .pf-tsz-card{margin:36px 0 34px;padding:0 16px 18px;scroll-margin-top:150px}
+ .pf-root .pf-tsz-card h2{margin:0 -16px 18px!important;padding:17px 16px;font-size:18px}
+}
