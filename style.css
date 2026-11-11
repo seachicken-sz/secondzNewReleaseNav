@@ -831,3 +831,18 @@ body:has(.pf-bottom-nav) .shell{padding-bottom:calc(145px + env(safe-area-inset-
 /* Share preview uses the exact Canvas-generated PNG, not a separate HTML approximation. */
 .pf-preview-frame .pf-generated-preview{display:block;width:100%;height:auto;max-width:100%;border-radius:15px;box-shadow:0 3px 14px rgba(55,35,69,.10)}
 .pf-preview-frame{min-height:80px}
+
+
+/* Related fan-run store lookup: optional help, not part of purchase data. */
+.pf-tsz-jump{margin:5px 0 16px;font-size:14px}
+.pf-tsz-jump a{color:#8050a5;text-decoration:underline;text-underline-offset:3px;font-weight:700}
+.pf-tsz-jump a:focus-visible,.pf-tsz-button:focus-visible{outline:3px solid #9350bd;outline-offset:4px}
+.pf-tsz-card{scroll-margin-top:175px;margin:24px 0;padding:22px 20px;border:1.5px solid #dec7eb;border-radius:20px;background:linear-gradient(145deg,#fcf6ff 0%,#fff9fc 63%,#f9f4ff 100%);box-shadow:0 4px 14px rgba(117,66,151,.07)}
+.pf-tsz-card h2{margin:0 0 14px;font-size:20px;line-height:1.5;color:#8250ad}
+.pf-tsz-card p{margin:12px 0;line-height:1.8}
+.pf-tsz-intro{font-weight:650;color:#584362}
+.pf-tsz-questions{padding:12px 14px;background:#fff;border-left:3px solid #d9aeea;border-radius:8px;color:#634e6d}
+.pf-tsz-button{display:block;text-align:center;margin:18px 0;width:100%;box-sizing:border-box;text-decoration:none!important}
+.pf-tsz-credit{font-size:13px;color:#775d82}
+.pf-tsz-disclaimer{font-size:12px;line-height:1.7!important;color:#716878;border-top:1px solid #e9dced;padding-top:12px}
+@media(max-width:600px){.pf-tsz-card{padding:18px 15px;scroll-margin-top:150px}.pf-tsz-card h2{font-size:18px}}
