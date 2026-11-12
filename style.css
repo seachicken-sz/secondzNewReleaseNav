@@ -945,3 +945,27 @@ body:has(.pf-bottom-nav) .shell{padding-bottom:calc(145px + env(safe-area-inset-
 .pf-extra-preview-status{font-size:13px;color:#79598a;margin:35px 0}
 .pf-extra-share{display:block;width:100%;min-height:48px}
 @media(max-width:420px){.pf-extra-preview-dialog{padding:14px}.pf-extra-theme-picker{gap:9px}.pf-extra-preview-frame{max-height:43dvh}}
+
+
+/* Extra-support image controls mirror the existing purchase-plan image flow. */
+.pf-extra-screen .pf-extra-name{
+ margin:26px 0 8px;padding:16px;
+ border:1px solid #ebe0ee;border-radius:14px;
+ background:#fff;
+}
+.pf-extra-screen .pf-extra-name label{display:block;margin-bottom:8px;font-size:14px;font-weight:750;color:#48364f}
+.pf-extra-screen .pf-extra-name input{
+ display:block;width:100%;box-sizing:border-box;min-height:46px;
+ padding:10px 12px;border:1px solid #d8c9de;border-radius:10px;
+ font-size:16px;color:#35233f;background:#fff;
+}
+.pf-extra-screen .pf-extra-name .pf-note{margin:7px 0 0;font-size:12px}
+#pf-extra-preview-modal .pf-extra-preview-image[hidden]{display:none!important}
+#pf-extra-preview-modal .pf-extra-preview-status{
+ margin:28px 0;text-align:center;font-size:13px;color:#6d5976;
+}
+#pf-extra-preview-modal .pf-preview-frame{
+ background:#f8f0fc;border:1px solid #e7d8ec;border-radius:15px;
+ padding:8px;overflow:hidden;
+}
+#pf-extra-preview-modal .pf-modal-options>p{margin-top:0}
