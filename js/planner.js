@@ -198,7 +198,7 @@ export function createPurchaseFlow({config,render,goHome,goResult,onExtraSupport
      (["regular","a","b"].every(id=>ids.includes(id))?'<tr class="pf-compare-three-row"><td colspan="3"><strong>3形態同時購入特典</strong><p>初回限定盤A・初回限定盤B・通常盤を対象条件で購入すると専用特典がつくよ！</p><p>対象のセット商品・購入条件は販売店で確認してね。</p></td>'+(ids.includes("fc")?'<td>FC限定盤は対象外</td>':'')+'</tr>':"")+
      '</tbody></table></div>';
    const threeNotice="";
-   return '<section id="pf-compare-table" class="pf-compare-section"><h2>特典を比較する</h2><div class="pf-common-tracks"><h3>全形態共通</h3><p>CD収録曲：「ザユウノメイ」「本当のことを言うと」</p><p>シリアルコード入りプレイリストカード（購入したCDの収録曲をスマホで聴けるよ！）</p><p>無料のtimeleSZアプリにカードのシリアルコードを登録して利用できます。</p><div class="pf-formats">'+openLink("App Store",IOS)+openLink("Google Play",ANDROID)+openLink("アプリの使い方",APPGUIDE)+'</div></div><div class="pf-compare-chips" aria-label="比較する盤種">'+chips+'</div>'+comparison+threeNotice+'</section>';
+   return '<section id="pf-compare-table" class="pf-compare-section"><h2>特典を比較する</h2><div class="pf-common-tracks"><h3>全形態共通</h3><p>CD収録曲：「ザユウノメイ」「本当のことを言うと」</p><p>シリアルコード入りプレイリストカード（購入したCDの収録曲をスマホで聴けるよ！）</p><p>無料のtimeleSZアプリにカードのシリアルコードを登録して利用できます。</p><div class="pf-app-link-buttons">'+openLink("App Store",IOS)+openLink("Google Play",ANDROID)+openLink("アプリの使い方",APPGUIDE)+'</div></div><div class="pf-compare-chips" aria-label="比較する盤種">'+chips+'</div>'+comparison+threeNotice+'</section>';
  };
  function compareMarkup(){
    compareSelection=eligibleEditions().filter(id=>compareSelection.includes(id));
@@ -280,7 +280,7 @@ export function createPurchaseFlow({config,render,goHome,goResult,onExtraSupport
    screen="plan";ensureUnassigned(plan);
    const budget=plan.source==="budget"?'<div class="pf-meta"><div><small>当初の予算</small><strong>'+safe(plan.budgetLabel||"未設定")+'</strong></div><div><small>診断のおすすめ</small><strong>'+safe(plan.recommended.map(id=>names[id]).join("・")||"なし")+'</strong></div></div>':"";
    const groups=[["regular","通常盤",["regular"]],["a","初回限定盤A",["a_dvd","a_bd"]],["b","初回限定盤B",["b_dvd","b_bd"]],["fc","FC限定盤",["fc_dvd","fc_bd"]]];
-   render('<section class="card pf-root pf-with-footer"><button type="button" class="pf-back" data-pf="back">← 戻る</button><h1>わたしのCD購入プラン</h1>'+budget+
+   render('<nav class="pf-plan-topbar" aria-label="購入プランのナビゲーション"><button type="button" data-pf="home">← トップに戻る</button></nav><section class="card pf-root pf-with-footer pf-plan-page"><h1>わたしのCD購入プラン</h1>'+budget+
      '<div class="pf-total"><div><small>現在の合計金額</small><strong data-pf-total></strong></div><div><small>CD合計</small><strong data-pf-qty></strong></div><p class="pf-budget-diff" data-pf-budget></p><div class="pf-total-actions"><button type="button" class="pf-total-action" data-pf="compare">特典を見る</button><button type="button" class="pf-total-action pf-total-clear" data-pf="clear-plan">購入プランをクリア</button></div></div>'+
      '<section class="pf-channel"><h2>購入場所を設定する</h2><p class="pf-note">購入場所を追加してください。枚数は下の「枚数を設定する」から指定できます。</p><p class="pf-tsz-jump"><a href="#pf-tsz-card">どこで買えばいいかわからない方へ</a></p>'+
      '<div data-pf-place-list>'+placeListMarkup()+'</div><div class="pf-add-actions"><button type="button" class="btn secondary" data-pf="show-add-online">＋ ネット通販を追加</button><button type="button" class="btn secondary" data-pf="show-add-store">＋ 店舗を追加</button></div>'+
