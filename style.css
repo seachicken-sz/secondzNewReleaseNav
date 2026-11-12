@@ -973,7 +973,7 @@ body:has(.pf-bottom-nav) .shell{padding-bottom:calc(145px + env(safe-area-inset-
 
 /* Shared support copy: same emphasized words across both result pages and export. */
 .support-copy{line-height:1.85;margin:10px 0 14px;overflow-wrap:anywhere}
-.support-emphasis{font-weight:850;color:#9650a8;text-decoration:underline;text-decoration-color:#c17bce;text-underline-offset:3px;text-decoration-thickness:2px}
+.support-emphasis{font-weight:850;color:#9650a8;text-decoration:none}
 .support-sns-details{border:1px solid #ead8ee;border-radius:13px;background:#fcf7fe;margin:12px 0 16px;overflow:hidden}
 .support-sns-details>summary{padding:13px 15px;font-weight:750;color:#81509e;cursor:pointer;list-style:revert}
 .support-sns-details-body{padding:0 15px 14px}
@@ -988,4 +988,4 @@ body:has(.pf-bottom-nav) .shell{padding-bottom:calc(145px + env(safe-area-inset-
 .compact-support-item{margin:0 0 15px}
 .compact-support-item>strong{font-weight:800;font-size:20px;color:#63377d}
 .compact-support-item>p{font-size:19px!important;line-height:1.6!important;margin:4px 0 0!important;overflow-wrap:anywhere}
-.image-canvas .compact-share-summary .support-emphasis{color:#9550a4;text-decoration:underline}
+.image-canvas .compact-share-summary .support-emphasis{color:#9550a4;text-decoration:none}
