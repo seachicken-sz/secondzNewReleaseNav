@@ -1,3 +1,4 @@
+import {IMAGE_FOOTER_LINE1,IMAGE_FOOTER_LINE2} from "./imageFooter.js?v=20261112-v1";
 const STORAGE_KEY="secondzReleaseNav:purchasePlan:v2";
 const OLD_STORAGE_KEY="secondzReleaseNav:purchasePlan:v1";
 const SHARE_URL="https://seachicken-sz.github.io/secondzNewReleaseNav/";
@@ -153,6 +154,8 @@ export function createPurchaseFlow({config,render,goHome,goResult,onExtraSupport
  const begin=result=>{plan=result?seededPlan(result,config):initial();ensureUnassigned(plan);addMode=null;persist();showPlan()};
  const resume=()=>{plan=read()||initial();ensureUnassigned(plan);addMode=null;persist();showPlan()};
  const openFromResult=result=>{previous="result";const saved=read();if(saved){plan=saved;ensureUnassigned(plan);showPlan()}else begin(result)};
+ const openRecommendedFromResult=result=>{previous="result";if(!result)return;const saved=read();plan=seededPlan(result,config);if(saved?.name)plan.name=saved.name;if(saved?.imageOptions)plan.imageOptions={...plan.imageOptions,...saved.imageOptions};ensureUnassigned(plan);addMode=null;persist();showPlan()};
+ const openCompareFromResult=()=>{previous="result";plan=read()||initial();ensureUnassigned(plan);comparison()};
  const openFromHome=()=>{previous="home";const saved=read();if(saved){plan=saved;ensureUnassigned(plan);addMode=null;persist();showPlan()}else begin(null)};
  const openCompare=()=>{previous="home";plan=read()||initial();ensureUnassigned(plan);comparison()};
  const comparison=()=>{screen="comparison";render(compareMarkup())};
@@ -343,7 +346,7 @@ export function createPurchaseFlow({config,render,goHome,goResult,onExtraSupport
    const fcMarkup=fc?'<div class="pf-image-place"><h3>ファミクラストアオンライン</h3>'+['fc_dvd','fc_bd'].filter(id=>plan.fcItems[id]>0).map(id=>'<div class="pf-image-line"><span>'+safe(names[id])+'</span><strong>'+plan.fcItems[id]+'枚</strong></div>').join("")+'</div>':"";
    const vars='--image-bg:'+colors.bg+';--image-border:'+colors.border+';--image-accent:'+colors.accent+';--image-paper:'+colors.paper+';--image-soft:'+colors.soft+';--image-pink:'+colors.pink+';';
    return '<div class="pf-image-card" style="'+vars+'"><div class="pf-image-stars">✧ ♡ ✧</div><small>MY CD PURCHASE PLAN</small><h2>'+safe(title)+'</h2><p class="pf-image-release">ザユウノメイ／本当のことを言うと</p>'+
-   '<div class="pf-image-places">'+listing+fcMarkup+'</div><div class="pf-image-footer"><span>CD合計 '+qtyOf(plan)+'枚</span><strong>'+format(totalOf(plan,config))+'円</strong></div><p class="pf-image-credit">タムごと新曲応援ナビ</p></div>';
+   '<div class="pf-image-places">'+listing+fcMarkup+'</div><div class="pf-image-footer"><span>CD合計 '+qtyOf(plan)+'枚</span><strong>'+format(totalOf(plan,config))+'円</strong></div><p class="pf-image-credit">'+safe(IMAGE_FOOTER_LINE1)+'<br>'+safe(IMAGE_FOOTER_LINE2)+'</p></div>';
  }
  function closePreview(){previewVersion++;closePreviewAssets();if(modal){modal.remove();modal=null;document.body.classList.remove("pf-modal-open")}}
  let previewVersion=0,previewUrl=null;
@@ -408,7 +411,7 @@ export function createPurchaseFlow({config,render,goHome,goResult,onExtraSupport
    const fcEntries=["fc_dvd","fc_bd"].filter(id=>plan.fcItems[id]>0).map(id=>[names[id],plan.fcItems[id]+"枚"]);
    if(fcEntries.length)sections.push({title:"ファミクラストアオンライン",entries:fcEntries});
    const title=plan.name.trim()?plan.name.trim()+"の購入プラン":"わたしの購入プラン";
-   const {renderPlanPng}=await import("./planCanvas.js?v=20261111-no-reel-v5");
+   const {renderPlanPng}=await import("./planCanvas.js?v=20261112-unified-footer-v6");
    return renderPlanPng({sections,title,releaseTitle:"ザユウノメイ／本当のことを言うと",totalCount:qtyOf(plan),totalPrice:totalOf(plan,config),colors:themeVars(),theme:plan.imageOptions.theme});
  }
  async function saveOrShare(button,share){
@@ -555,5 +558,5 @@ export function createPurchaseFlow({config,render,goHome,goResult,onExtraSupport
 
  });
  document.addEventListener("keydown",event=>{if(event.key==="Escape"&&modal)closePreview()});
- return {openFromResult,openFromHome,openCompare,resume,hasSaved,showPlan};
+ return {openFromResult,openRecommendedFromResult,openCompareFromResult,openFromHome,openCompare,resume,hasSaved,showPlan};
 }
