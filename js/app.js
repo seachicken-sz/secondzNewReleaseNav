@@ -434,6 +434,7 @@ function extraSupportMarkup(){
   return digital+subscription+section("03","無料でできる応援！",freeBody);
 }
 function showExtraSupportResult(){
+  readExtraImageOptions();
   save(EXTRA_SUPPORT_KEY,{releaseId:config.releaseId,subs:[...extraSubs]});
   view="extra-support-result";
   const summary=extraSubs.map(id=>config.subscriptions.find(s=>s.id===id)?.label).filter(Boolean).join("・")||"なし";
@@ -441,8 +442,10 @@ function showExtraSupportResult(){
     '<h1>あなたの追加応援プラン</h1><p class="release-title">'+escapeHtml(config.release?.cdTitle||"ザユウノメイ／本当のことを言うと")+'</p></div>'+
     '<p class="pf-extra-selected">加入中のサブスク：'+escapeHtml(summary)+'</p>'+extraSupportMarkup()+
     '<p class="small" style="text-align:center">※集計・配信・サービスに関する条件は必ず各公式サイトの最新情報をご確認ください。</p></div>'+
-    '<section class="card footer-actions"><div class="actions"><button type="button" class="btn" data-action="extra-image-open">画像を生成</button><button type="button" class="btn secondary" data-action="extra-support-edit">サブスクを選び直す</button>'+
-    '<button type="button" class="btn" data-action="extra-support-back">CD購入プランに戻る</button></div></section>');
+    '<div class="pf-name pf-extra-name"><label for="pf-extra-image-name">シェアするときの名前（任意）</label><input id="pf-extra-image-name" type="text" maxlength="10" value="'+escapeHtml(extraImageOptions.name)+'"><p class="pf-note">名前はこの端末に保存されます。</p></div>'+ 
+    '<section class="card footer-actions"><div class="actions"><button type="button" class="btn secondary" data-action="extra-support-edit">サブスクを選び直す</button>'+
+    '<button type="button" class="btn" data-action="extra-support-back">CD購入プランに戻る</button></div></section>'+ 
+    '<nav class="pf-bottom-nav"><button type="button" class="btn" data-action="extra-image-open">画像を生成</button></nav>');
 }
 
 
@@ -462,6 +465,7 @@ function persistExtraImageOptions(){
  save(EXTRA_IMAGE_SETTINGS_KEY,{...extraImageOptions,releaseId:config.releaseId});
 }
 function closeExtraPreview(){
+ document.body.classList.remove("pf-modal-open");
  extraPreviewOpen=false;
  const modal=document.getElementById("pf-extra-preview-modal");
  if(modal)modal.remove();
@@ -474,25 +478,22 @@ function invalidateExtraPreview(){
 }
 function openExtraPreview(){
  if(view!=="extra-support-result")return;
- readExtraImageOptions();
+ closeExtraPreview();
  extraPreviewOpen=true;
  const node=document.createElement("div");
  node.id="pf-extra-preview-modal";
- node.className="pf-extra-preview-overlay";
- node.setAttribute("role","presentation");
- node.innerHTML='<section role="dialog" aria-modal="true" aria-labelledby="pf-extra-preview-heading" class="pf-extra-preview-dialog">'+
-   '<div class="pf-extra-preview-head"><h2 id="pf-extra-preview-heading">応援プラン画像のプレビュー</h2><button type="button" class="pf-extra-preview-close" data-action="extra-image-close" aria-label="閉じる">×</button></div>'+
-   '<label for="pf-extra-image-name">シェアするときの名前（10文字まで・任意）</label>'+
-   '<input id="pf-extra-image-name" type="text" maxlength="10" value="'+escapeHtml(extraImageOptions.name)+'" placeholder="未入力なら「あなたの」"/>'+
-   '<fieldset class="pf-extra-theme-picker"><legend>画像デザイン</legend>'+
-   '<label><input type="radio" name="pf-extra-theme" value="purplePink" '+(extraImageOptions.theme==="purplePink"?"checked":"")+'> ① ゆめかわステーショナリー</label>'+
-   '<label><input type="radio" name="pf-extra-theme" value="movieMint" '+(extraImageOptions.theme==="movieMint"?"checked":"")+'> ② チケット風（ミント）</label></fieldset>'+
-   '<div class="pf-extra-preview-frame"><p class="pf-extra-preview-status" aria-live="polite">画像を生成中…</p><img class="pf-extra-preview-image" alt="追加応援プランの共有用画像" hidden></div>'+
-   '<button type="button" class="btn pf-extra-share" data-action="extra-image-share" disabled>保存・共有</button></section>';
+ node.className="pf-modal-overlay";
+ node.innerHTML='<section class="pf-modal" role="dialog" aria-modal="true" aria-labelledby="pf-extra-preview-heading">'+
+   '<div class="pf-modal-head"><h2 id="pf-extra-preview-heading">追加応援プランの画像プレビュー</h2><button type="button" class="pf-modal-close" data-action="extra-image-close" aria-label="閉じる">×</button></div>'+
+   '<div class="pf-modal-body"><div class="pf-preview-frame"><p class="pf-extra-preview-status" aria-live="polite">画像プレビューを生成中…</p><img class="pf-generated-preview pf-extra-preview-image" alt="追加応援プランの画像プレビュー" hidden></div>'+
+   '<fieldset class="pf-modal-options"><legend>画像のオプション</legend><p>カラー</p>'+
+   '<div class="pf-theme-options"><label><input type="radio" name="pf-extra-theme" value="purplePink"'+(extraImageOptions.theme==="purplePink"?" checked":"")+'>カラー①</label>'+
+   '<label><input type="radio" name="pf-extra-theme" value="movieMint"'+(extraImageOptions.theme==="movieMint"?" checked":"")+'>カラー②</label></div></fieldset>'+
+   '<div class="pf-modal-buttons"><button type="button" class="btn pf-extra-share" data-action="extra-image-share" disabled>画像を保存・共有する</button></div></div></section>';
  document.body.appendChild(node);
+ document.body.classList.add("pf-modal-open");
  node.addEventListener("click",event=>{if(event.target===node)closeExtraPreview()});
- const close=node.querySelector("[data-action='extra-image-close']");
- close.focus();
+ node.querySelector(".pf-modal-close")?.focus();
  refreshExtraPreview();
 }
 async function extraImageCachedGet(signature){
@@ -542,7 +543,7 @@ async function refreshExtraPreview(){
    let blob=extraPreviewSignature===signature?extraPreviewBlob:null;
    if(!blob)blob=await extraImageCachedGet(signature);
    if(!blob){
-     const {renderExtraSupportPng}=await import("./extraSupportCanvas.js?v=20261112-v1");
+     const {renderExtraSupportPng}=await import("./extraSupportCanvas.js?v=20261112-v2");
      blob=await renderExtraSupportPng({name:extraImageOptions.name,subs:extraSubs,theme:extraImageOptions.theme});
      // Persist the rendered PNG itself; never fail sharing if storage is unavailable.
      extraImageCachedPut(signature,blob).catch(()=>{});
