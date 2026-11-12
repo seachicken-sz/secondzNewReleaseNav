@@ -1,5 +1,6 @@
 import {buildPurchase,buildMethod,buildSupport,isBeforeDeadline} from "./result.js?v=20261111-all-budget-addon";
 import {createPurchaseFlow} from "./planner.js?v=20261112-extra-support-v18";
+import {supportCopy,selectedMusic,SUPPORT_COPY_VERSION} from "./supportContent.js?v=20261112-v1";
 const DRAFT_KEY="secondzReleaseNav:draft:v1";
 const RESULT_KEY="secondzReleaseNav:result:v1";
 const $=s=>document.querySelector(s);
@@ -285,37 +286,71 @@ p(messages.method.digitalMethod)+'<div class="site-links">'+linkFor("予約・�
 return html;
 }
 
+
+const supportTitle=()=>config.release?.digitalTitle||"本当のことを言うと";
+const supportText=()=>supportCopy(supportTitle());
+function markedSupport(text){
+ const input=String(text??"");
+ let html="",cursor=0;
+ for(const part of input.matchAll(/<([^<>]+)>/g)){
+   html+=escapeHtml(input.slice(cursor,part.index));
+   html+='<strong class="support-emphasis">'+escapeHtml(part[1])+'</strong>';
+   cursor=part.index+part[0].length;
+ }
+ return (html+escapeHtml(input.slice(cursor))).replace(/\n/g,"<br>");
+}
+const supportParagraph=text=>'<p class="support-copy">'+markedSupport(text)+'</p>';
+const supportLinks=()=>({
+ youtube:'<div class="app-link-grid">'+linkFor("YouTube公式チャンネル","https://youtube.com/@timelesz_official?si=Mn0Jxa2dxpRjfqyB")+'</div>',
+ sns:'<div class="app-link-grid">'+linkFor("X公式アカウント","https://x.com/ovtt_official?s=21&t=BbGDP467n_oSf2L69POfqA")+
+     linkFor("Instagram公式アカウント","https://www.instagram.com/timelesz_official")+
+     linkFor("TikTok公式アカウント","https://www.tiktok.com/@timelesz_overthetop")+'</div>',
+ request:'<div class="app-link-grid">'+linkFor("タムごとDailyで応援する",config.links.daily)+'</div>'
+});
+function snsDetailsMarkup(copy){
+ return '<details class="support-sns-details"><summary>詳しく見る</summary><div class="support-sns-details-body">'+
+ copy.snsDetails.map(group=>'<section class="support-sns-group"><h4>'+escapeHtml(group.title)+'</h4>'+
+ group.steps.map(line=>supportParagraph(line)).join("")+'</section>').join("")+
+ '</div></details>';
+}
+function freeSupportMarkup(){
+ const c=supportText(),links=supportLinks();
+ return card("みんなでできる応援",
+  supportParagraph(c.youtube)+links.youtube+
+  supportParagraph(c.sns)+snsDetailsMarkup(c)+links.sns+
+  supportParagraph(c.request)+links.request);
+}
+function stationheadLinks(){
+ return '<div class="site-links">'+linkFor("設定方法を見る",config.links.stationheadGuide)+'</div>'+
+ '<div class="stationhead-device-links"><a href="'+escapeHtml(config.links.stationheadIOS)+'" target="_blank" rel="noopener noreferrer">iPhone</a>'+
+ '<a href="'+escapeHtml(config.links.stationheadAndroid)+'" target="_blank" rel="noopener noreferrer">Android</a></div>'+
+ '<p class="subhead">登録ができたら以下のリンクをタップ！</p>'+
+ '<div class="site-links">'+linkFor("secondzチャンネル",config.links.stationhead)+'</div>';
+}
+function musicSupportMarkup(subs){
+ const selected=new Set(subs||[]);
+ const music=selectedMusic(subs||[]),c=supportText();
+ const eligible=selected.has("spotify")||selected.has("apple");
+ let body=supportParagraph(c.listen);
+ if(music.length){
+   if(selected.has("prime")&&!selected.has("unlimited"))body+=supportParagraph(c.prime);
+   body+='<div class="app-link-grid">'+music.map(([id,name])=>linkFor(name+"を開く",config.links.musicApps[id])).join("")+'</div>';
+ }else{
+   body+=supportParagraph(c.freeSpotify)+'<div class="app-link-grid">'+linkFor("Spotifyを開く",config.links.musicApps.spotify)+'</div>';
+ }
+ let html=card("新曲をサブスクで応援！",body,"support-music");
+ let stationBody=supportParagraph(eligible?c.stationMember:c.stationUpsell);
+ if(!eligible)stationBody+='<div class="site-links">'+linkFor("Spotify Premiumはこちら！",config.links.spotifyPremium)+'</div>';
+ stationBody+=stationheadLinks();
+ html+=card("ステヘにチャレンジしてみない？",stationBody);
+ if(selected.has("unext"))html+=card("U-NEXT会員の方へ！",supportParagraph(c.unext)+
+ '<div class="site-links">'+linkFor("詳しくはこちら",config.links.unextCampaign)+'</div>');
+ return html;
+}
 function supportMarkup(data,a){
-const selected=new Set(a.subs||[]);
-const appMap=[
-  ["spotify","Spotify Premium"],["prime","Amazon Music Prime"],["unlimited","Amazon Music Unlimited"],
-  ["line","LINE MUSIC"],["youtubeMusic","YouTube Music Premium"],["apple","Apple Music"]
-];
-const music=appMap.filter(([id])=>selected.has(id)&&!(id==="prime"&&selected.has("unlimited")));
-const heading='<p class="stream-intro">11/25〜先行配信される <strong>「'+escapeHtml(config.release?.digitalTitle||"本当のことを言うと")+'」</strong> をたくさん聴こう！</p>';
-const buttons=music.map(([id,name])=>linkFor(name+"を開く",config.links.musicApps[id])).join("");
-const musicBlock=heading+(music.length?'<div class="app-link-grid">'+buttons+'</div>':p(messages.support.freeSpotify)+'<div class="app-link-grid">'+linkFor("Spotifyを開く",config.links.musicApps.spotify)+'</div>');
-let html=card("新曲をサブスクで応援！",musicBlock,"support-music");
-if(data.stationhead){
-html+=card("ステヘにチャレンジしてみない？",
-p(messages.support.stationhead)+
-'<p class="detail">対象：Apple Music有料会員またはSpotify Premium会員・18歳以上</p>'+
-'<div class="site-links">'+linkFor("設定方法を見る",config.links.stationheadGuide)+'</div>'+
-'<div class="stationhead-device-links"><a href="'+escapeHtml(config.links.stationheadIOS)+'" target="_blank" rel="noopener noreferrer">iPhone</a><a href="'+escapeHtml(config.links.stationheadAndroid)+'" target="_blank" rel="noopener noreferrer">Android</a></div>'+
-'<p class="subhead">登録ができたら以下のリンクをタップ！</p>'+
-'<div class="site-links">'+linkFor("secondzチャンネル",config.links.stationhead)+'</div>');
+ return musicSupportMarkup(a.subs||[])+freeSupportMarkup();
 }
-if(data.unext){
-html+=card("U-NEXT会員の方へ！",p(messages.support.unext)+
-'<div class="site-links">'+linkFor("詳しくはこちら",config.links.unextCampaign)+'</div>');
-}
-html+=card("みんなでできる応援",
-'<ul><li>'+escapeHtml(messages.support.youtube)+'</li></ul><div class="app-link-grid">'+linkFor("YouTube公式チャンネル","https://youtube.com/@timelesz_official?si=Mn0Jxa2dxpRjfqyB")+'</div>'+
-'<ul><li>'+escapeHtml(messages.support.sns)+'</li></ul><div class="app-link-grid">'+linkFor("X公式アカウント","https://x.com/ovtt_official?s=21&t=BbGDP467n_oSf2L69POfqA")+linkFor("Instagram公式アカウント","https://www.instagram.com/timelesz_official")+linkFor("TikTok公式アカウント","https://www.tiktok.com/@timelesz_overthetop")+'</div>'+
-listText([messages.support.request])+
-'<div class="app-link-grid">'+linkFor("タムごとDailyで応援する",config.links.daily)+'</div>');
-return html;
-}
+
 function section(index,title,body){return '<section class="section"><h2 class="section-title"><span class="number">'+index+'</span>'+escapeHtml(title)+'</h2>'+body+'</section>'}
 function resultSummary(a){
 const store={yes:"近くに対象店舗あり",no:"近くに対象店舗なし",unknown:"対象店舗は未確認"}[a.store]||"未回答";
@@ -383,56 +418,14 @@ function showExtraSupportQuestion(){
     '<button type="button" class="btn ghost" data-action="extra-support-back">購入プランに戻る</button></div></section>');
 }
 function extraSupportMarkup(){
-  const selected=new Set(extraSubs);
-  const digitalBody=p(messages.purchase.extraParts.digitalAdd1400Budget.split("\n").slice(1).join("\n"))+
-    p(messages.method.digitalMethod)+
-    '<div class="site-links">'+linkFor("予約・購入ページ",config.links.digital)+'</div>';
-  const digital=section("01","デジタル配信で応援！",
-    card(messages.method.digitalHeading,digitalBody));
-  const musicServices=[
-    ["spotify","Spotify Premium"],["prime","Amazon Music Prime"],["unlimited","Amazon Music Unlimited"],
-    ["line","LINE MUSIC"],["youtubeMusic","YouTube Music Premium"],["apple","Apple Music"]
-  ].filter(([id])=>selected.has(id)&&!(id==="prime"&&selected.has("unlimited")));
-  const hasMusic=musicServices.length>0;
-  let musicBody='<p class="stream-intro">11/25〜先行配信される <strong>「'+escapeHtml(config.release?.digitalTitle||"本当のことを言うと")+'」</strong> をたくさん聴こう！</p>';
-  if(hasMusic){
-    if(selected.has("prime")&&!selected.has("unlimited")){
-      musicBody+='<p>Amazon Prime会員なら、Amazon Music Primeで利用できる範囲の楽曲を聴けるよ！</p>';
-    }
-    musicBody+='<div class="app-link-grid">'+musicServices.map(([id,name])=>linkFor(name+"を開く",config.links.musicApps[id])).join("")+'</div>';
-  }else{
-    musicBody+=p(messages.support.freeSpotify)+'<div class="app-link-grid">'+linkFor("Spotifyを開く",config.links.musicApps.spotify)+'</div>';
-  }
-  let subscriptionBody=card("新曲をサブスクで応援！",musicBody,"support-music");
-  if(selected.has("spotify")||selected.has("apple")){
-    subscriptionBody+=card("ステヘにチャレンジしてみない？",
-      p(messages.support.stationhead.replace("プレイリストを自分で作らず、secondzチャンネルで一緒に再生しよう。","プレイリストを自分で作る必要はなし！secondzチャンネルで一緒に再生しよう！"))+
-      '<p class="detail">対象：Apple Music有料会員またはSpotify Premium会員・18歳以上</p>'+
-      '<div class="site-links">'+linkFor("設定方法を見る",config.links.stationheadGuide)+'</div>'+
-      '<div class="stationhead-device-links"><a href="'+escapeHtml(config.links.stationheadIOS)+'" target="_blank" rel="noopener noreferrer">iPhone</a>'+
-      '<a href="'+escapeHtml(config.links.stationheadAndroid)+'" target="_blank" rel="noopener noreferrer">Android</a></div>'+
-      '<p class="subhead">登録ができたら以下のリンクをタップ！</p>'+
-      '<div class="site-links">'+linkFor("secondzチャンネル",config.links.stationhead)+'</div>');
-  }else{
-    subscriptionBody+=card("ステヘにチャレンジしてみない？",
-      p("＋1,080円でSpotify Premiumに加入してみない？\n1ヶ月だけでも加入してステへに参加すると、Billboardポイントに大きく貢献できるよ！\n面倒なプレイリスト作成の必要はなし！")+
-      '<div class="site-links">'+linkFor("Spotify Premiumはこちら！",config.links.spotifyPremium)+'</div>');
-  }
-  if(selected.has("unext")){
-    subscriptionBody+=card("U-NEXT会員の方へ！",p(messages.support.unext)+
-      '<div class="site-links">'+linkFor("詳しくはこちら",config.links.unextCampaign)+'</div>');
-  }
-  const subscription=section("02","サブスクで応援！",subscriptionBody);
-  const freeBody=card("みんなでできる応援",
-    '<ul><li>'+escapeHtml(messages.support.youtube)+'</li></ul><div class="app-link-grid">'+linkFor("YouTube公式チャンネル","https://youtube.com/@timelesz_official?si=Mn0Jxa2dxpRjfqyB")+'</div>'+
-    '<ul><li>'+escapeHtml(messages.support.sns)+'</li></ul><div class="app-link-grid">'+
-    linkFor("X公式アカウント","https://x.com/ovtt_official?s=21&t=BbGDP467n_oSf2L69POfqA")+
-    linkFor("Instagram公式アカウント","https://www.instagram.com/timelesz_official")+
-    linkFor("TikTok公式アカウント","https://www.tiktok.com/@timelesz_overthetop")+'</div>'+
-    listText([messages.support.request])+
-    '<div class="app-link-grid">'+linkFor("タムごとDailyで応援する",config.links.daily)+'</div>');
-  return digital+subscription+section("03","無料でできる応援！",freeBody);
+ const digital=section("01","デジタル配信で応援！",card(messages.method.digitalHeading,
+  supportParagraph(supportText().digital)+supportParagraph(messages.method.digitalMethod)+
+  '<div class="site-links">'+linkFor("予約・購入ページ",config.links.digital)+'</div>'));
+ return digital+
+  section("02","サブスクで応援！",musicSupportMarkup(extraSubs))+
+  section("03","無料でできる応援！",freeSupportMarkup());
 }
+
 function showExtraSupportResult(){
   readExtraImageOptions();
   save(EXTRA_SUPPORT_KEY,{releaseId:config.releaseId,subs:[...extraSubs]});
@@ -450,7 +443,7 @@ function showExtraSupportResult(){
 
 
 const EXTRA_IMAGE_SETTINGS_KEY="secondzReleaseNav:extraSupportImage:v1";
-const EXTRA_PNG_VERSION=3;
+const EXTRA_PNG_VERSION=4;
 const EXTRA_SHARE_TEXT="タムごと新曲応援ナビで応援プランを作ったよ！\nhttps://seachicken-sz.github.io/secondzNewReleaseNav/";
 let extraImageOptions={name:"",theme:"purplePink"};
 let extraPreviewBlob=null,extraPreviewUrl=null,extraPreviewSignature="",extraPreviewOpen=false;
@@ -544,16 +537,8 @@ async function refreshExtraPreview(){
    let blob=extraPreviewSignature===signature?extraPreviewBlob:null;
    if(!blob)blob=await extraImageCachedGet(signature);
    if(!blob){
-     const {renderExtraSupportPng}=await import("./extraSupportCanvas.js?v=20261112-v3");
-     blob=await renderExtraSupportPng({
-       name:extraImageOptions.name,subs:extraSubs,theme:extraImageOptions.theme,
-       digitalTitle:config.release?.digitalTitle,releaseTitle:config.release?.cdTitle,
-       digitalDescription:messages.purchase.extraParts.digitalAdd1400Budget.split("\n").slice(1).join("\n"),
-       listenIntro:messages.support.listenIntro,freeSpotify:messages.support.freeSpotify,
-       stationheadMember:messages.support.stationhead.replace("プレイリストを自分で作らず、secondzチャンネルで一緒に再生しよう。詳しい設定方法もチェックしてね！","プレイリストを自分で作る必要はなし！").replace("Stationhead（ステヘ）に参加できるよ！","Stationhead（ステヘ）に参加できるよ！"),
-       stationheadUpsell:"＋1,080円でSpotify Premiumに加入してみない？\n1ヶ月だけでも加入してステへに参加すると、Billboardポイントに大きく貢献できるよ！\n面倒なプレイリスト作成の必要はなし！",
-       unext:messages.support.unext,youtube:messages.support.youtube,sns:messages.support.sns,request:messages.support.request
-     });
+     const {renderExtraSupportPng}=await import("./extraSupportCanvas.js?v=20261112-v4");
+     blob=await renderExtraSupportPng({name:extraImageOptions.name,subs:extraSubs,theme:extraImageOptions.theme,digitalTitle:supportTitle(),releaseTitle:config.release?.cdTitle});
      // Persist the rendered PNG itself; never fail sharing if storage is unavailable.
      extraImageCachedPut(signature,blob).catch(()=>{});
    }
