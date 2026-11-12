@@ -1,5 +1,5 @@
 import {buildPurchase,buildMethod,buildSupport,isBeforeDeadline} from "./result.js?v=20261111-all-budget-addon";
-import {createPurchaseFlow} from "./planner.js?v=20261112-edition-compare-v3";
+import {createPurchaseFlow} from "./planner.js?v=20261112-edition-compare-v5";
 import {supportCopy,selectedMusic,supportImageSections} from "./supportContent.js?v=20261112-v1";
 import {IMAGE_FOOTER_LINE1,IMAGE_FOOTER_LINE2} from "./imageFooter.js?v=20261112-v1";
 const DRAFT_KEY="secondzReleaseNav:draft:v1";
@@ -22,7 +22,11 @@ const steps=()=>QUESTIONS.filter(q=>{
   return (q!=="seven"||answers.store!=="yes")&&(q!=="priority"||["1800","3600"].includes(answers.budget));
 });
 const question=()=>steps()[step];
-function frame(content){$("#app").innerHTML=content;window.scrollTo({top:0,behavior:"instant"})}
+function frame(content){
+ const top=content.includes('class="card pf-root pf-with-footer pf-compare-page"')||content.includes('id="result-view"');
+ const topButton=top?'<button type="button" class="page-scroll-top" data-scroll-top aria-label="ページの先頭に戻る" title="上に戻る"><svg viewBox="0 0 24 24" width="23" height="23" aria-hidden="true"><path d="m5 15 7-7 7 7" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>':"";
+ $("#app").innerHTML=content+topButton;window.scrollTo({top:0,behavior:"instant"})
+}
 function home(){
 view="home";
 const draft=load(DRAFT_KEY);
@@ -370,7 +374,7 @@ const data={purchase:buildPurchase(a,config,messages),method:buildMethod(a,confi
 const oldAnswers=answers;answers=a;
 const hasCdBudget=!isSmallBudget(a.budget);
 const nav=hasCdBudget&&!print?'<nav class="result-section-nav" aria-label="結果ページ内の移動"><a href="#result-recommend">おすすめプラン</a><a href="#result-method">購入方法</a><a href="#result-support">応援方法</a></nav>':"";
-const resultSection=(id,index,title,body)=>'<section class="section result-scroll-target" id="'+id+'"><h2 class="section-title"><span class="number">'+index+'</span>'+escapeHtml(title)+'</h2>'+body+'</section>';
+const resultSection=(id,index,title,body)=>'<section class="section result-scroll-target" id="'+id+'"><h2 class="section-title"><span class="number">'+index+'</span>'+escapeHtml(title)+'</h2>'+body+(print?'':'<div class="result-section-return"><a href="#result-view" data-scroll-result-top>↑トップに戻る</a></div>')+'</section>';
 const purchaseActions=hasCdBudget&&!print?'<div class="result-block-actions"><button type="button" class="btn" data-action="plan-recommended">おすすめを元にCD購入プランを作る</button><button type="button" class="btn secondary" data-action="compare-from-result">特典を比較する</button></div>':"";
 const methodActions=hasCdBudget&&!print?'<div class="result-block-actions"><button type="button" class="btn secondary" data-action="plan-from-result">CD購入プランを作る</button></div>':"";
 const html='<div class="result-meta"><p class="pill">MY NEW RELEASE SUPPORT PLAN</p><h1>あなたの新曲応援プラン</h1><p class="release-title">'+escapeHtml(config.release?.cdTitle||"ザユウノメイ／本当のことを言うと")+'</p></div>'+resultSummary(a)+nav+
@@ -672,6 +676,8 @@ async function shareBudgetImage(button){
 }
 
 document.addEventListener("click",event=>{
+if(event.target.closest("[data-scroll-top]")){window.scrollTo({top:0,behavior:"smooth"});return}
+if(event.target.closest("[data-scroll-result-top]")){event.preventDefault();window.scrollTo({top:0,behavior:"smooth"});return}
 const jump=event.target.closest(".result-section-nav a");
 if(jump&&view==="result"){event.preventDefault();document.getElementById(jump.getAttribute("href").slice(1))?.scrollIntoView({behavior:"smooth",block:"start"});return}
 const toggle=event.target.closest("[data-store-toggle]");
