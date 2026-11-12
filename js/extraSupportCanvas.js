@@ -56,35 +56,45 @@ function decorate(g,h,c,theme){
 function getSections(data){
   const chosen=new Set(data.subs);
   const labels={spotify:"Spotify Premium",prime:"Amazon Music Prime",unlimited:"Amazon Music Unlimited",line:"LINE MUSIC",youtubeMusic:"YouTube Music Premium",apple:"Apple Music"};
+  const digitalTitle=data.digitalTitle||"本当のことを言うと";
   const music=Object.keys(labels).filter(id=>chosen.has(id)&&!(id==="prime"&&chosen.has("unlimited")));
-  const streaming=music.length?music.map(id=>({title:labels[id],description:id==="prime"?"Prime会員が利用できる範囲で新曲を楽しもう！":"新曲をたくさん聴いて応援！",link:labels[id]})):
-    [{title:"Spotify無料版",description:"無料のSpotifyでも新曲を聴いて応援しよう！",link:"Spotify"}];
-  streaming.push(chosen.has("spotify")||chosen.has("apple")?
-    {title:"Stationhead（ステヘ）",description:"secondzチャンネルで一緒に再生して応援！",link:"Stationhead / secondzチャンネル"}:
-    {title:"Stationhead（ステヘ）",description:"Spotify Premiumに加入してステヘにも参加しよう！",link:"Spotify Premium / Stationhead"});
-  if(chosen.has("unext"))streaming.push({title:"U-NEXT",description:"USEN推し活リクエストを追加で利用しよう！",link:"U-NEXT / USEN推し活リクエスト"});
+  const streaming=music.length?music.map(id=>({
+    title:labels[id],
+    description:id==="prime"?"Amazon Prime会員なら、Amazon Music Primeで利用できる範囲の楽曲を聴けるよ！":
+      "「"+digitalTitle+"」をたくさん聴いて応援しよう！"
+  })):[{title:"Spotify無料版",description:"Spotifyのフリープランなら無料で聴けるよ！"}];
+  const eligible=chosen.has("spotify")||chosen.has("apple");
+  streaming.push(eligible?{
+    title:"Stationhead（ステヘ）",
+    description:"Spotify PremiumまたはApple Musicの有料会員で18歳以上なら参加できるよ！\nプレイリストを自分で作る必要はなし！secondzチャンネルで一緒に再生しよう！"
+  }:{
+    title:"Stationhead（ステヘ）",
+    description:"Spotify Premiumに加入してステヘにも参加しよう！\n18歳以上なら利用できるよ！プレイリストを自分で作る必要はなし！secondzチャンネルで一緒に再生しよう！"
+  });
+  if(chosen.has("unext"))streaming.push({title:"U-NEXT",description:"U-NEXT会員はUSEN推し活リクエストを追加でできるよ！"});
   return [
-    {number:"01",title:"デジタル配信で応援！",rows:[{title:"「本当のことを言うと」を購入",description:"デジタル購入でもBillboardポイントに貢献！",link:"デジタル購入ページ"}]},
+    {number:"01",title:"デジタル配信で応援！",rows:[{
+      title:"「"+digitalTitle+"」を購入",
+      description:"11/25から先行配信される「"+digitalTitle+"」を購入するとBillboardポイントに貢献できるよ！"
+    }]},
     {number:"02",title:"サブスクで応援！",rows:streaming},
     {number:"03",title:"無料でできる応援！",rows:[
-      {title:"YouTube",description:"MVを再生して高評価！",link:"YouTube公式チャンネル"},
-      {title:"SNS",description:"いいね・拡散・応援コメントをしよう！",link:"X / Instagram / TikTok公式"},
-      {title:"リクエスト",description:"ラジオやUSENへのリクエストで応援！",link:"タムごとDaily"}
+      {title:"YouTube",description:"YouTubeにMVが公開されたら高評価！たくさん再生して楽しもう！"},
+      {title:"SNS",description:"各SNSでいいね・拡散・応援コメントをしよう！"},
+      {title:"リクエスト",description:"ラジオリクエストや推し活リクエストに参加しよう！\nリクエストをまとめてやるにはタムごとDailyをご利用ください！"}
     ]}
   ];
 }
 function measureCard(g,section){
-  let h=86;
+  let h=91;
   section.rows.forEach(row=>{
-    g.font="700 27px system-ui, sans-serif";
+    g.font="800 27px system-ui, sans-serif";
     const titleLines=wrap(g,row.title,720).length;
     g.font="500 23px system-ui, sans-serif";
     const descLines=wrap(g,row.description,720).length;
-    g.font="600 20px system-ui, sans-serif";
-    const linkLines=wrap(g,"リンク先： "+row.link,720).length;
-    h+=titleLines*36+descLines*33+linkLines*31+28;
+    h+=titleLines*36+descLines*33+30;
   });
-  return h+14;
+  return h+18;
 }
 export async function renderExtraSupportPng(data){
   await document.fonts?.ready;
@@ -107,7 +117,7 @@ export async function renderExtraSupportPng(data){
   g.font="800 "+titleSize+"px system-ui, sans-serif";
   while(g.measureText(title).width>790&&titleSize>28){titleSize-=2;g.font="800 "+titleSize+"px system-ui, sans-serif"}
   drawText(g,title,450,107,titleSize,c.ink,"800",800,1.22,true);
-  drawText(g,"ザユウノメイ／本当のことを言うと",450,168,26,c.ink,"600",820,1.3,true);
+  drawText(g,data.releaseTitle||"ザユウノメイ／本当のことを言うと",450,168,26,c.ink,"600",820,1.3,true);
   const lookup={spotify:"Spotify Premium",prime:"Amazon Prime",unlimited:"Amazon Music Unlimited",line:"LINE MUSIC",youtubeMusic:"YouTube Music Premium",apple:"Apple Music",unext:"U-NEXT"};
   const subscriptions=selected.map(id=>lookup[id]).filter(Boolean).join("・")||"なし";
   g.font="600 23px system-ui, sans-serif";
@@ -127,8 +137,7 @@ export async function renderExtraSupportPng(data){
     s.rows.forEach((row,idx)=>{
       if(idx){g.strokeStyle=c.border;g.lineWidth=1.5;g.beginPath();g.moveTo(78,rowY-8);g.lineTo(820,rowY-8);g.stroke()}
       rowY=drawText(g,row.title,82,rowY,27,c.ink,"800",728,1.33);
-      rowY=drawText(g,row.description,82,rowY+3,23,c.ink,"500",728,1.43);
-      rowY=drawText(g,"リンク先： "+row.link,82,rowY+7,20,c.accent,"700",728,1.55)+20;
+      rowY=drawText(g,row.description,82,rowY+3,23,c.ink,"500",728,1.43)+26;
     });
     y+=h+28;
   });
