@@ -1,3 +1,4 @@
+import {supportImageSections} from "./supportContent.js?v=20261112-v1";
 // Native Canvas PNG export for additional support plan; no SVG-to-PNG or external fonts.
 const W=900;
 const round=(g,x,y,w,h,r,fill,stroke)=>{
@@ -53,56 +54,66 @@ function decorate(g,h,c,theme){
   }
   g.restore();
 }
-function getSections(data){
-  const chosen=new Set(data.subs);
-  const labels={spotify:"Spotify Premium",prime:"Amazon Music Prime",unlimited:"Amazon Music Unlimited",line:"LINE MUSIC",youtubeMusic:"YouTube Music Premium",apple:"Apple Music"};
-  const digitalTitle=data.digitalTitle||"本当のことを言うと";
-  const music=Object.keys(labels).filter(id=>chosen.has(id)&&!(id==="prime"&&chosen.has("unlimited")));
-  const musicIntro=data.listenIntro||"11/25〜先行配信される「"+digitalTitle+"」をたくさん聴こう！";
-  const streaming=[{title:"新曲をサブスクで応援！",description:musicIntro}];
-  if(music.length){
-    if(chosen.has("prime")&&!chosen.has("unlimited"))streaming.push({title:"Amazon Music Prime",description:"Amazon Prime会員なら、Amazon Music Primeで利用できる範囲の楽曲を聴けるよ！"});
-    music.filter(id=>id!=="prime").forEach(id=>streaming.push({title:labels[id],description:""}));
-  }else streaming.push({title:"Spotify無料版",description:data.freeSpotify||"Spotifyのフリープランなら無料で聴けるよ！"});
-  const eligible=chosen.has("spotify")||chosen.has("apple");
-  streaming.push({
-    title:"ステヘにチャレンジしてみない？",
-    description:eligible?
-      (data.stationheadMember||"Spotify PremiumまたはApple Musicの有料会員で18歳以上ならStationhead（ステヘ）に参加できるよ！プレイリストを自分で作る必要はなし！"):
-      (data.stationheadUpsell||"＋1,080円でSpotify Premiumに加入してみない？\n1ヶ月だけでも加入してステへに参加すると、Billboardポイントに大きく貢献できるよ！\n面倒なプレイリスト作成の必要はなし！")
-  });
-  if(chosen.has("unext"))streaming.push({title:"U-NEXT会員の方へ！",description:data.unext||"U-NEXT会員はUSEN推し活リクエストを追加でできるよ！"});
-  return [
-    {number:"01",title:"デジタル配信で応援！",rows:[{
-      title:"デジタル配信「"+digitalTitle+"」を買うには",
-      description:data.digitalDescription||"11/25から先行配信される「"+digitalTitle+"」を購入するとBillboardポイントに貢献できるよ！"
-    }]},
-    {number:"02",title:"サブスクで応援！",rows:streaming},
-    {number:"03",title:"無料でできる応援！",rows:[
-      {title:"みんなでできる応援",description:""},
-      {title:"YouTube",description:data.youtube||"YouTubeにMVが公開されたら高評価！ たくさん再生して楽しもう！"},
-      {title:"SNS",description:data.sns||"各SNSでいいね・拡散・応援コメントをしよう！"},
-      {title:"リクエスト",description:(data.request||"ラジオリクエストや推し活リクエストに参加しよう！ タムごとDailyも活用してね！")+"\nリクエストをまとめてやるにはタムごとDailyをご利用ください！"}
-    ]}
-  ];
+function textRuns(input){
+ const result=[];let cursor=0;const source=String(input??"");
+ for(const m of source.matchAll(/<([^<>]+)>/g)){
+   if(m.index>cursor)result.push({text:source.slice(cursor,m.index),emphasis:false});
+   result.push({text:m[1],emphasis:true});cursor=m.index+m[0].length;
+ }
+ if(cursor<source.length)result.push({text:source.slice(cursor),emphasis:false});
+ return result;
+}
+const textFont=(size,emphasis)=>(emphasis?"800 ":"500 ")+size+"px system-ui, -apple-system, 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif";
+function markedLines(g,input,maxWidth,size){
+ const lines=[[]];let lineWidth=0;
+ for(const run of textRuns(input)){
+  for(const char of run.text){
+   if(char==="\n"){lines.push([]);lineWidth=0;continue}
+   g.font=textFont(size,run.emphasis);
+   const width=g.measureText(char).width;
+   if(lineWidth>0&&lineWidth+width>maxWidth){lines.push([]);lineWidth=0}
+   const row=lines[lines.length-1],last=row[row.length-1];
+   if(last&&last.emphasis===run.emphasis){last.text+=char;last.width+=width}
+   else row.push({text:char,width,emphasis:run.emphasis});
+   lineWidth+=width;
+  }
+ }
+ return lines;
+}
+function drawMarked(g,input,x,y,maxWidth,size,lineHeight,colors){
+ const lines=markedLines(g,input,maxWidth,size);
+ for(const [i,line] of lines.entries()){
+  let xPos=x;
+  for(const run of line){
+   g.font=textFont(size,run.emphasis);
+   g.textAlign="left";g.textBaseline="top";
+   g.fillStyle=run.emphasis?colors.accent:colors.ink;
+   g.fillText(run.text,xPos,y+i*lineHeight);
+   if(run.emphasis){
+    g.strokeStyle=colors.accent;g.lineWidth=1.4;
+    g.beginPath();g.moveTo(xPos,y+i*lineHeight+size+2);g.lineTo(xPos+run.width,y+i*lineHeight+size+2);g.stroke();
+   }
+   xPos+=run.width;
+  }
+ }
+ return y+lines.length*lineHeight;
 }
 function measureCard(g,section){
-  let h=91;
-  section.rows.forEach(row=>{
-    g.font="800 27px system-ui, sans-serif";
-    const titleLines=wrap(g,row.title,720).length;
-    g.font="500 23px system-ui, sans-serif";
-    const descLines=row.description?wrap(g,row.description,720).length:0;
-    h+=titleLines*36+descLines*33+30;
-  });
-  return h+18;
+ let h=91;
+ section.rows.forEach(row=>{
+  g.font="800 27px system-ui, sans-serif";
+  const titleLines=wrap(g,row.title,720).length;
+  const descLines=row.description?markedLines(g,row.description,720,23).length:0;
+  h+=titleLines*36+descLines*35+30;
+ });
+ return h+18;
 }
 export async function renderExtraSupportPng(data){
   await document.fonts?.ready;
   const selected=Array.isArray(data.subs)?data.subs:[];
   const theme=data.theme==="movieMint"?"movieMint":"purplePink",c=palette[theme];
   const name=Array.from(String(data.name||"").trim()).slice(0,10).join("");
-  const sections=getSections({...data,subs:selected});
+  const sections=supportImageSections({...data,subs:selected});
   const measuring=document.createElement("canvas").getContext("2d");
   const sizes=sections.map(s=>measureCard(measuring,s));
   const temp=document.createElement("canvas");
@@ -138,7 +149,7 @@ export async function renderExtraSupportPng(data){
     s.rows.forEach((row,idx)=>{
       if(idx){g.strokeStyle=c.border;g.lineWidth=1.5;g.beginPath();g.moveTo(78,rowY-8);g.lineTo(820,rowY-8);g.stroke()}
       rowY=drawText(g,row.title,82,rowY,27,c.ink,"800",728,1.33);
-      rowY=(row.description?drawText(g,row.description,82,rowY+3,23,c.ink,"500",728,1.43):rowY)+26;
+      rowY=(row.description?drawMarked(g,row.description,82,rowY+3,728,23,35,c):rowY)+26;
     });
     y+=h+28;
   });
