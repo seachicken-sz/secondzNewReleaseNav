@@ -1072,3 +1072,10 @@ body:has(.pf-bottom-nav) .shell{padding-bottom:calc(145px + env(safe-area-inset-
 .pf-three-compare h3{margin:0 0 9px;color:#75478d}
 .pf-three-compare p{margin:7px 0;line-height:1.65}
 @media(max-width:430px){.pf-comparison-table th,.pf-comparison-table td{width:165px;min-width:165px;max-width:165px;padding:9px}.pf-compare-page .pf-compare-toc{padding:10px}}
+
+/* Comparison navigation and uncaged three-edition section */
+.pf-compare-page .pf-compare-toc>.pf-toc-section:first-child{margin-top:0;margin-bottom:10px}
+.pf-compare-page .pf-toc-editions{margin-top:0}
+.pf-compare-page .pf-three-benefits-flat{background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important;padding:0!important;margin:40px 0 34px!important;scroll-margin-top:22px}
+.pf-compare-page .pf-three-benefits-flat>h2{font-size:21px!important;color:#794993!important;margin:0 0 18px!important}
+.pf-compare-page .pf-three-benefits-flat .pf-purchase-advice{margin-top:16px}
