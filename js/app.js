@@ -1,5 +1,5 @@
 import {buildPurchase,buildMethod,buildSupport,isBeforeDeadline} from "./result.js?v=20261111-all-budget-addon";
-import {createPurchaseFlow} from "./planner.js?v=20261112-extra-support-v18";
+import {createPurchaseFlow} from "./planner.js?v=20261112-edition-compare-v2";
 import {supportCopy,selectedMusic,supportImageSections} from "./supportContent.js?v=20261112-v1";
 import {IMAGE_FOOTER_LINE1,IMAGE_FOOTER_LINE2} from "./imageFooter.js?v=20261112-v1";
 const DRAFT_KEY="secondzReleaseNav:draft:v1";
