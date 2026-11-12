@@ -1084,3 +1084,20 @@ body:has(.pf-bottom-nav) .shell{padding-bottom:calc(145px + env(safe-area-inset-
 @keyframes pf-quiz-soft-reveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .pf-compare-page .pf-quiz-reveal{animation:pf-quiz-soft-reveal .42s cubic-bezier(.22,1,.36,1) both}
 @media(prefers-reduced-motion:reduce){.pf-compare-page .pf-quiz-reveal{animation:none}}
+
+/* Three compact app links */
+.pf-compare-page .pf-app-link-buttons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:15px 0 4px}
+.pf-compare-page .pf-app-link-buttons a{display:flex;align-items:center;justify-content:center;text-align:center;min-width:0;min-height:44px;box-sizing:border-box;border-radius:11px;padding:9px 5px;background:#8a53ad;color:#fff;font-size:clamp(10px,2.8vw,13px);font-weight:750;text-decoration:none;line-height:1.4}
+.pf-compare-page .pf-app-link-buttons a:focus-visible,.page-scroll-top:focus-visible,.pf-plan-topbar button:focus-visible{outline:3px solid #b68bd4;outline-offset:3px}
+/* Fixed return-to-top control: comparison and budget results only */
+.page-scroll-top{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:calc(20px + env(safe-area-inset-bottom));width:49px;height:49px;border:0;border-radius:50%;background:#8a53ad;color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 13px rgba(63,28,91,.28);cursor:pointer;z-index:900;transition:background .2s ease,transform .2s ease}
+.page-scroll-top:hover{background:#713e94;transform:translateY(-2px)}
+/* Purchase plan top fixed navigation */
+.pf-plan-topbar{position:sticky;top:0;z-index:1050;display:flex;align-items:center;justify-content:flex-start;min-height:48px;background:#fff;border:1px solid #eaddec;border-radius:12px;box-shadow:0 3px 11px rgba(63,28,91,.09);padding:5px 12px;margin:0 0 12px}
+.pf-plan-topbar button{border:0;background:transparent;color:#78449a;font-size:14px;font-weight:800;padding:9px 10px;cursor:pointer}
+.pf-plan-page{scroll-margin-top:65px}
+/* Return to page start under each budget result section */
+.result-section-return{display:flex;justify-content:flex-end;margin:18px 0 4px}
+.result-section-return a{color:#7a4698;text-decoration:underline;text-underline-offset:3px;font-size:13px;font-weight:700}
+.result-section-return a:hover{color:#583171}
+@media(prefers-reduced-motion:reduce){.page-scroll-top{transition:none}}
