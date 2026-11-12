@@ -1,5 +1,5 @@
 import {buildPurchase,buildMethod,buildSupport,isBeforeDeadline} from "./result.js?v=20261111-all-budget-addon";
-import {createPurchaseFlow} from "./planner.js?v=20261112-edition-compare-v5";
+import {createPurchaseFlow} from "./planner.js?v=20261112-edition-compare-v6";
 import {supportCopy,selectedMusic,supportImageSections} from "./supportContent.js?v=20261112-v1";
 import {IMAGE_FOOTER_LINE1,IMAGE_FOOTER_LINE2} from "./imageFooter.js?v=20261112-v1";
 const DRAFT_KEY="secondzReleaseNav:draft:v1";
@@ -374,7 +374,7 @@ const data={purchase:buildPurchase(a,config,messages),method:buildMethod(a,confi
 const oldAnswers=answers;answers=a;
 const hasCdBudget=!isSmallBudget(a.budget);
 const nav=hasCdBudget&&!print?'<nav class="result-section-nav" aria-label="結果ページ内の移動"><a href="#result-recommend">おすすめプラン</a><a href="#result-method">購入方法</a><a href="#result-support">応援方法</a></nav>':"";
-const resultSection=(id,index,title,body)=>'<section class="section result-scroll-target" id="'+id+'"><h2 class="section-title"><span class="number">'+index+'</span>'+escapeHtml(title)+'</h2>'+body+(print?'':'<div class="result-section-return"><a href="#result-view" data-scroll-result-top>↑トップに戻る</a></div>')+'</section>';
+const resultSection=(id,index,title,body)=>'<section class="section result-scroll-target" id="'+id+'"><h2 class="section-title"><span class="number">'+index+'</span>'+escapeHtml(title)+'</h2>'+body+'</section>';
 const purchaseActions=hasCdBudget&&!print?'<div class="result-block-actions"><button type="button" class="btn" data-action="plan-recommended">おすすめを元にCD購入プランを作る</button><button type="button" class="btn secondary" data-action="compare-from-result">特典を比較する</button></div>':"";
 const methodActions=hasCdBudget&&!print?'<div class="result-block-actions"><button type="button" class="btn secondary" data-action="plan-from-result">CD購入プランを作る</button></div>':"";
 const html='<div class="result-meta"><p class="pill">MY NEW RELEASE SUPPORT PLAN</p><h1>あなたの新曲応援プラン</h1><p class="release-title">'+escapeHtml(config.release?.cdTitle||"ザユウノメイ／本当のことを言うと")+'</p></div>'+resultSummary(a)+nav+
@@ -425,12 +425,13 @@ function showExtraSupportQuestion(){
     '<button type="button" class="btn ghost" data-action="extra-support-back">購入プランに戻る</button></div></section>');
 }
 function extraSupportMarkup(){
+ const returnTop='<div class="result-section-return"><a href="#" data-scroll-result-top>↑トップに戻る</a></div>';
  const digital=section("01","デジタル配信で応援！",card(messages.method.digitalHeading,
   supportParagraph(supportText().digital)+supportParagraph(messages.method.digitalMethod)+
-  '<div class="site-links">'+linkFor("予約・購入ページ",config.links.digital)+'</div>'));
+  '<div class="site-links">'+linkFor("予約・購入ページ",config.links.digital)+'</div>')+returnTop);
  return digital+
-  section("02","サブスクで応援！",musicSupportMarkup(extraSubs))+
-  section("03","無料でできる応援！",freeSupportMarkup());
+  section("02","サブスクで応援！",musicSupportMarkup(extraSubs)+returnTop)+
+  section("03","無料でできる応援！",freeSupportMarkup()+returnTop);
 }
 
 function showExtraSupportResult(){
