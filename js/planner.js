@@ -85,7 +85,7 @@ const detail={
     description:"カップリング曲をたくさん楽しみたい人におすすめ！",
     tracks:[["ザユウノメイ"],["本当のことを言うと"],["45",true],["Still us",true],["上記4曲のInst音源"]],
     videos:[],
-    gifts:[["20P歌詞ブックレット"],["分けて使える！オリジナルステッカーシート ver.C"],["シリアルコード入りプレイリストカード"]],
+    gifts:[["20P歌詞ブックレット"],["分けて使える！オリジナルステッカーシート ver.C",true],["シリアルコード入りプレイリストカード"]],
     note:"天地空きスリーブ・両面ジャケット仕様。封入特典は初回仕様のため、購入時に確認してね。"
   },
   a:{
@@ -136,7 +136,7 @@ function seededPlan(result,config){
 
 export function createPurchaseFlow({config,render,goHome,goResult,onExtraSupport}){
  let plan=initial(),screen="home",previous="home",addMode=null,modal=null;
- let compareSelection=["regular","a","b","fc"],quizFc="",quizPriority="";
+ let compareSelection=["regular"],quizFc="",quizPriority="";
  const eligibleEditions=()=>deadlineOk(config.deadline)?["regular","a","b","fc"]:["regular","a","b"];
  const scrollToPart=id=>requestAnimationFrame(()=>document.getElementById(id)?.scrollIntoView({behavior:"smooth",block:"start"}));
  const editionId=id=>id==="regular"?"regular":id+"_dvd";
@@ -162,7 +162,7 @@ export function createPurchaseFlow({config,render,goHome,goResult,onExtraSupport
  const openCompareFromResult=()=>{previous="result";plan=read()||initial();ensureUnassigned(plan);comparison()};
  const openFromHome=()=>{previous="home";const saved=read();if(saved){plan=saved;ensureUnassigned(plan);addMode=null;persist();showPlan()}else begin(null)};
  const openCompare=()=>{previous="home";plan=read()||initial();ensureUnassigned(plan);comparison()};
- const comparison=()=>{screen="comparison";compareSelection=eligibleEditions();quizFc="";quizPriority="";render(compareMarkup())};
+ const comparison=()=>{screen="comparison";compareSelection=["regular"];quizFc="";quizPriority="";render(compareMarkup())};
  const back=()=>{if(previous==="result")goResult();else if(previous==="comparison")comparison();else if(previous==="plan")showPlan();else goHome()};
  const editionDetails=id=>{
    const d=detail[id];
@@ -173,6 +173,7 @@ export function createPurchaseFlow({config,render,goHome,goResult,onExtraSupport
  };
  const editionActions=id=>'<div class="pf-edition-actions"><button type="button" class="btn" data-pf="choose-edition" data-edition="'+id+'">CD購入プランを作る</button><button type="button" class="btn secondary" data-pf="compare-edition" data-edition="'+id+'">特典を比較する</button></div>';
  const editionLabels={regular:"通常盤",a:"初回限定盤A",b:"初回限定盤B",fc:"FC限定盤"};
+ const shortEditionLabels={regular:"通常",a:"初回A",b:"初回B",fc:"FC盤"};
  const priorityChoices=[["songs","とにかく曲をたくさん聴きたい！","regular"],["dance","timeleszの踊っているところを見たい！","a"],["visual","ビジュアルをじっくり楽しみたい！","b"],["variety","timeleszのわちゃわちゃが大好き！","fc"]];
  const recommendedEdition=()=>priorityChoices.find(([key,,id])=>key===quizPriority&&eligibleEditions().includes(id)&&(id!=="fc"||quizFc==="yes"))?.[2]||null;
  const quizMarkup=()=>{
@@ -183,11 +184,11 @@ export function createPurchaseFlow({config,render,goHome,goResult,onExtraSupport
    const step2=showNext?'<fieldset class="pf-quiz-field"><legend>'+(active?"Q2.":"Q1.")+' 何を一番楽しみたい？</legend>'+choices.map(([key,label])=>'<label><input type="radio" name="pf-quiz-priority" value="'+key+'" '+(quizPriority===key?"checked":"")+'> '+safe(label)+'</label>').join("")+'</fieldset>':"";
    const choice=recommendedEdition();
    const answer=choice?'<div class="pf-quiz-answer"><p class="pf-quiz-kicker">あなたにおすすめの一枚</p><h3>'+editionLabels[choice]+'</h3><p class="pf-description">'+safe(detail[choice].description)+'</p><details class="pf-quiz-details"><summary>収録曲・映像・封入特典を見る</summary><div>'+editionDetails(choice)+'</div></details>'+editionActions(choice)+'</div>':"";
-   return '<section id="pf-quiz" class="pf-compare-section"><h2>好みからおすすめの特典を探す</h2><div class="pf-quiz-body">'+step1+step2+answer+'</div></section>';
+   return '<section id="pf-quiz" class="pf-compare-section"><h2>好みからおすすめの特典を探す</h2><div class="pf-quiz-body"><div data-pf-quiz-step1>'+step1+'</div><div data-pf-quiz-step2>'+step2+'</div><div data-pf-quiz-answer>'+answer+'</div></div></section>';
  };
  const compareTableMarkup=()=>{
    const ids=eligibleEditions().filter(id=>compareSelection.includes(id));
-   const chips=eligibleEditions().map(id=>'<button type="button" class="pf-compare-chip'+(ids.includes(id)?" is-active":"")+'" data-pf="compare-chip" data-edition="'+id+'" aria-pressed="'+ids.includes(id)+'">'+editionLabels[id]+'</button>').join("");
+   const chips=eligibleEditions().map(id=>'<button type="button" class="pf-compare-chip'+(ids.includes(id)?" is-active":"")+'" data-pf="compare-chip" data-edition="'+id+'" aria-pressed="'+ids.includes(id)+'">'+shortEditionLabels[id]+'</button>').join("");
    const columns=(get)=>ids.map(id=>'<td>'+get(id)+'</td>').join("");
    const subtracks={regular:[["45"],["Still us"],["上記4曲のInst音源"]],a:[["大怪盗"],["大怪盗 -Inst-"]],b:[["Avocado"],["Avocado -Inst-"]],fc:[]};
    const comparison='<div class="pf-table-scroll" tabindex="0" aria-label="盤種別特典比較表・横スクロール可能"><table class="pf-comparison-table"><thead><tr>'+ids.map(id=>'<th scope="col">'+editionLabels[id]+'</th>').join("")+'</tr></thead><tbody>'+
@@ -203,9 +204,9 @@ export function createPurchaseFlow({config,render,goHome,goResult,onExtraSupport
    compareSelection=eligibleEditions().filter(id=>compareSelection.includes(id));
    if(!compareSelection.length)compareSelection=[eligibleEditions()[0]];
    const visible=eligibleEditions();
-   const toc='<nav class="pf-compare-toc" aria-label="このページの目次"><p>特典を確認する</p><div class="pf-toc-editions">'+visible.map(id=>'<button type="button" data-pf="scroll-edition" data-edition="'+id+'">'+editionLabels[id]+'</button>').join("")+'</div><button type="button" class="pf-toc-section" data-pf="scroll-section" data-target="pf-quiz">好みからおすすめの特典を探す</button><button type="button" class="pf-toc-section" data-pf="scroll-section" data-target="pf-compare-table">特典を比較する</button></nav>';
+   const toc='<nav class="pf-compare-toc" aria-label="このページの目次"><button type="button" class="pf-toc-section" data-pf="scroll-edition" data-edition="regular">特典を確認する</button><div class="pf-toc-editions">'+visible.map(id=>'<button type="button" data-pf="scroll-edition" data-edition="'+id+'">'+shortEditionLabels[id]+'</button>').join("")+'</div><button type="button" class="pf-toc-section" data-pf="scroll-section" data-target="pf-quiz">好みからおすすめの特典を探す</button><button type="button" class="pf-toc-section" data-pf="scroll-section" data-target="pf-compare-table">特典を比較する</button><button type="button" class="pf-toc-section" data-pf="scroll-section" data-target="pf-three-benefits">三形態同時購入特典について</button></nav>';
    const sections=visible.map(id=>'<section id="pf-edition-'+id+'" class="pf-edition pf-edition-flat"><div class="pf-edition-head"><h2>'+editionLabels[id]+'</h2><strong>'+format(priceFor(editionId(id),config))+'円</strong></div><p class="pf-muted">'+(id==="regular"?"CDのみ":"CD＋DVD／Blu-ray")+'</p>'+editionDetails(id)+editionActions(id)+'</section>').join("");
-   const guide='<section class="pf-guide pf-three-editions"><h2>3形態同時購入特典もチェック！</h2><p>初回限定盤A・初回限定盤B・通常盤の3形態を同時購入で専用特典がつくよ！</p><p>専用特典は早期終了したこともあるから早めの予約がマスト！</p><details class="pf-past-benefits"><summary>参考までに過去の特典はこんな感じ</summary><div class="pf-past-benefits-content"><h3>MOMENTUM</h3><ul><li>トレーディングカード(全員分)</li><li>ストリーミング映像<ul><li>バラエティ映像(ワンカードポーカー)</li><li>ユニット曲制作メイキング</li><li>あくびMV メンバーソロver</li></ul></li></ul><h3>消えない花火</h3><ul><li>フレークシール(全員分)</li><li>ストリーミング映像<ul><li>JALフェス出演時のライブ映像</li><li>消えない花火MV メンバーソロver</li></ul></li></ul></div></details><div class="pf-purchase-advice"><h3>店頭購入・予約の場合</h3><p>初回A+初回B+通常をまとめて予約しよう！</p><p>初回Aと初回Bの映像の盤種(DVD/Blu-ray)は揃えてね！</p></div><div class="pf-purchase-advice"><h3>ネット通販の場合</h3><p>「3形態同時購入特典付」と書かれているセットを選ぼう！</p><p>定価は4,920円なのでそれより高いところは気をつけてね！</p></div></section>';
+   const guide='<section id="pf-three-benefits" class="pf-compare-section pf-three-benefits-flat"><h2>3形態同時購入特典もチェック！</h2><p>初回限定盤A・初回限定盤B・通常盤の3形態を同時購入で専用特典がつくよ！</p><p>専用特典は早期終了したこともあるから早めの予約がマスト！</p><details class="pf-past-benefits"><summary>参考までに過去の特典はこんな感じ</summary><div class="pf-past-benefits-content"><h3>MOMENTUM</h3><ul><li>トレーディングカード(全員分)</li><li>ストリーミング映像<ul><li>バラエティ映像(ワンカードポーカー)</li><li>ユニット曲制作メイキング</li><li>あくびMV メンバーソロver</li></ul></li></ul><h3>消えない花火</h3><ul><li>フレークシール(全員分)</li><li>ストリーミング映像<ul><li>JALフェス出演時のライブ映像</li><li>消えない花火MV メンバーソロver</li></ul></li></ul></div></details><div class="pf-purchase-advice"><h3>店頭購入・予約の場合</h3><p>初回A+初回B+通常をまとめて予約しよう！</p><p>初回Aと初回Bの映像の盤種(DVD/Blu-ray)は揃えてね！</p></div><div class="pf-purchase-advice"><h3>ネット通販の場合</h3><p>「3形態同時購入特典付」と書かれているセットを選ぼう！</p><p>定価は4,920円なのでそれより高いところは気をつけてね！</p></div></section>';
    return '<section class="card pf-root pf-with-footer pf-compare-page"><button class="pf-back" type="button" data-pf="back">← 戻る</button><h1>どの盤にする？特典を比較しよう！</h1><p class="muted">収録曲や映像を確認してみよう！</p>'+toc+'<section id="pf-edition-list" class="pf-compare-section"><h2>特典を確認する</h2>'+sections+'</section>'+quizMarkup()+compareTableMarkup()+guide+'<button class="btn secondary" type="button" data-pf="home">トップへ戻る</button></section>';
  }
  const chooseEdition=id=>{
@@ -486,7 +487,7 @@ export function createPurchaseFlow({config,render,goHome,goResult,onExtraSupport
    if(action==="scroll-section"){scrollToPart(button.dataset.target);return}
    if(action==="compare-edition"){
      if(!eligibleEditions().includes(button.dataset.edition))return;
-     compareSelection=[button.dataset.edition];render(compareMarkup());scrollToPart("pf-compare-table");return;
+     compareSelection=[button.dataset.edition];const table=document.getElementById("pf-compare-table");if(table){const temp=document.createElement("div");temp.innerHTML=compareTableMarkup();table.replaceWith(temp.firstElementChild)}scrollToPart("pf-compare-table");return;
    }
    if(action==="choose-edition"){chooseEdition(button.dataset.edition);return}
    if(action==="compare-chip"){
@@ -494,9 +495,8 @@ export function createPurchaseFlow({config,render,goHome,goResult,onExtraSupport
      if(!eligibleEditions().includes(edition))return;
      if(compareSelection.includes(edition)){if(compareSelection.length===1)return;compareSelection=compareSelection.filter(id=>id!==edition)}
      else compareSelection=eligibleEditions().filter(id=>compareSelection.includes(id)||id===edition);
-     const top=document.getElementById("pf-compare-table")?.getBoundingClientRect().top;
-     render(compareMarkup());
-     if(top!==undefined)window.scrollBy(0,document.getElementById("pf-compare-table").getBoundingClientRect().top-top);
+     const table=document.getElementById("pf-compare-table");
+     if(table){const temp=document.createElement("div");temp.innerHTML=compareTableMarkup();table.replaceWith(temp.firstElementChild)}
      return;
    }
    if(action==="compare"){previous="plan";comparison();return}
@@ -596,8 +596,8 @@ export function createPurchaseFlow({config,render,goHome,goResult,onExtraSupport
  });
  document.addEventListener("change",event=>{
    const target=event.target;
-   if(target.matches('input[name="pf-quiz-fc"]')){quizFc=target.value;quizPriority="";render(compareMarkup());scrollToPart("pf-quiz");return}
-   if(target.matches('input[name="pf-quiz-priority"]')){quizPriority=target.value;render(compareMarkup());scrollToPart("pf-quiz");return}
+   if(target.matches('input[name="pf-quiz-fc"]')){quizFc=target.value;quizPriority="";const temp=document.createElement("div");temp.innerHTML=quizMarkup();for(const key of ["step2","answer"]){const next=temp.querySelector("[data-pf-quiz-"+key+"]");const root=document.querySelector("[data-pf-quiz-"+key+"]");if(root&&next)root.innerHTML=next.innerHTML}return}
+   if(target.matches('input[name="pf-quiz-priority"]')){quizPriority=target.value;const temp=document.createElement("div");temp.innerHTML=quizMarkup();const next=temp.querySelector("[data-pf-quiz-answer]");const root=document.querySelector("[data-pf-quiz-answer]");if(root&&next)root.innerHTML=next.innerHTML;return}
    if(target.matches("[data-pf-shop-select]")){const wrap=document.querySelector("[data-pf-other-wrap]");if(wrap)wrap.hidden=target.value!=="other"}
    if(target.matches("[data-pf-place-select]")){
      const editor=target.closest("[data-editor]");
