@@ -441,8 +441,139 @@ function showExtraSupportResult(){
     '<h1>あなたの追加応援プラン</h1><p class="release-title">'+escapeHtml(config.release?.cdTitle||"ザユウノメイ／本当のことを言うと")+'</p></div>'+
     '<p class="pf-extra-selected">加入中のサブスク：'+escapeHtml(summary)+'</p>'+extraSupportMarkup()+
     '<p class="small" style="text-align:center">※集計・配信・サービスに関する条件は必ず各公式サイトの最新情報をご確認ください。</p></div>'+
-    '<section class="card footer-actions"><div class="actions"><button type="button" class="btn secondary" data-action="extra-support-edit">サブスクを選び直す</button>'+
+    '<section class="card footer-actions"><div class="actions"><button type="button" class="btn" data-action="extra-image-open">画像を生成</button><button type="button" class="btn secondary" data-action="extra-support-edit">サブスクを選び直す</button>'+
     '<button type="button" class="btn" data-action="extra-support-back">CD購入プランに戻る</button></div></section>');
+}
+
+
+const EXTRA_IMAGE_SETTINGS_KEY="secondzReleaseNav:extraSupportImage:v1";
+const EXTRA_SHARE_TEXT="タムごと新曲応援ナビで応援プランを作ったよ！\nhttps://seachicken-sz.github.io/secondzNewReleaseNav/";
+let extraImageOptions={name:"",theme:"purplePink"};
+let extraPreviewBlob=null,extraPreviewUrl=null,extraPreviewSignature="",extraPreviewOpen=false;
+const previewSignature=()=>JSON.stringify({releaseId:config.releaseId,name:extraImageOptions.name,theme:extraImageOptions.theme,subs:[...extraSubs].sort()});
+function readExtraImageOptions(){
+ const saved=load(EXTRA_IMAGE_SETTINGS_KEY);
+ const plan=load("secondzReleaseNav:purchasePlan:v2");
+ const planName=plan?.releaseId===config.releaseId?String(plan.name||""):"";
+ const name=typeof saved?.name==="string"?saved.name:planName;
+ extraImageOptions={name:Array.from(name.trim()).slice(0,10).join(""),theme:["purplePink","movieMint"].includes(saved?.theme)?saved.theme:"purplePink"};
+}
+function persistExtraImageOptions(){
+ save(EXTRA_IMAGE_SETTINGS_KEY,{...extraImageOptions,releaseId:config.releaseId});
+}
+function closeExtraPreview(){
+ extraPreviewOpen=false;
+ const modal=document.getElementById("pf-extra-preview-modal");
+ if(modal)modal.remove();
+ if(extraPreviewUrl){URL.revokeObjectURL(extraPreviewUrl);extraPreviewUrl=null}
+}
+function invalidateExtraPreview(){
+ extraPreviewSignature="";
+ extraPreviewBlob=null;
+ if(extraPreviewUrl){URL.revokeObjectURL(extraPreviewUrl);extraPreviewUrl=null}
+}
+function openExtraPreview(){
+ if(view!=="extra-support-result")return;
+ readExtraImageOptions();
+ extraPreviewOpen=true;
+ const node=document.createElement("div");
+ node.id="pf-extra-preview-modal";
+ node.className="pf-extra-preview-overlay";
+ node.setAttribute("role","presentation");
+ node.innerHTML='<section role="dialog" aria-modal="true" aria-labelledby="pf-extra-preview-heading" class="pf-extra-preview-dialog">'+
+   '<div class="pf-extra-preview-head"><h2 id="pf-extra-preview-heading">応援プラン画像のプレビュー</h2><button type="button" class="pf-extra-preview-close" data-action="extra-image-close" aria-label="閉じる">×</button></div>'+
+   '<label for="pf-extra-image-name">シェアするときの名前（10文字まで・任意）</label>'+
+   '<input id="pf-extra-image-name" type="text" maxlength="10" value="'+escapeHtml(extraImageOptions.name)+'" placeholder="未入力なら「あなたの」"/>'+
+   '<fieldset class="pf-extra-theme-picker"><legend>画像デザイン</legend>'+
+   '<label><input type="radio" name="pf-extra-theme" value="purplePink" '+(extraImageOptions.theme==="purplePink"?"checked":"")+'> ① ゆめかわステーショナリー</label>'+
+   '<label><input type="radio" name="pf-extra-theme" value="movieMint" '+(extraImageOptions.theme==="movieMint"?"checked":"")+'> ② チケット風（ミント）</label></fieldset>'+
+   '<div class="pf-extra-preview-frame"><p class="pf-extra-preview-status" aria-live="polite">画像を生成中…</p><img class="pf-extra-preview-image" alt="追加応援プランの共有用画像" hidden></div>'+
+   '<button type="button" class="btn pf-extra-share" data-action="extra-image-share" disabled>保存・共有</button></section>';
+ document.body.appendChild(node);
+ node.addEventListener("click",event=>{if(event.target===node)closeExtraPreview()});
+ const close=node.querySelector("[data-action='extra-image-close']");
+ close.focus();
+ refreshExtraPreview();
+}
+async function extraImageCachedGet(signature){
+ if(!("indexedDB" in window))return null;
+ return new Promise(resolve=>{
+   try{
+     const request=indexedDB.open("secondzReleaseNav:extraImage",1);
+     request.onupgradeneeded=()=>request.result.createObjectStore("previews");
+     request.onerror=()=>resolve(null);
+     request.onsuccess=()=>{
+       const db=request.result;
+       const tx=db.transaction("previews","readonly");
+       const read=tx.objectStore("previews").get("current");
+       read.onsuccess=()=>{const v=read.result;resolve(v?.signature===signature&&v.blob instanceof Blob?v.blob:null)};
+       read.onerror=()=>resolve(null);
+       tx.oncomplete=()=>db.close();
+       tx.onerror=()=>{db.close();resolve(null)};
+     };
+   }catch{resolve(null)}
+ });
+}
+async function extraImageCachedPut(signature,blob){
+ if(!("indexedDB" in window))return;
+ return new Promise(resolve=>{
+   try{
+     const request=indexedDB.open("secondzReleaseNav:extraImage",1);
+     request.onupgradeneeded=()=>request.result.createObjectStore("previews");
+     request.onerror=()=>resolve();
+     request.onsuccess=()=>{
+       const db=request.result;
+       const tx=db.transaction("previews","readwrite");
+       tx.objectStore("previews").put({signature,blob},"current");
+       tx.oncomplete=()=>{db.close();resolve()};
+       tx.onerror=()=>{db.close();resolve()};
+     };
+   }catch{resolve()}
+ });
+}
+async function refreshExtraPreview(){
+ if(!extraPreviewOpen)return;
+ const signature=previewSignature();
+ const root=document.getElementById("pf-extra-preview-modal");
+ const status=root?.querySelector(".pf-extra-preview-status"),img=root?.querySelector(".pf-extra-preview-image"),share=root?.querySelector(".pf-extra-share");
+ if(!root||!img||!status||!share)return;
+ share.disabled=true;img.hidden=true;status.hidden=false;status.textContent="画像を生成中…";
+ try{
+   let blob=extraPreviewSignature===signature?extraPreviewBlob:null;
+   if(!blob)blob=await extraImageCachedGet(signature);
+   if(!blob){
+     const {renderExtraSupportPng}=await import("./extraSupportCanvas.js?v=20261112-v1");
+     blob=await renderExtraSupportPng({name:extraImageOptions.name,subs:extraSubs,theme:extraImageOptions.theme});
+     // Persist the rendered PNG itself; never fail sharing if storage is unavailable.
+     extraImageCachedPut(signature,blob).catch(()=>{});
+   }
+   if(!extraPreviewOpen||signature!==previewSignature()||root!==document.getElementById("pf-extra-preview-modal"))return;
+   if(extraPreviewUrl)URL.revokeObjectURL(extraPreviewUrl);
+   extraPreviewBlob=blob;extraPreviewSignature=signature;extraPreviewUrl=URL.createObjectURL(blob);
+   img.src=extraPreviewUrl;img.hidden=false;status.hidden=true;share.disabled=false;
+ }catch(error){
+   console.error(error);
+   if(extraPreviewOpen&&signature===previewSignature()){status.textContent="画像を生成できませんでした。設定を変更して再度お試しください。";}
+ }
+}
+async function shareExtraImage(button){
+ if(!extraPreviewBlob||extraPreviewSignature!==previewSignature())return;
+ const blob=extraPreviewBlob;
+ const filename="タムごと_追加応援プラン.png";
+ const file=new File([blob],filename,{type:"image/png"});
+ button.disabled=true;const original=button.textContent;button.textContent="準備中…";
+ try{
+   if(navigator.canShare?.({files:[file]})&&navigator.share){
+     try{await navigator.share({files:[file],text:EXTRA_SHARE_TEXT,title:"追加応援プラン"});return}
+     catch(error){if(error.name==="AbortError")return;console.warn(error)}
+   }
+   const url=URL.createObjectURL(blob);
+   const a=document.createElement("a");a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();
+   setTimeout(()=>URL.revokeObjectURL(url),30000);
+   try{await navigator.clipboard.writeText(EXTRA_SHARE_TEXT);alert("画像を保存しました。共有用テキストをコピーしたよ！")}
+   catch{alert("画像を保存しました。共有用テキスト：\n"+EXTRA_SHARE_TEXT)}
+ }catch(error){console.error(error);alert("保存・共有に失敗しました。再度お試しください。")}
+ finally{button.disabled=false;button.textContent=original}
 }
 
 function showResult(){
@@ -500,6 +631,9 @@ if(choiceEl){
 }
 const button=event.target.closest("[data-action]");if(!button)return;
 switch(button.dataset.action){
+case "extra-image-open":openExtraPreview();break;
+case "extra-image-close":closeExtraPreview();break;
+case "extra-image-share":shareExtraImage(button);break;
 case "extra-support-result":showExtraSupportResult();break;
 case "extra-support-edit":showExtraSupportQuestion();break;
 case "extra-support-back":planner.showPlan();break;
@@ -517,6 +651,11 @@ case "export":exportImage(button);break;
 }
 });
 document.addEventListener("input",event=>{
+if(event.target.id==="pf-extra-image-name"){
+  extraImageOptions.name=Array.from(event.target.value).slice(0,10).join("");
+  if(event.target.value!==extraImageOptions.name)event.target.value=extraImageOptions.name;
+  persistExtraImageOptions();refreshExtraPreview();return;
+}
 if(event.target.id==="budget-range"){
 const id=config.budgetOptions[Number(event.target.value)].id;
 answers.budget=id;if(!["1800","3600"].includes(id))answers.priority=null;
@@ -526,6 +665,13 @@ $("#next").disabled=false;
 // Keep the progress bar still until the user presses Next.
 }
 });
+document.addEventListener("change",event=>{
+ if(event.target.name==="pf-extra-theme"){
+   extraImageOptions.theme=event.target.value==="movieMint"?"movieMint":"purplePink";
+   persistExtraImageOptions();refreshExtraPreview();
+ }
+});
+document.addEventListener("keydown",event=>{if(event.key==="Escape"&&extraPreviewOpen)closeExtraPreview()});
 async function init(){
 try{
 const responses=await Promise.all([fetch("./data/config.json",{cache:"no-store"}),fetch("./data/messages.json",{cache:"no-store"})]);
