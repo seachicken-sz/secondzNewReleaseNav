@@ -89,10 +89,6 @@ function drawMarked(g,input,x,y,maxWidth,size,lineHeight,colors){
    g.textAlign="left";g.textBaseline="top";
    g.fillStyle=run.emphasis?colors.accent:colors.ink;
    g.fillText(run.text,xPos,y+i*lineHeight);
-   if(run.emphasis){
-    g.strokeStyle=colors.accent;g.lineWidth=1.4;
-    g.beginPath();g.moveTo(xPos,y+i*lineHeight+size+2);g.lineTo(xPos+run.width,y+i*lineHeight+size+2);g.stroke();
-   }
    xPos+=run.width;
   }
  }
