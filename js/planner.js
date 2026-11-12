@@ -133,7 +133,7 @@ function seededPlan(result,config){
   return plan;
 }
 
-export function createPurchaseFlow({config,render,goHome,goResult}){
+export function createPurchaseFlow({config,render,goHome,goResult,onExtraSupport}){
  let plan=initial(),screen="home",previous="home",addMode=null,modal=null;
  const read=()=>{
    try{
@@ -252,6 +252,7 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
        '<div class="pf-split">'+formatRow(id)+'</div></div>').join("")+(key==='fc'?'<div data-pf-fc-notice></div>':'')+'</article>').join("")+'</div></section>'+
      '<p class="pf-note pf-system-notes">※購入場所を削除するとそこに設定した枚数も削除されます。<br>※表示金額は定価の税込金額となります。送料や割引は各店舗、各通販サイトでご確認ください。</p>'+
      '<div class="pf-name"><label for="pf-name">シェアするときの名前（任意）</label><input id="pf-name" data-pf-name type="text" maxlength="30" value="'+safe(plan.name)+'"><p class="pf-note">名前や購入先はこの端末に保存されます。</p></div>'+
+     '<section class="pf-extra-support-card" aria-labelledby="pf-extra-support-title"><h2 id="pf-extra-support-title">CD以外でも応援してみよう！</h2><p>CD購入プランが決まったら、次は普段使っているサブスクでできる応援をチェック！</p><p>加入中のサービスを選ぶだけで、あなたに合った応援方法をご案内します。</p><button type="button" class="btn pf-extra-support-cta" data-pf="extra-support">追加の応援方法を探す</button></section>'+
      '<section id="pf-tsz-card" class="pf-tsz-card" aria-labelledby="pf-tsz-title"><h2 id="pf-tsz-title">TSZ在庫チェッカーを活用しよう！</h2>'+
      '<p class="pf-tsz-intro">・オリコン・ビルボ加盟店の検索<br>・発売後の在庫状況の共有<br>ができる便利なサイトです！</p>'+
      '<p class="pf-tsz-questions">「どこで買えばオリコンチャートに貢献できるの？」<br>「家の近くのあの店って加盟店？」<br>「ネット通販ならどこ？」</p>'+
@@ -440,6 +441,7 @@ export function createPurchaseFlow({config,render,goHome,goResult}){
    if(modal&&event.target===modal){closePreview();return}
    const button=event.target.closest("[data-pf]");if(!button)return;
    const action=button.dataset.pf,id=button.dataset.id,placeId=button.dataset.place;
+   if(action==="extra-support"){closePreview();onExtraSupport?.();return}
    if(action==="home"){closePreview();goHome();return}
    if(action==="back"){closePreview();back();return}
    if(action==="compare"){previous="plan";comparison();return}
