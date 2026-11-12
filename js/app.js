@@ -441,7 +441,7 @@ function showExtraSupportResult(){
 
 
 const EXTRA_IMAGE_SETTINGS_KEY="secondzReleaseNav:extraSupportImage:v1";
-const EXTRA_PNG_VERSION=4;
+const EXTRA_PNG_VERSION=5;
 const EXTRA_SHARE_TEXT="タムごと新曲応援ナビで応援プランを作ったよ！\nhttps://seachicken-sz.github.io/secondzNewReleaseNav/";
 let extraImageOptions={name:"",theme:"purplePink"};
 let extraPreviewBlob=null,extraPreviewUrl=null,extraPreviewSignature="",extraPreviewOpen=false;
@@ -535,7 +535,7 @@ async function refreshExtraPreview(){
    let blob=extraPreviewSignature===signature?extraPreviewBlob:null;
    if(!blob)blob=await extraImageCachedGet(signature);
    if(!blob){
-     const {renderExtraSupportPng}=await import("./extraSupportCanvas.js?v=20261112-v4");
+     const {renderExtraSupportPng}=await import("./extraSupportCanvas.js?v=20261112-v5");
      blob=await renderExtraSupportPng({name:extraImageOptions.name,subs:extraSubs,theme:extraImageOptions.theme,digitalTitle:supportTitle(),releaseTitle:config.release?.cdTitle});
      // Persist the rendered PNG itself; never fail sharing if storage is unavailable.
      extraImageCachedPut(signature,blob).catch(()=>{});
