@@ -415,7 +415,7 @@ function extraSupportMarkup(){
       '<div class="site-links">'+linkFor("secondzチャンネル",config.links.stationhead)+'</div>');
   }else{
     subscriptionBody+=card("ステヘにチャレンジしてみない？",
-      p(messages.purchase.extraParts.spotifyPremium)+
+      p("＋1,080円でSpotify Premiumに加入してみない？\n1ヶ月だけでも加入してステへに参加すると、Billboardポイントに大きく貢献できるよ！\n面倒なプレイリスト作成の必要はなし！")+
       '<div class="site-links">'+linkFor("Spotify Premiumはこちら！",config.links.spotifyPremium)+'</div>');
   }
   if(selected.has("unext")){
@@ -548,7 +548,7 @@ async function refreshExtraPreview(){
      blob=await renderExtraSupportPng({
        name:extraImageOptions.name,subs:extraSubs,theme:extraImageOptions.theme,
        digitalTitle:config.release?.digitalTitle,releaseTitle:config.release?.cdTitle,
-       digitalDescription:messages.purchase.extraParts.digitalAdd1400Budget.split("\\n").slice(1).join("\\n"),
+       digitalDescription:messages.purchase.extraParts.digitalAdd1400Budget.split("\n").slice(1).join("\n"),
        listenIntro:messages.support.listenIntro,freeSpotify:messages.support.freeSpotify,
        stationheadMember:messages.support.stationhead.replace("プレイリストを自分で作らず、secondzチャンネルで一緒に再生しよう。詳しい設定方法もチェックしてね！","プレイリストを自分で作る必要はなし！").replace("Stationhead（ステヘ）に参加できるよ！","Stationhead（ステヘ）に参加できるよ！"),
        stationheadUpsell:"＋1,080円でSpotify Premiumに加入してみない？\n1ヶ月だけでも加入してステへに参加すると、Billboardポイントに大きく貢献できるよ！\n面倒なプレイリスト作成の必要はなし！",
