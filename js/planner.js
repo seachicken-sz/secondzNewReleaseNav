@@ -154,7 +154,7 @@ export function createPurchaseFlow({config,render,goHome,goResult,onExtraSupport
  const begin=result=>{plan=result?seededPlan(result,config):initial();ensureUnassigned(plan);addMode=null;persist();showPlan()};
  const resume=()=>{plan=read()||initial();ensureUnassigned(plan);addMode=null;persist();showPlan()};
  const openFromResult=result=>{previous="result";const saved=read();if(saved){plan=saved;ensureUnassigned(plan);showPlan()}else begin(result)};
- const openRecommendedFromResult=result=>{previous="result";if(!result)return;const saved=read();plan=seededPlan(result,config);if(saved?.name)plan.name=saved.name;if(saved?.imageOptions)plan.imageOptions={...plan.imageOptions,...saved.imageOptions};ensureUnassigned(plan);addMode=null;persist();showPlan()};
+ const openRecommendedFromResult=result=>{if(!result)return;const saved=read();if(saved&&(selectedIds(saved).length||saved.name||saved.places.some(p=>p.type!=="unassigned"))&&!confirm("保存済みのCD購入プランを、おすすめ内容で上書きします。よろしいですか？"))return;previous="result";plan=seededPlan(result,config);if(saved?.name)plan.name=saved.name;if(saved?.imageOptions)plan.imageOptions={...plan.imageOptions,...saved.imageOptions};ensureUnassigned(plan);addMode=null;persist();showPlan()};
  const openCompareFromResult=()=>{previous="result";plan=read()||initial();ensureUnassigned(plan);comparison()};
  const openFromHome=()=>{previous="home";const saved=read();if(saved){plan=saved;ensureUnassigned(plan);addMode=null;persist();showPlan()}else begin(null)};
  const openCompare=()=>{previous="home";plan=read()||initial();ensureUnassigned(plan);comparison()};
