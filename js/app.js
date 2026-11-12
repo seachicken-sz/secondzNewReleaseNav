@@ -31,11 +31,16 @@ function home(){
 view="home";
 const draft=load(DRAFT_KEY);
 const result=load(RESULT_KEY);
-frame('<section class="card"><div class="intro"><img class="home-brand-logo" src="./img/new-release-nav-logo.svg?v=20261110-logo-fix2" width="440" height="121" style="display:block;width:100%;max-width:440px;height:auto;max-height:145px;object-fit:contain;margin:0 auto 12px" alt="タムごと新曲応援ナビ"><p class="home-release-copy">2/3 発売<br><strong class="home-release-emphasis" style="color:#A148AC">「ザユウノメイ/本当のことを言うと」</strong><br>を応援しよう！<br>予算や好みに応じた応援プランを<br>チェックできます！</p><div class="home-cautions"><p>※特典情報・受け取り・支払いについては必ず購入先で確認してください。</p><p>※特典内容は変更される可能性があります。<br>必ず購入前に公式サイトで確認をしてください。</p></div></div><div class="pf-home-choices"><article class="pf-home-choice"><h2>特典から考える！</h2><p>収録曲や映像特典を比較して、欲しい盤を見つけよう！</p><button class="btn" data-action="plan-compare">特典を比較する</button></article><article class="pf-home-choice"><h2>枚数から考える！</h2><p>CDの種類と枚数を選んで、合計金額をチェック！</p><button class="btn" data-action="plan-create">購入プランを作る</button></article><article class="pf-home-choice"><h2>予算から考える！</h2><p>予算に合わせておすすめのCDや応援方法をチェック！</p><button class="btn" data-action="start">始める</button></article></div><div class="actions">'+
+ const supportDraft=load(EXTRA_SUPPORT_DRAFT_KEY);
+ const supportResult=load(EXTRA_SUPPORT_KEY);
+frame('<section class="card"><div class="intro"><img class="home-brand-logo" src="./img/new-release-nav-logo.svg?v=20261110-logo-fix2" width="440" height="121" style="display:block;width:100%;max-width:440px;height:auto;max-height:145px;object-fit:contain;margin:0 auto 12px" alt="タムごと新曲応援ナビ"><p class="home-release-copy">2/3 発売<br><strong class="home-release-emphasis" style="color:#A148AC">「ザユウノメイ/本当のことを言うと」</strong><br>を応援しよう！<br>予算や好みに応じた応援プランを<br>チェックできます！</p><div class="home-cautions"><p>※特典情報・受け取り・支払いについては必ず購入先で確認してください。</p><p>※特典内容は変更される可能性があります。<br>必ず購入前に公式サイトで確認をしてください。</p></div></div><div class="pf-home-choices"><article class="pf-home-choice"><h2>特典から考える！</h2><p>収録曲や映像特典を比較して、欲しい盤を見つけよう！</p><button class="btn" data-action="plan-compare">特典を比較する</button></article><article class="pf-home-choice"><h2>枚数から考える！</h2><p>CDの種類と枚数を選んで、合計金額をチェック！</p><button class="btn" data-action="plan-create">購入プランを作る</button></article><article class="pf-home-choice"><h2>予算から考える！</h2><p>予算に合わせておすすめのCDや応援方法をチェック！</p><button class="btn" data-action="start">始める</button>'+
 (draft&&draft.releaseId===config.releaseId?'<button class="btn secondary" data-action="resume">前回の続きから</button>':"")+
 (result&&result.releaseId===config.releaseId?'<button class="btn secondary" data-action="saved">前回の結果を見る</button>':"")+
 
-'</div><p class="small" style="text-align:center;margin-top:22px">回答内容はご利用の端末に保存し、送信は行いません。</p></section>');
+'</article><article class="pf-home-choice"><h2>今できる応援！</h2><p>加入しているサブスクからどんな応援ができるかチェック！</p><button class="btn" data-action="extra-home-start">応援を探す</button>'+
+ (supportDraft?.releaseId===config.releaseId?'<button class="btn secondary" data-action="extra-home-resume">前回の続きから</button>':"")+
+ (supportResult?.releaseId===config.releaseId?'<button class="btn secondary" data-action="extra-home-saved">前回の結果を見る</button>':"")+
+ '</article></div><p class="small" style="text-align:center;margin-top:22px">回答内容はご利用の端末に保存し、送信は行いません。</p></section>');
 }
 function start(resume=false){
 const d=resume?load(DRAFT_KEY):null;
@@ -407,8 +412,25 @@ return '<div class="compact-share-summary"><div class="compact-share-stars">✧�
 }
 
 const EXTRA_SUPPORT_KEY="secondzReleaseNav:extraSupport:v1";
-let extraSubs=[];
+const EXTRA_SUPPORT_DRAFT_KEY="secondzReleaseNav:extraSupportDraft:v1";
+let extraSubs=[],extraSupportFromHome=false;
+function openExtraSupportFromHome(resume=false){
+ extraSupportFromHome=true;
+ const saved=resume?load(EXTRA_SUPPORT_DRAFT_KEY):null;
+ const known=new Set(config.subscriptions.map(x=>x.id));
+ extraSubs=saved?.releaseId===config.releaseId&&Array.isArray(saved.subs)?saved.subs.filter(id=>known.has(id)):[];
+ showExtraSupportQuestion();
+}
+function showSavedExtraSupportResult(){
+ const saved=load(EXTRA_SUPPORT_KEY);
+ if(saved?.releaseId!==config.releaseId||!Array.isArray(saved.subs)){home();return}
+ const known=new Set(config.subscriptions.map(x=>x.id));
+ extraSubs=saved.subs.filter(id=>known.has(id));
+ extraSupportFromHome=true;
+ showExtraSupportResult();
+}
 function openExtraSupport(){
+  extraSupportFromHome=false;
   const saved=load(EXTRA_SUPPORT_KEY);
   const prior=load(RESULT_KEY);
   const initial=saved?.releaseId===config.releaseId?saved.subs:prior?.releaseId===config.releaseId?prior.answers?.subs:[];
@@ -422,7 +444,7 @@ function showExtraSupportQuestion(){
   frame('<section class="card pf-extra-screen"><button class="pf-back" type="button" data-action="home">← 戻る</button><h1>加入しているサブスクを選択してください。</h1>'+
     '<p class="muted">加入しているものをすべて選択して「結果を見る」を押してください。加入しているものがないときは、そのまま「結果を見る」を押してください。</p>'+
     '<div class="choices">'+choices+'</div><div class="actions"><button type="button" class="btn" data-action="extra-support-result">結果を見る</button>'+
-    '<button type="button" class="btn ghost" data-action="extra-support-back">購入プランに戻る</button></div></section>');
+    '<button type="button" class="btn ghost" data-action="extra-support-back">'+(extraSupportFromHome?"トップ画面に戻る":"購入プランに戻る")+'</button></div></section>');
 }
 function extraSupportMarkup(){
  const returnTop='<div class="result-section-return"><a href="#" data-scroll-result-top>↑トップに戻る</a></div>';
@@ -437,6 +459,7 @@ function extraSupportMarkup(){
 function showExtraSupportResult(){
   readExtraImageOptions();
   save(EXTRA_SUPPORT_KEY,{releaseId:config.releaseId,subs:[...extraSubs]});
+  clear(EXTRA_SUPPORT_DRAFT_KEY);
   view="extra-support-result";
   const summary=extraSubs.map(id=>config.subscriptions.find(s=>s.id===id)?.label).filter(Boolean).join("・")||"なし";
   frame('<div class="card pf-extra-screen"><button class="pf-back" type="button" data-action="home">← 戻る</button><div class="result-meta"><p class="pill">MY NEW RELEASE SUPPORT PLAN</p>'+
@@ -445,7 +468,7 @@ function showExtraSupportResult(){
     '<p class="small" style="text-align:center">※集計・配信・サービスに関する条件は必ず各公式サイトの最新情報をご確認ください。</p>'+
     '<div class="pf-name pf-extra-name"><label for="pf-extra-image-name">シェアするときの名前（任意）</label><input id="pf-extra-image-name" type="text" maxlength="10" value="'+escapeHtml(extraImageOptions.name)+'"><p class="pf-note">名前はこの端末に保存されます。</p></div></div>'+ 
     '<section class="card footer-actions"><div class="actions"><button type="button" class="btn secondary" data-action="extra-support-edit">サブスクを選び直す</button>'+
-    '<button type="button" class="btn" data-action="extra-support-back">CD購入プランに戻る</button></div></section>'+ 
+    '<button type="button" class="btn" data-action="extra-support-back">'+(extraSupportFromHome?"トップ画面に戻る":"CD購入プランに戻る")+'</button></div></section>'+ 
     '<nav class="pf-bottom-nav"><button type="button" class="btn" data-action="extra-image-open">画像を生成</button></nav>');
 }
 
@@ -698,6 +721,7 @@ if(choiceEl){
   if(choiceEl.dataset.choice==="extra-subs"&&view==="extra-support-question"){
     const id=choiceEl.dataset.value;
     extraSubs=extraSubs.includes(id)?extraSubs.filter(x=>x!==id):[...extraSubs,id];
+     save(EXTRA_SUPPORT_DRAFT_KEY,{releaseId:config.releaseId,subs:[...extraSubs]});
     choiceEl.classList.toggle("active",extraSubs.includes(id));
     choiceEl.setAttribute("aria-pressed",String(extraSubs.includes(id)));
     return;
@@ -711,7 +735,10 @@ case "extra-image-close":closeExtraPreview();break;
 case "extra-image-share":shareExtraImage(button);break;
 case "extra-support-result":showExtraSupportResult();break;
 case "extra-support-edit":showExtraSupportQuestion();break;
-case "extra-support-back":planner.showPlan();break;
+case "extra-support-back":if(extraSupportFromHome)home();else planner.showPlan();break;
+ case "extra-home-start":openExtraSupportFromHome();break;
+ case "extra-home-resume":openExtraSupportFromHome(true);break;
+ case "extra-home-saved":showSavedExtraSupportResult();break;
 case "start":case "restart":start();break;
 case "plan-create":planner.openFromHome();break;
 case "plan-compare":planner.openCompare();break;
