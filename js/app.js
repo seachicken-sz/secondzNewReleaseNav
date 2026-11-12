@@ -406,7 +406,7 @@ function extraSupportMarkup(){
   let subscriptionBody=card("新曲をサブスクで応援！",musicBody,"support-music");
   if(selected.has("spotify")||selected.has("apple")){
     subscriptionBody+=card("ステヘにチャレンジしてみない？",
-      p(messages.support.stationhead)+
+      p(messages.support.stationhead.replace("プレイリストを自分で作らず、secondzチャンネルで一緒に再生しよう。","プレイリストを自分で作る必要はなし！secondzチャンネルで一緒に再生しよう！"))+
       '<p class="detail">対象：Apple Music有料会員またはSpotify Premium会員・18歳以上</p>'+
       '<div class="site-links">'+linkFor("設定方法を見る",config.links.stationheadGuide)+'</div>'+
       '<div class="stationhead-device-links"><a href="'+escapeHtml(config.links.stationheadIOS)+'" target="_blank" rel="noopener noreferrer">iPhone</a>'+
@@ -450,15 +450,16 @@ function showExtraSupportResult(){
 
 
 const EXTRA_IMAGE_SETTINGS_KEY="secondzReleaseNav:extraSupportImage:v1";
+const EXTRA_PNG_VERSION=2;
 const EXTRA_SHARE_TEXT="タムごと新曲応援ナビで応援プランを作ったよ！\nhttps://seachicken-sz.github.io/secondzNewReleaseNav/";
 let extraImageOptions={name:"",theme:"purplePink"};
 let extraPreviewBlob=null,extraPreviewUrl=null,extraPreviewSignature="",extraPreviewOpen=false;
-const previewSignature=()=>JSON.stringify({releaseId:config.releaseId,name:extraImageOptions.name,theme:extraImageOptions.theme,subs:[...extraSubs].sort()});
+const previewSignature=()=>JSON.stringify({version:EXTRA_PNG_VERSION,releaseId:config.releaseId,name:extraImageOptions.name,theme:extraImageOptions.theme,subs:[...extraSubs].sort()});
 function readExtraImageOptions(){
  const saved=load(EXTRA_IMAGE_SETTINGS_KEY);
  const plan=load("secondzReleaseNav:purchasePlan:v2");
  const planName=plan?.releaseId===config.releaseId?String(plan.name||""):"";
- const name=typeof saved?.name==="string"?saved.name:planName;
+ const name=saved?.releaseId===config.releaseId&&typeof saved?.name==="string"?saved.name:planName;
  extraImageOptions={name:Array.from(name.trim()).slice(0,10).join(""),theme:["purplePink","movieMint"].includes(saved?.theme)?saved.theme:"purplePink"};
 }
 function persistExtraImageOptions(){
@@ -544,7 +545,7 @@ async function refreshExtraPreview(){
    if(!blob)blob=await extraImageCachedGet(signature);
    if(!blob){
      const {renderExtraSupportPng}=await import("./extraSupportCanvas.js?v=20261112-v2");
-     blob=await renderExtraSupportPng({name:extraImageOptions.name,subs:extraSubs,theme:extraImageOptions.theme});
+     blob=await renderExtraSupportPng({name:extraImageOptions.name,subs:extraSubs,theme:extraImageOptions.theme,digitalTitle:config.release?.digitalTitle,releaseTitle:config.release?.cdTitle});
      // Persist the rendered PNG itself; never fail sharing if storage is unavailable.
      extraImageCachedPut(signature,blob).catch(()=>{});
    }
