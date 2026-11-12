@@ -1101,3 +1101,10 @@ body:has(.pf-bottom-nav) .shell{padding-bottom:calc(145px + env(safe-area-inset-
 .result-section-return a{color:#7a4698;text-decoration:underline;text-underline-offset:3px;font-size:13px;font-weight:700}
 .result-section-return a:hover{color:#583171}
 @media(prefers-reduced-motion:reduce){.page-scroll-top{transition:none}}
+
+/* Use exactly the site's primary button color for the fixed scroll control. */
+.page-scroll-top{background:var(--accent)}
+.page-scroll-top:hover{background:var(--accent)}
+/* Purchase actions share one compact row; top navigation bar has been removed. */
+.pf-plan-page .pf-total-actions{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+.pf-plan-page .pf-total-actions .pf-total-action{width:auto;flex:0 1 auto}
