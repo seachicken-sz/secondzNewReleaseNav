@@ -83,7 +83,7 @@ const deadlineOk=date=>{
 const detail={
   regular:{
     description:"カップリング曲をたくさん楽しみたい人におすすめ！",
-    tracks:[["ザユウノメイ"],["本当のことを言うと"],["45",true],["Still us",true],["上記4曲のInst音源"]],
+    tracks:[["ザユウノメイ"],["本当のことを言うと"],["45",true],["Still us",true]],
     videos:[],
     gifts:[["20P歌詞ブックレット"],["分けて使える！オリジナルステッカーシート ver.C",true],["シリアルコード入りプレイリストカード"]],
     note:"天地空きスリーブ・両面ジャケット仕様。封入特典は初回仕様のため、購入時に確認してね。"
@@ -181,16 +181,16 @@ export function createPurchaseFlow({config,render,goHome,goResult,onExtraSupport
    const step1=active?'<fieldset class="pf-quiz-field"><legend>Q1. ファンクラブに加入している？</legend><label><input type="radio" name="pf-quiz-fc" value="yes" '+(quizFc==="yes"?"checked":"")+'> 加入している</label><label><input type="radio" name="pf-quiz-fc" value="no" '+(quizFc==="no"?"checked":"")+'> 加入していない</label></fieldset>':"";
    const showNext=!active||Boolean(quizFc);
    const choices=priorityChoices.filter(([, ,id])=>id!=="fc"||active&&quizFc==="yes");
-   const step2=showNext?'<fieldset class="pf-quiz-field"><legend>'+(active?"Q2.":"Q1.")+' 何を一番楽しみたい？</legend>'+choices.map(([key,label])=>'<label><input type="radio" name="pf-quiz-priority" value="'+key+'" '+(quizPriority===key?"checked":"")+'> '+safe(label)+'</label>').join("")+'</fieldset>':"";
+   const step2=showNext?'<fieldset class="pf-quiz-field pf-quiz-reveal"><legend>'+(active?"Q2.":"Q1.")+' 何を一番楽しみたい？</legend>'+choices.map(([key,label])=>'<label><input type="radio" name="pf-quiz-priority" value="'+key+'" '+(quizPriority===key?"checked":"")+'> '+safe(label)+'</label>').join("")+'</fieldset>':"";
    const choice=recommendedEdition();
-   const answer=choice?'<div class="pf-quiz-answer"><p class="pf-quiz-kicker">あなたにおすすめの一枚</p><h3>'+editionLabels[choice]+'</h3><p class="pf-description">'+safe(detail[choice].description)+'</p><details class="pf-quiz-details"><summary>収録曲・映像・封入特典を見る</summary><div>'+editionDetails(choice)+'</div></details>'+editionActions(choice)+'</div>':"";
+   const answer=choice?'<div class="pf-quiz-answer pf-quiz-reveal"><p class="pf-quiz-kicker">あなたにおすすめの一枚</p><h3>'+editionLabels[choice]+'</h3><p class="pf-description">'+safe(detail[choice].description)+'</p><details class="pf-quiz-details"><summary>収録曲・映像・封入特典を見る</summary><div>'+editionDetails(choice)+'</div></details>'+editionActions(choice)+'</div>':"";
    return '<section id="pf-quiz" class="pf-compare-section"><h2>好みからおすすめの特典を探す</h2><div class="pf-quiz-body"><div data-pf-quiz-step1>'+step1+'</div><div data-pf-quiz-step2>'+step2+'</div><div data-pf-quiz-answer>'+answer+'</div></div></section>';
  };
  const compareTableMarkup=()=>{
    const ids=eligibleEditions().filter(id=>compareSelection.includes(id));
    const chips=eligibleEditions().map(id=>'<button type="button" class="pf-compare-chip'+(ids.includes(id)?" is-active":"")+'" data-pf="compare-chip" data-edition="'+id+'" aria-pressed="'+ids.includes(id)+'">'+shortEditionLabels[id]+'</button>').join("");
    const columns=(get)=>ids.map(id=>'<td>'+get(id)+'</td>').join("");
-   const subtracks={regular:[["45"],["Still us"],["上記4曲のInst音源"]],a:[["大怪盗"],["大怪盗 -Inst-"]],b:[["Avocado"],["Avocado -Inst-"]],fc:[]};
+   const subtracks={regular:[["45"],["Still us"]],a:[["大怪盗"],["大怪盗 -Inst-"]],b:[["Avocado"],["Avocado -Inst-"]],fc:[]};
    const comparison='<div class="pf-table-scroll" tabindex="0" aria-label="盤種別特典比較表・横スクロール可能"><table class="pf-comparison-table"><thead><tr>'+ids.map(id=>'<th scope="col">'+editionLabels[id]+'</th>').join("")+'</tr></thead><tbody>'+
      '<tr>'+columns(id=>subtracks[id].length?rows(subtracks[id]):'<p>追加カップリング曲なし</p>')+'</tr>'+
      '<tr>'+columns(id=>detail[id].videos.length?rows(detail[id].videos):'<p>映像特典なし</p>')+'</tr>'+
