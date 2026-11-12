@@ -58,30 +58,31 @@ function getSections(data){
   const labels={spotify:"Spotify Premium",prime:"Amazon Music Prime",unlimited:"Amazon Music Unlimited",line:"LINE MUSIC",youtubeMusic:"YouTube Music Premium",apple:"Apple Music"};
   const digitalTitle=data.digitalTitle||"本当のことを言うと";
   const music=Object.keys(labels).filter(id=>chosen.has(id)&&!(id==="prime"&&chosen.has("unlimited")));
-  const streaming=music.length?music.map(id=>({
-    title:labels[id],
-    description:id==="prime"?"Amazon Prime会員なら、Amazon Music Primeで利用できる範囲の楽曲を聴けるよ！":
-      "「"+digitalTitle+"」をたくさん聴いて応援しよう！"
-  })):[{title:"Spotify無料版",description:"Spotifyのフリープランなら無料で聴けるよ！"}];
+  const musicIntro=data.listenIntro||"11/25〜先行配信される「"+digitalTitle+"」をたくさん聴こう！";
+  const streaming=[{title:"新曲をサブスクで応援！",description:musicIntro}];
+  if(music.length){
+    if(chosen.has("prime")&&!chosen.has("unlimited"))streaming.push({title:"Amazon Music Prime",description:"Amazon Prime会員なら、Amazon Music Primeで利用できる範囲の楽曲を聴けるよ！"});
+    music.filter(id=>id!=="prime").forEach(id=>streaming.push({title:labels[id],description:""}));
+  }else streaming.push({title:"Spotify無料版",description:data.freeSpotify||"Spotifyのフリープランなら無料で聴けるよ！"});
   const eligible=chosen.has("spotify")||chosen.has("apple");
-  streaming.push(eligible?{
-    title:"Stationhead（ステヘ）",
-    description:"Spotify PremiumまたはApple Musicの有料会員で18歳以上なら参加できるよ！\nプレイリストを自分で作る必要はなし！secondzチャンネルで一緒に再生しよう！"
-  }:{
-    title:"Stationhead（ステヘ）",
-    description:"Spotify Premiumに加入してステヘにも参加しよう！\n18歳以上なら利用できるよ！プレイリストを自分で作る必要はなし！secondzチャンネルで一緒に再生しよう！"
+  streaming.push({
+    title:"ステヘにチャレンジしてみない？",
+    description:eligible?
+      (data.stationheadMember||"Spotify PremiumまたはApple Musicの有料会員で18歳以上ならStationhead（ステヘ）に参加できるよ！プレイリストを自分で作る必要はなし！"):
+      (data.stationheadUpsell||"＋1,080円でSpotify Premiumに加入してみない？\n1ヶ月だけでも加入してステへに参加すると、Billboardポイントに大きく貢献できるよ！\n面倒なプレイリスト作成の必要はなし！")
   });
-  if(chosen.has("unext"))streaming.push({title:"U-NEXT",description:"U-NEXT会員はUSEN推し活リクエストを追加でできるよ！"});
+  if(chosen.has("unext"))streaming.push({title:"U-NEXT会員の方へ！",description:data.unext||"U-NEXT会員はUSEN推し活リクエストを追加でできるよ！"});
   return [
     {number:"01",title:"デジタル配信で応援！",rows:[{
-      title:"「"+digitalTitle+"」を購入",
-      description:"11/25から先行配信される「"+digitalTitle+"」を購入するとBillboardポイントに貢献できるよ！"
+      title:"デジタル配信「"+digitalTitle+"」を買うには",
+      description:data.digitalDescription||"11/25から先行配信される「"+digitalTitle+"」を購入するとBillboardポイントに貢献できるよ！"
     }]},
     {number:"02",title:"サブスクで応援！",rows:streaming},
     {number:"03",title:"無料でできる応援！",rows:[
-      {title:"YouTube",description:"YouTubeにMVが公開されたら高評価！たくさん再生して楽しもう！"},
-      {title:"SNS",description:"各SNSでいいね・拡散・応援コメントをしよう！"},
-      {title:"リクエスト",description:"ラジオリクエストや推し活リクエストに参加しよう！\nリクエストをまとめてやるにはタムごとDailyをご利用ください！"}
+      {title:"みんなでできる応援",description:""},
+      {title:"YouTube",description:data.youtube||"YouTubeにMVが公開されたら高評価！ たくさん再生して楽しもう！"},
+      {title:"SNS",description:data.sns||"各SNSでいいね・拡散・応援コメントをしよう！"},
+      {title:"リクエスト",description:(data.request||"ラジオリクエストや推し活リクエストに参加しよう！ タムごとDailyも活用してね！")+"\nリクエストをまとめてやるにはタムごとDailyをご利用ください！"}
     ]}
   ];
 }
@@ -91,7 +92,7 @@ function measureCard(g,section){
     g.font="800 27px system-ui, sans-serif";
     const titleLines=wrap(g,row.title,720).length;
     g.font="500 23px system-ui, sans-serif";
-    const descLines=wrap(g,row.description,720).length;
+    const descLines=row.description?wrap(g,row.description,720).length:0;
     h+=titleLines*36+descLines*33+30;
   });
   return h+18;
@@ -137,7 +138,7 @@ export async function renderExtraSupportPng(data){
     s.rows.forEach((row,idx)=>{
       if(idx){g.strokeStyle=c.border;g.lineWidth=1.5;g.beginPath();g.moveTo(78,rowY-8);g.lineTo(820,rowY-8);g.stroke()}
       rowY=drawText(g,row.title,82,rowY,27,c.ink,"800",728,1.33);
-      rowY=drawText(g,row.description,82,rowY+3,23,c.ink,"500",728,1.43)+26;
+      rowY=(row.description?drawText(g,row.description,82,rowY+3,23,c.ink,"500",728,1.43):rowY)+26;
     });
     y+=h+28;
   });
