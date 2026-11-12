@@ -1,6 +1,6 @@
 import {buildPurchase,buildMethod,buildSupport,isBeforeDeadline} from "./result.js?v=20261111-all-budget-addon";
 import {createPurchaseFlow} from "./planner.js?v=20261112-extra-support-v18";
-import {supportCopy,selectedMusic,SUPPORT_COPY_VERSION} from "./supportContent.js?v=20261112-v1";
+import {supportCopy,selectedMusic,supportImageSections} from "./supportContent.js?v=20261112-v1";
 const DRAFT_KEY="secondzReleaseNav:draft:v1";
 const RESULT_KEY="secondzReleaseNav:result:v1";
 const $=s=>document.querySelector(s);
@@ -259,7 +259,7 @@ function methodMarkup(data,print=false){
 let html="";
 if(isSmallBudget(answers.budget)){
   if(data.digitalMethod)return card(messages.method.digitalHeading,
-    p(messages.method.digitalMethod)+'<div class="site-links">'+linkFor("予約・購入ページ",config.links.digital)+'</div>');
+    supportParagraph(supportText().digital)+supportParagraph(messages.method.digitalMethod)+'<div class="site-links">'+linkFor("予約・購入ページ",config.links.digital)+'</div>');
   return "";
 }
 if(answers.store==="yes")html=storeMarkup(true);
@@ -282,7 +282,7 @@ p(messages.method.fcMethod)+
 p(messages.method.fcInstructions)+'<p class="fc-card-warning">※'+escapeHtml(messages.method.fcCardWarning)+'</p>'+
 '<div class="fc-deadline">'+escapeHtml(messages.method.fcDeadlineStrong)+'</div>');
 if(data.digitalMethod)html+=card(messages.method.digitalHeading,
-p(messages.method.digitalMethod)+'<div class="site-links">'+linkFor("予約・購入ページ",config.links.digital)+'</div>');
+supportParagraph(supportText().digital)+supportParagraph(messages.method.digitalMethod)+'<div class="site-links">'+linkFor("予約・購入ページ",config.links.digital)+'</div>');
 return html;
 }
 
@@ -385,17 +385,15 @@ const items=purchase.items.flatMap(item=>(item.productIds||[]).map(id=>names[id]
 const unique=[...new Set(items)];
 const first=unique.length?unique.map(x=>'<span class="compact-plan-tag">'+escapeHtml(x)+'</span>').join(""):'<span class="compact-plan-tag">お金をかけずに応援！</span>';
 const secondary=purchase.secondaries?.length?'<p class="compact-plan-label">もう1枚選ぶなら…</p><div class="compact-plan-tags">'+purchase.secondaries.map(x=>'<span class="compact-plan-tag compact-plan-tag-secondary">'+escapeHtml(x.label)+'</span>').join("")+'</div>':"";
-const streaming=(a.subs||[]).map(id=>config.subscriptions.find(x=>x.id===id)?.label).filter(x=>x&&x!=="U-NEXT");
-const actions=[
-["♫","音楽を聴いて応援"],
-["▷","YouTubeでMVを楽しむ"],
-["♡","SNSやリクエストで応援"]
-];
-if(streaming.length)actions[0][1]=streaming.join("・")+"で応援";
+const compactSupport=supportImageSections({subs:a.subs||[],digitalTitle:supportTitle()});
+const compactItems=compactSupport.map(group=>
+  '<div class="compact-support-group"><h3>'+escapeHtml(group.number+" "+group.title)+'</h3>'+
+  group.rows.map(row=>'<div class="compact-support-item"><strong>'+escapeHtml(row.title)+'</strong>'+
+    (row.description?'<p>'+markedSupport(row.description)+'</p>':"")+'</div>').join("")+'</div>').join("");
 return '<div class="compact-share-summary"><div class="compact-share-stars">✧　♡　✧</div><p class="compact-share-eyebrow">MY NEW RELEASE SUPPORT PLAN</p><h1>わたしの新曲応援プラン</h1><p class="compact-share-release">'+escapeHtml(cdTitle)+'</p>'+
 '<div class="compact-share-budget"><small>MY BUDGET</small><strong>'+escapeHtml(budget)+'</strong></div>'+
 '<section class="compact-share-recommend"><h2>♡ おすすめの購入プラン</h2><div class="compact-plan-tags">'+first+'</div>'+secondary+'</section>'+
-'<section class="compact-share-support"><h2>✧ この応援がおすすめ！</h2><ul>'+actions.map(x=>'<li><span>'+x[0]+'</span>'+escapeHtml(x[1])+'</li>').join("")+'</ul></section>'+
+'<section class="compact-share-support"><h2>✧ この応援がおすすめ！</h2>'+compactItems+'</section>'+
 '<p class="compact-share-footer">タムごと新曲応援ナビ<br><small>非公式ファンツール｜詳細・購入条件は公式情報をご確認ください</small></p></div>';
 }
 
