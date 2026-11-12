@@ -194,9 +194,9 @@ export function createPurchaseFlow({config,render,goHome,goResult,onExtraSupport
      '<tr>'+columns(id=>subtracks[id].length?rows(subtracks[id]):'<p>追加カップリング曲なし</p>')+'</tr>'+
      '<tr>'+columns(id=>detail[id].videos.length?rows(detail[id].videos):'<p>映像特典なし</p>')+'</tr>'+
      '<tr>'+columns(id=>rows(detail[id].gifts.filter(([label])=>!label.includes("プレイリストカード"))))+'</tr>'+
+     (["regular","a","b"].every(id=>ids.includes(id))?'<tr class="pf-compare-three-row"><td colspan="3"><strong>3形態同時購入特典</strong><p>初回限定盤A・初回限定盤B・通常盤を対象条件で購入すると専用特典がつくよ！</p><p>対象のセット商品・購入条件は販売店で確認してね。</p></td>'+(ids.includes("fc")?'<td>FC限定盤は対象外</td>':'')+'</tr>':"")+
      '</tbody></table></div>';
-   const three=["regular","a","b"].every(id=>ids.includes(id));
-   const threeNotice=three?'<div class="pf-three-compare"><h3>3形態同時購入特典</h3><p>初回限定盤A・初回限定盤B・通常盤の3形態を対象条件で購入すると専用特典がつくよ！</p><p>ネット通販では「3形態同時購入特典付」セット、店頭では購入先の対象条件を確認してね。</p></div>':"";
+   const threeNotice="";
    return '<section id="pf-compare-table" class="pf-compare-section"><h2>特典を比較する</h2><div class="pf-common-tracks"><h3>全形態共通</h3><p>CD収録曲：「ザユウノメイ」「本当のことを言うと」</p><p>シリアルコード入りプレイリストカード（購入したCDの収録曲をスマホで聴けるよ！）</p><p>無料のtimeleSZアプリにカードのシリアルコードを登録して利用できます。</p><div class="pf-formats">'+openLink("App Store",IOS)+openLink("Google Play",ANDROID)+openLink("アプリの使い方",APPGUIDE)+'</div></div><div class="pf-compare-chips" aria-label="比較する盤種">'+chips+'</div>'+comparison+threeNotice+'</section>';
  };
  function compareMarkup(){
