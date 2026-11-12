@@ -1108,3 +1108,7 @@ body:has(.pf-bottom-nav) .shell{padding-bottom:calc(145px + env(safe-area-inset-
 /* Purchase actions share one compact row; top navigation bar has been removed. */
 .pf-plan-page .pf-total-actions{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
 .pf-plan-page .pf-total-actions .pf-total-action{width:auto;flex:0 1 auto}
+
+/* Saved-result and resume actions stay inside their own homepage card. */
+.pf-home-choice>.btn+.btn{margin-top:9px}
+.pf-home-choice>.btn.secondary{min-height:43px}
