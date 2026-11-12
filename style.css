@@ -1079,3 +1079,8 @@ body:has(.pf-bottom-nav) .shell{padding-bottom:calc(145px + env(safe-area-inset-
 .pf-compare-page .pf-three-benefits-flat{background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important;padding:0!important;margin:40px 0 34px!important;scroll-margin-top:22px}
 .pf-compare-page .pf-three-benefits-flat>h2{font-size:21px!important;color:#794993!important;margin:0 0 18px!important}
 .pf-compare-page .pf-three-benefits-flat .pf-purchase-advice{margin-top:16px}
+
+/* Soft transition for the next quiz question and recommendation. */
+@keyframes pf-quiz-soft-reveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.pf-compare-page .pf-quiz-reveal{animation:pf-quiz-soft-reveal .42s cubic-bezier(.22,1,.36,1) both}
+@media(prefers-reduced-motion:reduce){.pf-compare-page .pf-quiz-reveal{animation:none}}
