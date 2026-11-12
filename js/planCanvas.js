@@ -1,3 +1,4 @@
+import {IMAGE_FOOTER_LINE1,IMAGE_FOOTER_LINE2} from "./imageFooter.js?v=20261112-v1";
 // Draw the share image with native Canvas (safe for iOS Safari).
 // Assets are same-origin transparent PNGs stored in img/image parts, not off-screen HTML.
 const FILES={
@@ -113,7 +114,7 @@ async function renderPlanInternal({sections,title,releaseTitle,totalCount,totalP
   });
   const topHeight=155+55+35+titleLines.length*57+15+releaseLines.length*34+42;
   const groupHeight=groups.reduce((n,group)=>n+group.height+21,0);
-  const footerHeight=188;
+  const footerHeight=222;
   const imageHeight=Math.max(940,margin+topHeight+groupHeight+footerHeight+margin);
   canvas.height=imageHeight;
   const g=canvas.getContext("2d",{alpha:false});
@@ -207,8 +208,8 @@ async function renderPlanInternal({sections,title,releaseTitle,totalCount,totalP
   drawText("合計金額",innerX+innerW-27,summaryY+18,19,750,colors.accent,"right");
   drawText(totalPrice.toLocaleString("ja-JP")+"円",innerX+innerW-27,summaryY+52,35,750,colors.accent,"right");
   const creditY=summaryY+139;
-  drawText("タムごと新曲応援ナビ",width/2,creditY,21,750,colors.accent,"center");
-  if(!isTicket){twinkle(237,creditY+11,11,colors.pink);twinkle(660,creditY+11,11,colors.pink)}
+  drawText(IMAGE_FOOTER_LINE1,width/2,creditY,19,750,colors.accent,"center");
+  drawText(IMAGE_FOOTER_LINE2,width/2,creditY+32,17,500,colors.accent,"center");
   const blob=await new Promise((resolve,reject)=>{
     const timer=setTimeout(()=>reject(new Error("PNG生成がタイムアウトしました")),7000);
     try{canvas.toBlob(value=>{clearTimeout(timer);value?resolve(value):reject(new Error("PNGを生成できませんでした"))},"image/png")}
