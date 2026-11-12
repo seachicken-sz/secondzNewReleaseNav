@@ -1,3 +1,4 @@
+import {IMAGE_FOOTER_LINE1,IMAGE_FOOTER_LINE2} from "./imageFooter.js?v=20261112-v1";
 import {supportImageSections} from "./supportContent.js?v=20261112-v1";
 // Native Canvas PNG export for additional support plan; no SVG-to-PNG or external fonts.
 const W=900;
@@ -149,8 +150,8 @@ export async function renderExtraSupportPng(data){
     });
     y+=h+28;
   });
-  drawText(g,"非公式ファンメイドツール",450,y+2,20,c.muted,"700",810,1.25,true);
-  drawText(g,"各サービスの最新情報は公式で確認してください",450,y+34,19,c.muted,"500",810,1.3,true);
+  drawText(g,IMAGE_FOOTER_LINE1,450,y+2,20,c.muted,"700",810,1.25,true);
+  drawText(g,IMAGE_FOOTER_LINE2,450,y+34,19,c.muted,"500",810,1.3,true);
   return new Promise((resolve,reject)=>{
     temp.toBlob(blob=>blob?resolve(blob):reject(new Error("PNGの生成に失敗しました")),"image/png");
   });
