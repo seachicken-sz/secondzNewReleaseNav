@@ -1,6 +1,7 @@
 import {buildPurchase,buildMethod,buildSupport,isBeforeDeadline} from "./result.js?v=20261111-all-budget-addon";
 import {createPurchaseFlow} from "./planner.js?v=20261112-extra-support-v18";
 import {supportCopy,selectedMusic,supportImageSections} from "./supportContent.js?v=20261112-v1";
+import {IMAGE_FOOTER_LINE1,IMAGE_FOOTER_LINE2} from "./imageFooter.js?v=20261112-v1";
 const DRAFT_KEY="secondzReleaseNav:draft:v1";
 const RESULT_KEY="secondzReleaseNav:result:v1";
 const $=s=>document.querySelector(s);
@@ -184,10 +185,9 @@ if(data.secondaries?.length){
 const secondTitle=is1800?"第二候補":"もう1枚はここから選ぼう！";
 html+=card(secondTitle,data.secondaries.map(alt=>{
 const price=alt.price??(alt.total-data.items[0].price);
+const feature=editionDetails[alt.id]?.intro||alt.description||"";
 const detail=is1800?editionContents(alt.id)+'<div class="detail">'+money(price)+'</div>':editionContents(alt.id)+'<div class="detail">合計 '+money(alt.total)+'</div>';
-return '<div class="option-card">'+
-(is1800?'':'<span class="product-name">'+escapeHtml(cdTitle)+'</span>')+
-'<strong class="edition-name">'+escapeHtml(alt.label)+'</strong>'+detail+'</div>';
+return '<details class="result-secondary-option"><summary><span class="result-secondary-label"><strong class="edition-name">'+escapeHtml(alt.label)+'</strong>'+(feature?'<span class="result-secondary-feature">'+escapeHtml(feature)+'</span>':"")+'</span></summary><div class="result-secondary-body">'+detail+'</div></details>';
 }).join(""));
 }
 if(data.notes?.length)html+='<div class="note">'+data.notes.map(x=>'<p>'+escapeHtml(x)+'</p>').join("")+'</div>';
@@ -368,10 +368,15 @@ function resultContent(result,print=false){
 const a=result.answers;
 const data={purchase:buildPurchase(a,config,messages),method:buildMethod(a,config),support:buildSupport(a,messages)};
 const oldAnswers=answers;answers=a;
-const html='<div class="result-meta"><p class="pill">MY NEW RELEASE SUPPORT PLAN</p><h1>あなたの新曲応援プラン</h1><p class="release-title">'+escapeHtml(config.release?.cdTitle||"ザユウノメイ／本当のことを言うと")+'</p></div>'+resultSummary(a)+
-(a.budget==="zero"?"":section("01","これを買うのがおすすめ！",purchaseMarkup(data.purchase)))+
-(a.budget==="zero"?"":section("02","こんな買い方がおすすめ！",methodMarkup(data.method,print)))+
-section(a.budget==="zero"?"01":"03",messages.headings.support,supportMarkup(data.support,a)+addOnMarkup(data.purchase))+
+const hasCdBudget=!isSmallBudget(a.budget);
+const nav=hasCdBudget&&!print?'<nav class="result-section-nav" aria-label="結果ページ内の移動"><a href="#result-recommend">おすすめプラン</a><a href="#result-method">購入方法</a><a href="#result-support">応援方法</a></nav>':"";
+const resultSection=(id,index,title,body)=>'<section class="section result-scroll-target" id="'+id+'"><h2 class="section-title"><span class="number">'+index+'</span>'+escapeHtml(title)+'</h2>'+body+'</section>';
+const purchaseActions=hasCdBudget&&!print?'<div class="result-block-actions"><button type="button" class="btn" data-action="plan-recommended">おすすめを元にCD購入プランを作る</button><button type="button" class="btn secondary" data-action="compare-from-result">特典を比較する</button></div>':"";
+const methodActions=hasCdBudget&&!print?'<div class="result-block-actions"><button type="button" class="btn secondary" data-action="plan-from-result">CD購入プランを作る</button></div>':"";
+const html='<div class="result-meta"><p class="pill">MY NEW RELEASE SUPPORT PLAN</p><h1>あなたの新曲応援プラン</h1><p class="release-title">'+escapeHtml(config.release?.cdTitle||"ザユウノメイ／本当のことを言うと")+'</p></div>'+resultSummary(a)+nav+
+(a.budget==="zero"?"":resultSection("result-recommend","01","これを買うのがおすすめ！",purchaseMarkup(data.purchase)+purchaseActions))+
+(a.budget==="zero"?"":resultSection("result-method","02","こんな買い方がおすすめ！",methodMarkup(data.method,print)+methodActions))+
+resultSection("result-support",a.budget==="zero"?"01":"03",messages.headings.support,supportMarkup(data.support,a)+addOnMarkup(data.purchase))+
 '<hr class="divider"><p class="small" style="text-align:center">タムごと新曲応援ナビ<br>タムごと新曲応援ナビは非公式のファンツールです。<br>集計・購入・特典に関する情報は必ず公式・販売店の最新情報をご確認ください。</p>';
 answers=oldAnswers;return html;
 }
@@ -390,11 +395,11 @@ const compactItems=compactSupport.map(group=>
   '<div class="compact-support-group"><h3>'+escapeHtml(group.number+" "+group.title)+'</h3>'+
   group.rows.map(row=>'<div class="compact-support-item"><strong>'+escapeHtml(row.title)+'</strong>'+
     (row.description?'<p>'+markedSupport(row.description)+'</p>':"")+'</div>').join("")+'</div>').join("");
-return '<div class="compact-share-summary"><div class="compact-share-stars">✧　♡　✧</div><p class="compact-share-eyebrow">MY NEW RELEASE SUPPORT PLAN</p><h1>わたしの新曲応援プラン</h1><p class="compact-share-release">'+escapeHtml(cdTitle)+'</p>'+
+return '<div class="compact-share-summary"><div class="compact-share-stars">✧　♡　✧</div><p class="compact-share-eyebrow">MY NEW RELEASE SUPPORT PLAN</p><h1>'+(budgetImageOptions.name.trim()?escapeHtml(budgetImageOptions.name.trim())+'さんの新曲応援プラン':'あなたの新曲応援プラン')+'</h1><p class="compact-share-release">'+escapeHtml(cdTitle)+'</p>'+
 '<div class="compact-share-budget"><small>MY BUDGET</small><strong>'+escapeHtml(budget)+'</strong></div>'+
 '<section class="compact-share-recommend"><h2>♡ おすすめの購入プラン</h2><div class="compact-plan-tags">'+first+'</div>'+secondary+'</section>'+
 '<section class="compact-share-support"><h2>✧ この応援がおすすめ！</h2>'+compactItems+'</section>'+
-'<p class="compact-share-footer">タムごと新曲応援ナビ<br><small>非公式ファンツール｜詳細・購入条件は公式情報をご確認ください</small></p></div>';
+'<p class="compact-share-footer">'+escapeHtml(IMAGE_FOOTER_LINE1)+'<br><small>'+escapeHtml(IMAGE_FOOTER_LINE2)+'</small></p></div>';
 }
 
 const EXTRA_SUPPORT_KEY="secondzReleaseNav:extraSupport:v1";
@@ -441,7 +446,7 @@ function showExtraSupportResult(){
 
 
 const EXTRA_IMAGE_SETTINGS_KEY="secondzReleaseNav:extraSupportImage:v1";
-const EXTRA_PNG_VERSION=5;
+const EXTRA_PNG_VERSION=6;
 const EXTRA_SHARE_TEXT="タムごと新曲応援ナビで応援プランを作ったよ！\nhttps://seachicken-sz.github.io/secondzNewReleaseNav/";
 let extraImageOptions={name:"",theme:"purplePink"};
 let extraPreviewBlob=null,extraPreviewUrl=null,extraPreviewSignature="",extraPreviewOpen=false;
@@ -535,7 +540,7 @@ async function refreshExtraPreview(){
    let blob=extraPreviewSignature===signature?extraPreviewBlob:null;
    if(!blob)blob=await extraImageCachedGet(signature);
    if(!blob){
-     const {renderExtraSupportPng}=await import("./extraSupportCanvas.js?v=20261112-v5");
+     const {renderExtraSupportPng}=await import("./extraSupportCanvas.js?v=20261112-v6");
      blob=await renderExtraSupportPng({name:extraImageOptions.name,subs:extraSubs,theme:extraImageOptions.theme,digitalTitle:supportTitle(),releaseTitle:config.release?.cdTitle});
      // Persist the rendered PNG itself; never fail sharing if storage is unavailable.
      extraImageCachedPut(signature,blob).catch(()=>{});
@@ -569,36 +574,106 @@ async function shareExtraImage(button){
  finally{button.disabled=false;button.textContent=original}
 }
 
+
+const BUDGET_IMAGE_KEY="secondzReleaseNav:budgetImage:v1";
+let budgetImageOptions={name:"",theme:"purplePink"},budgetPreviewModal=null,budgetPreviewBlob=null,budgetPreviewUrl=null,budgetPreviewVersion=0;
+function loadBudgetImageOptions(){
+ const saved=load(BUDGET_IMAGE_KEY);
+ const plannerPlan=load("secondzReleaseNav:purchasePlan:v2");
+ const name=saved?.releaseId===config.releaseId&&typeof saved.name==="string"?saved.name:
+   plannerPlan?.releaseId===config.releaseId?String(plannerPlan.name||""):"";
+ budgetImageOptions={name:Array.from(name).slice(0,30).join(""),theme:["purplePink","movieMint"].includes(saved?.theme)?saved.theme:"purplePink"};
+}
+function saveBudgetImageOptions(){save(BUDGET_IMAGE_KEY,{...budgetImageOptions,releaseId:config.releaseId})}
 function showResult(){
-view="result";
-const result=lastResult||load(RESULT_KEY);if(!result||result.releaseId!==config.releaseId){home();return}
-lastResult=result;
-frame('<div id="result-view" class="card">'+resultContent(result)+'</div><section class="card footer-actions"><div class="actions"><button class="btn" data-action="export">画像で保存</button><button class="btn secondary" data-action="plan-from-result">CD購入プランを作る</button><button class="btn secondary" data-action="home">トップへ戻る</button><button class="btn ghost" data-action="restart">もう一度診断する</button></div><p class="small">診断結果はこの端末に保存済み。再診断が完了すると上書きされます。</p></section>');
+ view="result";
+ const result=lastResult||load(RESULT_KEY);if(!result||result.releaseId!==config.releaseId){home();return}
+ lastResult=result;
+ loadBudgetImageOptions();
+ frame('<div id="result-view" class="card">'+resultContent(result)+'</div><section class="card footer-actions">'+
+ '<div class="pf-name result-image-name"><label for="result-image-name">シェアするときの名前（任意）</label><input id="result-image-name" type="text" maxlength="30" value="'+escapeHtml(budgetImageOptions.name)+'"><p class="pf-note">名前はこの端末に保存されます。</p></div>'+
+ '<div class="actions"><button class="btn" data-action="export">画像を生成</button><button class="btn secondary" data-action="plan-from-result">CD購入プランを作る</button><button class="btn secondary" data-action="home">トップへ戻る</button><button class="btn ghost" data-action="restart">もう一度診断する</button></div><p class="small">診断結果はこの端末に保存済み。再診断が完了すると上書きされます。</p></section>');
 }
-async function exportImage(button){
-const result=lastResult||load(RESULT_KEY);if(!result)return;
-button.disabled=true;button.textContent="画像を作成中…";
-const node=document.createElement("div");
-node.className="image-canvas";
-node.id="result-image-export";
-node.innerHTML=compactResultContent(result);
-node.querySelectorAll(".edition-set-item").forEach(el=>el.open=true);
-document.body.appendChild(node);
-try{
-await document.fonts?.ready;
-const {toBlob}=await import("https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/+esm");
-const blob=await toBlob(node,{backgroundColor:"#ffffff",pixelRatio:1,cacheBust:true,style:{position:"static",left:"auto",top:"auto"}});
-if(!blob)throw Error("PNGの作成に失敗しました");
-const filename="新曲応援プラン_簡易版_"+new Date().toLocaleDateString("sv-SE",{timeZone:"Asia/Tokyo"}).replaceAll("-","")+".png";
-const file=new File([blob],filename,{type:"image/png"});
-if(navigator.canShare?.({files:[file]})&&navigator.share){
-try{await navigator.share({files:[file],title:"新曲応援プラン"});return}catch(e){if(e.name==="AbortError")return}
+function closeBudgetPreview(){
+ budgetPreviewVersion++;
+ if(budgetPreviewUrl){URL.revokeObjectURL(budgetPreviewUrl);budgetPreviewUrl=null}
+ budgetPreviewBlob=null;
+ if(budgetPreviewModal){budgetPreviewModal.remove();budgetPreviewModal=null}
+ document.body.classList.remove("pf-modal-open");
 }
-const url=URL.createObjectURL(blob);
-const a=document.createElement("a");a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
-}catch(err){console.error(err);alert("画像の保存ができませんでした。通信環境を確認して再度お試しください。");}finally{node.remove();button.disabled=false;button.textContent="画像で保存"}
+async function makeBudgetImage(){
+ const result=lastResult||load(RESULT_KEY);
+ if(!result)throw Error("診断結果を読み込めません");
+ const node=document.createElement("div");
+ node.className="image-canvas";
+ node.id="result-image-export";
+ node.dataset.theme=budgetImageOptions.theme;
+ node.innerHTML=compactResultContent(result);
+ document.body.appendChild(node);
+ try{
+  await document.fonts?.ready;
+  const {toBlob}=await import("https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/+esm");
+  const blob=await toBlob(node,{backgroundColor:"#ffffff",pixelRatio:1,cacheBust:true,style:{position:"static",left:"auto",top:"auto"}});
+  if(!blob)throw Error("PNGを生成できませんでした");
+  return blob;
+ }finally{node.remove()}
 }
+async function refreshBudgetPreview(){
+ const modal=budgetPreviewModal;if(!modal)return;
+ const version=++budgetPreviewVersion;
+ const frame=modal.querySelector("[data-budget-preview]"),btn=modal.querySelector("[data-action='budget-image-share']");
+ if(!frame||!btn)return;
+ btn.disabled=true;frame.textContent="画像プレビューを生成中…";
+ try{
+  const blob=await makeBudgetImage();
+  if(modal!==budgetPreviewModal||version!==budgetPreviewVersion)return;
+  if(budgetPreviewUrl)URL.revokeObjectURL(budgetPreviewUrl);
+  budgetPreviewBlob=blob;budgetPreviewUrl=URL.createObjectURL(blob);
+  frame.innerHTML='<img class="pf-generated-preview" alt="新曲応援プランの画像プレビュー">';
+  frame.querySelector("img").src=budgetPreviewUrl;
+  btn.disabled=false;
+ }catch(err){console.error(err);if(modal===budgetPreviewModal&&version===budgetPreviewVersion)frame.textContent="画像を生成できませんでした。もう一度お試しください。"}
+}
+function openBudgetPreview(){
+ if(view!=="result")return;
+ closeBudgetPreview();
+ const modal=document.createElement("div");
+ modal.id="result-image-modal";modal.className="pf-modal-overlay";
+ modal.innerHTML='<section class="pf-modal" role="dialog" aria-modal="true" aria-labelledby="result-image-title">'+
+ '<div class="pf-modal-head"><h2 id="result-image-title">応援プランの画像プレビュー</h2><button type="button" class="pf-modal-close" data-action="budget-image-close" aria-label="閉じる">×</button></div>'+
+ '<div class="pf-modal-body"><div class="pf-preview-frame" data-budget-preview>画像プレビューを生成中…</div>'+
+ '<fieldset class="pf-modal-options"><legend>画像のオプション</legend><p>カラー</p><div class="pf-theme-options">'+
+ '<label><input type="radio" name="budget-image-theme" value="purplePink"'+(budgetImageOptions.theme==="purplePink"?" checked":"")+'>カラー①</label>'+
+ '<label><input type="radio" name="budget-image-theme" value="movieMint"'+(budgetImageOptions.theme==="movieMint"?" checked":"")+'>カラー②</label></div></fieldset>'+
+ '<div class="pf-modal-buttons"><button type="button" class="btn" data-action="budget-image-share" disabled>画像を保存・共有する</button></div></div></section>';
+ document.body.appendChild(modal);budgetPreviewModal=modal;
+ document.body.classList.add("pf-modal-open");
+ modal.addEventListener("click",e=>{if(e.target===modal)closeBudgetPreview()});
+ modal.querySelector(".pf-modal-close")?.focus();
+ refreshBudgetPreview();
+}
+async function shareBudgetImage(button){
+ if(!budgetPreviewBlob)return;
+ const blob=budgetPreviewBlob,filename="タムごと_新曲応援プラン.png";
+ const file=new File([blob],filename,{type:"image/png"});
+ button.disabled=true;const label=button.textContent;button.textContent="準備中…";
+ try{
+  if(navigator.canShare?.({files:[file]})&&navigator.share){
+   try{await navigator.share({files:[file],title:"新曲応援プラン",text:EXTRA_SHARE_TEXT});return}
+   catch(e){if(e.name==="AbortError")return;console.warn(e)}
+  }
+  const url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),30000);
+  try{await navigator.clipboard.writeText(EXTRA_SHARE_TEXT);alert("画像を保存しました。共有用テキストをコピーしたよ！")}
+  catch{alert("画像を保存しました。")}
+ }catch(err){console.error(err);alert("画像の保存・共有に失敗しました。もう一度お試しください。")}
+ finally{button.disabled=false;button.textContent=label}
+}
+
 document.addEventListener("click",event=>{
+const jump=event.target.closest(".result-section-nav a");
+if(jump&&view==="result"){event.preventDefault();document.getElementById(jump.getAttribute("href").slice(1))?.scrollIntoView({behavior:"smooth",block:"start"});return}
 const toggle=event.target.closest("[data-store-toggle]");
 if(toggle){
 const active=toggle.getAttribute("aria-expanded")==="true";
@@ -635,15 +710,22 @@ case "plan-create":planner.openFromHome();break;
 case "plan-compare":planner.openCompare();break;
 case "plan-resume":planner.resume();break;
 case "plan-from-result":planner.openFromResult(lastResult||load(RESULT_KEY));break;
+case "plan-recommended":planner.openRecommendedFromResult(lastResult||load(RESULT_KEY));break;
+case "compare-from-result":planner.openCompareFromResult();break;
+case "budget-image-close":closeBudgetPreview();break;
+case "budget-image-share":shareBudgetImage(button);break;
 case "resume":start(true);break;
 case "next":next();break;
 case "back":back();break;
 case "saved":lastResult=load(RESULT_KEY);showResult();break;
 case "home":home();break;
-case "export":exportImage(button);break;
+case "export":openBudgetPreview();break;
 }
 });
 document.addEventListener("input",event=>{
+if(event.target.id==="result-image-name"){
+ budgetImageOptions.name=Array.from(event.target.value).slice(0,30).join("");saveBudgetImageOptions();return;
+}
 if(event.target.id==="pf-extra-image-name"){
   extraImageOptions.name=Array.from(event.target.value).slice(0,10).join("");
   if(event.target.value!==extraImageOptions.name)event.target.value=extraImageOptions.name;
@@ -659,6 +741,9 @@ $("#next").disabled=false;
 }
 });
 document.addEventListener("change",event=>{
+ if(event.target.name==="budget-image-theme"){
+ budgetImageOptions.theme=event.target.value==="movieMint"?"movieMint":"purplePink";saveBudgetImageOptions();refreshBudgetPreview();return;
+ }
  if(event.target.name==="pf-extra-theme"){
    extraImageOptions.theme=event.target.value==="movieMint"?"movieMint":"purplePink";
    persistExtraImageOptions();refreshExtraPreview();
