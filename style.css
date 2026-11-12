@@ -892,3 +892,28 @@ body:has(.pf-bottom-nav) .shell{padding-bottom:calc(145px + env(safe-area-inset-
   .pf-total .pf-total-actions{gap:6px}
   .pf-total .pf-total-action{padding:6px 8px;font-size:11px}
 }
+
+
+/* Optional subscription-only diagnosis between purchase plan and TSZ. */
+.pf-root .pf-extra-support-card{
+ margin:34px 0 28px;padding:20px;
+ border:1.5px solid #d5b7e8;border-radius:19px;
+ background:linear-gradient(140deg,#f9f3ff,#fff8fc);
+ box-shadow:0 4px 14px rgba(99,59,131,.08);
+}
+.pf-root .pf-extra-support-card h2{
+ margin:0 0 12px!important;color:#8951ba!important;
+ font-size:20px;font-weight:850;line-height:1.5;
+}
+.pf-root .pf-extra-support-card p{margin:10px 0;line-height:1.75}
+.pf-root .pf-extra-support-card .pf-extra-support-cta{display:block;width:100%;margin:19px 0 0}
+.pf-extra-screen{max-width:720px;margin-left:auto;margin-right:auto}
+.pf-extra-screen .pf-extra-selected{
+ margin:14px 0 24px;padding:12px 14px;border-radius:12px;
+ background:#f7f1fb;color:#694683;font-size:14px;
+}
+.pf-extra-screen .section{margin:26px 0}
+@media(max-width:600px){
+ .pf-root .pf-extra-support-card{padding:17px 15px;margin:30px 0 25px}
+ .pf-root .pf-extra-support-card h2{font-size:18px}
+}
