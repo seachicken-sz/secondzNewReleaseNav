@@ -450,7 +450,7 @@ function showExtraSupportResult(){
 
 
 const EXTRA_IMAGE_SETTINGS_KEY="secondzReleaseNav:extraSupportImage:v1";
-const EXTRA_PNG_VERSION=2;
+const EXTRA_PNG_VERSION=3;
 const EXTRA_SHARE_TEXT="タムごと新曲応援ナビで応援プランを作ったよ！\nhttps://seachicken-sz.github.io/secondzNewReleaseNav/";
 let extraImageOptions={name:"",theme:"purplePink"};
 let extraPreviewBlob=null,extraPreviewUrl=null,extraPreviewSignature="",extraPreviewOpen=false;
@@ -544,8 +544,16 @@ async function refreshExtraPreview(){
    let blob=extraPreviewSignature===signature?extraPreviewBlob:null;
    if(!blob)blob=await extraImageCachedGet(signature);
    if(!blob){
-     const {renderExtraSupportPng}=await import("./extraSupportCanvas.js?v=20261112-v2");
-     blob=await renderExtraSupportPng({name:extraImageOptions.name,subs:extraSubs,theme:extraImageOptions.theme,digitalTitle:config.release?.digitalTitle,releaseTitle:config.release?.cdTitle});
+     const {renderExtraSupportPng}=await import("./extraSupportCanvas.js?v=20261112-v3");
+     blob=await renderExtraSupportPng({
+       name:extraImageOptions.name,subs:extraSubs,theme:extraImageOptions.theme,
+       digitalTitle:config.release?.digitalTitle,releaseTitle:config.release?.cdTitle,
+       digitalDescription:messages.purchase.extraParts.digitalAdd1400Budget.split("\\n").slice(1).join("\\n"),
+       listenIntro:messages.support.listenIntro,freeSpotify:messages.support.freeSpotify,
+       stationheadMember:messages.support.stationhead.replace("プレイリストを自分で作らず、secondzチャンネルで一緒に再生しよう。詳しい設定方法もチェックしてね！","プレイリストを自分で作る必要はなし！").replace("Stationhead（ステヘ）に参加できるよ！","Stationhead（ステヘ）に参加できるよ！"),
+       stationheadUpsell:"＋1,080円でSpotify Premiumに加入してみない？\n1ヶ月だけでも加入してステへに参加すると、Billboardポイントに大きく貢献できるよ！\n面倒なプレイリスト作成の必要はなし！",
+       unext:messages.support.unext,youtube:messages.support.youtube,sns:messages.support.sns,request:messages.support.request
+     });
      // Persist the rendered PNG itself; never fail sharing if storage is unavailable.
      extraImageCachedPut(signature,blob).catch(()=>{});
    }
