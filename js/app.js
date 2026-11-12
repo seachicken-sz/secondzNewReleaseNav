@@ -1,5 +1,5 @@
 import {buildPurchase,buildMethod,buildSupport,isBeforeDeadline} from "./result.js?v=20261111-all-budget-addon";
-import {createPurchaseFlow} from "./planner.js?v=20261111-total-actions-v17";
+import {createPurchaseFlow} from "./planner.js?v=20261112-extra-support-v18";
 const DRAFT_KEY="secondzReleaseNav:draft:v1";
 const RESULT_KEY="secondzReleaseNav:result:v1";
 const $=s=>document.querySelector(s);
@@ -363,6 +363,88 @@ return '<div class="compact-share-summary"><div class="compact-share-stars">✧�
 '<section class="compact-share-support"><h2>✧ この応援がおすすめ！</h2><ul>'+actions.map(x=>'<li><span>'+x[0]+'</span>'+escapeHtml(x[1])+'</li>').join("")+'</ul></section>'+
 '<p class="compact-share-footer">タムごと新曲応援ナビ<br><small>非公式ファンツール｜詳細・購入条件は公式情報をご確認ください</small></p></div>';
 }
+
+const EXTRA_SUPPORT_KEY="secondzReleaseNav:extraSupport:v1";
+let extraSubs=[];
+function openExtraSupport(){
+  const saved=load(EXTRA_SUPPORT_KEY);
+  const prior=load(RESULT_KEY);
+  const initial=saved?.releaseId===config.releaseId?saved.subs:prior?.releaseId===config.releaseId?prior.answers?.subs:[];
+  const known=new Set(config.subscriptions.map(x=>x.id));
+  extraSubs=Array.isArray(initial)?initial.filter(id=>known.has(id)):[];
+  showExtraSupportQuestion();
+}
+function showExtraSupportQuestion(){
+  view="extra-support-question";
+  const choices=config.subscriptions.map(s=>choice("extra-subs",s.id,s.label,extraSubs.includes(s.id),true)).join("");
+  frame('<section class="card pf-extra-screen"><h1>加入しているサブスクを選択してください。</h1>'+
+    '<p class="muted">加入しているものをすべて選択して「結果を見る」を押してください。加入しているものがないときは、そのまま「結果を見る」を押してください。</p>'+
+    '<div class="choices">'+choices+'</div><div class="actions"><button type="button" class="btn" data-action="extra-support-result">結果を見る</button>'+
+    '<button type="button" class="btn ghost" data-action="extra-support-back">購入プランに戻る</button></div></section>');
+}
+function extraSupportMarkup(){
+  const selected=new Set(extraSubs);
+  const digitalBody=p(messages.purchase.extraParts.digitalAdd1400Budget.split("\n").slice(1).join("\n"))+
+    p(messages.method.digitalMethod)+
+    '<div class="site-links">'+linkFor("予約・購入ページ",config.links.digital)+'</div>';
+  const digital=section("01","デジタル配信で応援！",
+    card(messages.method.digitalHeading,digitalBody));
+  const musicServices=[
+    ["spotify","Spotify Premium"],["prime","Amazon Music Prime"],["unlimited","Amazon Music Unlimited"],
+    ["line","LINE MUSIC"],["youtubeMusic","YouTube Music Premium"],["apple","Apple Music"]
+  ].filter(([id])=>selected.has(id)&&!(id==="prime"&&selected.has("unlimited")));
+  const hasMusic=musicServices.length>0;
+  let musicBody='<p class="stream-intro">11/25〜先行配信される <strong>「'+escapeHtml(config.release?.digitalTitle||"本当のことを言うと")+'」</strong> をたくさん聴こう！</p>';
+  if(hasMusic){
+    if(selected.has("prime")&&!selected.has("unlimited")){
+      musicBody+='<p>Amazon Prime会員なら、Amazon Music Primeで利用できる範囲の楽曲を聴けるよ！</p>';
+    }
+    musicBody+='<div class="app-link-grid">'+musicServices.map(([id,name])=>linkFor(name+"を開く",config.links.musicApps[id])).join("")+'</div>';
+  }else{
+    musicBody+=p(messages.support.freeSpotify)+'<div class="app-link-grid">'+linkFor("Spotifyを開く",config.links.musicApps.spotify)+'</div>';
+  }
+  let subscriptionBody=card("新曲をサブスクで応援！",musicBody,"support-music");
+  if(selected.has("spotify")||selected.has("apple")){
+    subscriptionBody+=card("ステヘにチャレンジしてみない？",
+      p(messages.support.stationhead)+
+      '<p class="detail">対象：Apple Music有料会員またはSpotify Premium会員・18歳以上</p>'+
+      '<div class="site-links">'+linkFor("設定方法を見る",config.links.stationheadGuide)+'</div>'+
+      '<div class="stationhead-device-links"><a href="'+escapeHtml(config.links.stationheadIOS)+'" target="_blank" rel="noopener noreferrer">iPhone</a>'+
+      '<a href="'+escapeHtml(config.links.stationheadAndroid)+'" target="_blank" rel="noopener noreferrer">Android</a></div>'+
+      '<p class="subhead">登録ができたら以下のリンクをタップ！</p>'+
+      '<div class="site-links">'+linkFor("secondzチャンネル",config.links.stationhead)+'</div>');
+  }else{
+    subscriptionBody+=card("ステヘにチャレンジしてみない？",
+      p(messages.purchase.extraParts.spotifyPremium)+
+      '<div class="site-links">'+linkFor("Spotify Premiumはこちら！",config.links.spotifyPremium)+'</div>');
+  }
+  if(selected.has("unext")){
+    subscriptionBody+=card("U-NEXT会員の方へ！",p(messages.support.unext)+
+      '<div class="site-links">'+linkFor("詳しくはこちら",config.links.unextCampaign)+'</div>');
+  }
+  const subscription=section("02","サブスクで応援！",subscriptionBody);
+  const freeBody=card("みんなでできる応援",
+    '<ul><li>'+escapeHtml(messages.support.youtube)+'</li></ul><div class="app-link-grid">'+linkFor("YouTube公式チャンネル","https://youtube.com/@timelesz_official?si=Mn0Jxa2dxpRjfqyB")+'</div>'+
+    '<ul><li>'+escapeHtml(messages.support.sns)+'</li></ul><div class="app-link-grid">'+
+    linkFor("X公式アカウント","https://x.com/ovtt_official?s=21&t=BbGDP467n_oSf2L69POfqA")+
+    linkFor("Instagram公式アカウント","https://www.instagram.com/timelesz_official")+
+    linkFor("TikTok公式アカウント","https://www.tiktok.com/@timelesz_overthetop")+'</div>'+
+    listText([messages.support.request])+
+    '<div class="app-link-grid">'+linkFor("タムごとDailyで応援する",config.links.daily)+'</div>');
+  return digital+subscription+section("03","無料でできる応援！",freeBody);
+}
+function showExtraSupportResult(){
+  save(EXTRA_SUPPORT_KEY,{releaseId:config.releaseId,subs:[...extraSubs]});
+  view="extra-support-result";
+  const summary=extraSubs.map(id=>config.subscriptions.find(s=>s.id===id)?.label).filter(Boolean).join("・")||"なし";
+  frame('<div class="card pf-extra-screen"><div class="result-meta"><p class="pill">MY NEW RELEASE SUPPORT PLAN</p>'+
+    '<h1>あなたの追加応援プラン</h1><p class="release-title">'+escapeHtml(config.release?.cdTitle||"ザユウノメイ／本当のことを言うと")+'</p></div>'+
+    '<p class="pf-extra-selected">加入中のサブスク：'+escapeHtml(summary)+'</p>'+extraSupportMarkup()+
+    '<p class="small" style="text-align:center">※集計・配信・サービスに関する条件は必ず各公式サイトの最新情報をご確認ください。</p></div>'+
+    '<section class="card footer-actions"><div class="actions"><button type="button" class="btn secondary" data-action="extra-support-edit">サブスクを選び直す</button>'+
+    '<button type="button" class="btn" data-action="extra-support-back">CD購入プランに戻る</button></div></section>');
+}
+
 function showResult(){
 view="result";
 const result=lastResult||load(RESULT_KEY);if(!result||result.releaseId!==config.releaseId){home();return}
@@ -406,9 +488,21 @@ if(panel)panel.innerHTML=active?"":toggle.dataset.storeToggle==="yes"?storeMarku
 return;
 }
 const choiceEl=event.target.closest("[data-choice]");
-if(choiceEl){setAnswer(choiceEl.dataset.choice,choiceEl.dataset.value);return}
+if(choiceEl){
+  if(choiceEl.dataset.choice==="extra-subs"&&view==="extra-support-question"){
+    const id=choiceEl.dataset.value;
+    extraSubs=extraSubs.includes(id)?extraSubs.filter(x=>x!==id):[...extraSubs,id];
+    choiceEl.classList.toggle("active",extraSubs.includes(id));
+    choiceEl.setAttribute("aria-pressed",String(extraSubs.includes(id)));
+    return;
+  }
+  setAnswer(choiceEl.dataset.choice,choiceEl.dataset.value);return;
+}
 const button=event.target.closest("[data-action]");if(!button)return;
 switch(button.dataset.action){
+case "extra-support-result":showExtraSupportResult();break;
+case "extra-support-edit":showExtraSupportQuestion();break;
+case "extra-support-back":planner.showPlan();break;
 case "start":case "restart":start();break;
 case "plan-create":planner.openFromHome();break;
 case "plan-compare":planner.openCompare();break;
@@ -437,7 +531,7 @@ try{
 const responses=await Promise.all([fetch("./data/config.json",{cache:"no-store"}),fetch("./data/messages.json",{cache:"no-store"})]);
 if(responses.some(r=>!r.ok))throw Error("データの取得に失敗しました");
 [config,messages]=await Promise.all(responses.map(r=>r.json()));
-planner=createPurchaseFlow({config,render:html=>frame(html),goHome:home,goResult:showResult});
+planner=createPurchaseFlow({config,render:html=>frame(html),goHome:home,goResult:showResult,onExtraSupport:openExtraSupport});
 home();
 }catch(err){console.error(err);frame('<section class="card"><h1>読み込みに失敗しました</h1><p class="loading-error">通信状況を確認してページを再読み込みしてください。</p><button class="btn" onclick="location.reload()">再読み込み</button></section>')}
 }
