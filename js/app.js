@@ -441,8 +441,8 @@ function showExtraSupportResult(){
   frame('<div class="card pf-extra-screen"><div class="result-meta"><p class="pill">MY NEW RELEASE SUPPORT PLAN</p>'+
     '<h1>あなたの追加応援プラン</h1><p class="release-title">'+escapeHtml(config.release?.cdTitle||"ザユウノメイ／本当のことを言うと")+'</p></div>'+
     '<p class="pf-extra-selected">加入中のサブスク：'+escapeHtml(summary)+'</p>'+extraSupportMarkup()+
-    '<p class="small" style="text-align:center">※集計・配信・サービスに関する条件は必ず各公式サイトの最新情報をご確認ください。</p></div>'+
-    '<div class="pf-name pf-extra-name"><label for="pf-extra-image-name">シェアするときの名前（任意）</label><input id="pf-extra-image-name" type="text" maxlength="10" value="'+escapeHtml(extraImageOptions.name)+'"><p class="pf-note">名前はこの端末に保存されます。</p></div>'+ 
+    '<p class="small" style="text-align:center">※集計・配信・サービスに関する条件は必ず各公式サイトの最新情報をご確認ください。</p>'+
+    '<div class="pf-name pf-extra-name"><label for="pf-extra-image-name">シェアするときの名前（任意）</label><input id="pf-extra-image-name" type="text" maxlength="10" value="'+escapeHtml(extraImageOptions.name)+'"><p class="pf-note">名前はこの端末に保存されます。</p></div></div>'+ 
     '<section class="card footer-actions"><div class="actions"><button type="button" class="btn secondary" data-action="extra-support-edit">サブスクを選び直す</button>'+
     '<button type="button" class="btn" data-action="extra-support-back">CD購入プランに戻る</button></div></section>'+ 
     '<nav class="pf-bottom-nav"><button type="button" class="btn" data-action="extra-image-open">画像を生成</button></nav>');
