@@ -86,7 +86,7 @@ title="どれを優先したい？";description="あなたが特に楽しみた�
 content=config.priorities.filter(item=>item.id!=="variety"||fcAvailable()).map(item=>choice(q,item.id,item.label,answers.priority===item.id)).join("");
 }
 const enabled=isAnswered(q);
-frame('<section class="card"><button class="pf-back" type="button" data-action="home">← トップに戻る</button><div class="progress" role="progressbar" aria-label="回答の進み具合" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+Math.round(progressPercent)+'"><span style="width:'+(fromPercent??progressPercent)+'%"></span></div><h1>'+escapeHtml(title)+'</h1>'+(description?'<p class="muted">'+escapeHtml(description)+'</p>':'')+'<div class="choices">'+content+'</div><div class="actions"><button class="btn" id="next" data-action="next" '+(!enabled?"disabled":"")+'>'+(step===total-1?"結果を見る":"次へ")+'</button><button class="btn ghost" data-action="back">'+(step===0?"トップに戻る":"ひとつ前に戻る")+'</button></div></section>');
+frame('<section class="card"><button class="pf-back" type="button" data-action="home">← 戻る</button><div class="progress" role="progressbar" aria-label="回答の進み具合" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+Math.round(progressPercent)+'"><span style="width:'+(fromPercent??progressPercent)+'%"></span></div><h1>'+escapeHtml(title)+'</h1>'+(description?'<p class="muted">'+escapeHtml(description)+'</p>':'')+'<div class="choices">'+content+'</div><div class="actions"><button class="btn" id="next" data-action="next" '+(!enabled?"disabled":"")+'>'+(step===total-1?"結果を見る":"次へ")+'</button><button class="btn ghost" data-action="back">'+(step===0?"トップに戻る":"ひとつ前に戻る")+'</button></div></section>');
 if(fromPercent!==null){
   const bar=document.querySelector(".progress > span");
   if(bar){
@@ -419,7 +419,7 @@ function openExtraSupport(){
 function showExtraSupportQuestion(){
   view="extra-support-question";
   const choices=config.subscriptions.map(s=>choice("extra-subs",s.id,s.label,extraSubs.includes(s.id),true)).join("");
-  frame('<section class="card pf-extra-screen"><button class="pf-back" type="button" data-action="home">← トップに戻る</button><h1>加入しているサブスクを選択してください。</h1>'+
+  frame('<section class="card pf-extra-screen"><button class="pf-back" type="button" data-action="home">← 戻る</button><h1>加入しているサブスクを選択してください。</h1>'+
     '<p class="muted">加入しているものをすべて選択して「結果を見る」を押してください。加入しているものがないときは、そのまま「結果を見る」を押してください。</p>'+
     '<div class="choices">'+choices+'</div><div class="actions"><button type="button" class="btn" data-action="extra-support-result">結果を見る</button>'+
     '<button type="button" class="btn ghost" data-action="extra-support-back">購入プランに戻る</button></div></section>');
@@ -439,7 +439,7 @@ function showExtraSupportResult(){
   save(EXTRA_SUPPORT_KEY,{releaseId:config.releaseId,subs:[...extraSubs]});
   view="extra-support-result";
   const summary=extraSubs.map(id=>config.subscriptions.find(s=>s.id===id)?.label).filter(Boolean).join("・")||"なし";
-  frame('<div class="card pf-extra-screen"><button class="pf-back" type="button" data-action="home">← トップに戻る</button><div class="result-meta"><p class="pill">MY NEW RELEASE SUPPORT PLAN</p>'+
+  frame('<div class="card pf-extra-screen"><button class="pf-back" type="button" data-action="home">← 戻る</button><div class="result-meta"><p class="pill">MY NEW RELEASE SUPPORT PLAN</p>'+
     '<h1>あなたの追加応援プラン</h1><p class="release-title">'+escapeHtml(config.release?.cdTitle||"ザユウノメイ／本当のことを言うと")+'</p></div>'+
     '<p class="pf-extra-selected">加入中のサブスク：'+escapeHtml(summary)+'</p>'+extraSupportMarkup()+
     '<p class="small" style="text-align:center">※集計・配信・サービスに関する条件は必ず各公式サイトの最新情報をご確認ください。</p>'+
@@ -595,7 +595,7 @@ function showResult(){
  const result=lastResult||load(RESULT_KEY);if(!result||result.releaseId!==config.releaseId){home();return}
  lastResult=result;
  loadBudgetImageOptions();
- frame('<div id="result-view" class="card"><button class="pf-back" type="button" data-action="home">← トップに戻る</button>'+resultContent(result)+'</div><section class="card footer-actions">'+
+ frame('<div id="result-view" class="card"><button class="pf-back" type="button" data-action="home">← 戻る</button>'+resultContent(result)+'</div><section class="card footer-actions">'+
  '<div class="pf-name result-image-name"><label for="result-image-name">シェアするときの名前（任意）</label><input id="result-image-name" type="text" maxlength="30" value="'+escapeHtml(budgetImageOptions.name)+'"><p class="pf-note">名前はこの端末に保存されます。</p></div>'+
  '<div class="actions"><button class="btn" data-action="export">画像を生成</button><button class="btn secondary" data-action="plan-from-result">CD購入プランを作る</button><button class="btn secondary" data-action="home">トップへ戻る</button><button class="btn ghost" data-action="restart">もう一度診断する</button></div><p class="small">診断結果はこの端末に保存済み。再診断が完了すると上書きされます。</p></section>');
 }
