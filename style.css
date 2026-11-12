@@ -917,3 +917,31 @@ body:has(.pf-bottom-nav) .shell{padding-bottom:calc(145px + env(safe-area-inset-
  .pf-root .pf-extra-support-card{padding:17px 15px;margin:30px 0 25px}
  .pf-root .pf-extra-support-card h2{font-size:18px}
 }
+
+
+/* Shareable additional-support PNG preview: controls are outside the exported image. */
+.pf-extra-preview-overlay{
+ position:fixed;inset:0;z-index:1200;
+ display:flex;align-items:center;justify-content:center;
+ background:rgba(38,22,50,.65);padding:14px;
+}
+.pf-extra-preview-dialog{
+ width:min(100%,590px);max-height:calc(100dvh - 28px);overflow-y:auto;
+ overscroll-behavior:contain;padding:18px;
+ background:#fff;border-radius:20px;box-shadow:0 18px 60px rgba(40,21,56,.28);
+}
+.pf-extra-preview-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:15px}
+.pf-extra-preview-head h2{font-size:18px;line-height:1.45;color:#68398c;margin:0}
+.pf-extra-preview-close{border:0;background:#f3e9f8;color:#77438b;font-size:25px;border-radius:50%;width:40px;height:40px;flex:0 0 40px}
+.pf-extra-preview-dialog>label{display:block;font-size:14px;font-weight:750;color:#68457b;margin-bottom:8px}
+#pf-extra-image-name{display:block;width:100%;min-height:46px;box-sizing:border-box;font-size:16px;padding:10px 12px;border:1px solid #d5b9e5;border-radius:11px;color:#35233f;background:#fff}
+.pf-extra-theme-picker{margin:16px 0;padding:13px;border:1px solid #e1d0ed;border-radius:13px;display:flex;flex-wrap:wrap;gap:12px;background:#fcf9fe}
+.pf-extra-theme-picker legend{font-size:13px;font-weight:750;color:#70468c;padding:0 6px}
+.pf-extra-theme-picker label{display:flex;align-items:center;gap:6px;line-height:1.5;font-size:13px;cursor:pointer}
+.pf-extra-theme-picker input{accent-color:#8951ba}
+.pf-extra-preview-frame{margin:12px auto;min-height:130px;max-height:48dvh;overflow:auto;background:#f7f1fa;border-radius:13px;padding:8px;box-sizing:border-box;text-align:center}
+.pf-extra-preview-image{display:block;width:100%;max-width:480px;height:auto;margin:auto;border-radius:9px}
+.pf-extra-preview-image[hidden]{display:none}
+.pf-extra-preview-status{font-size:13px;color:#79598a;margin:35px 0}
+.pf-extra-share{display:block;width:100%;min-height:48px}
+@media(max-width:420px){.pf-extra-preview-dialog{padding:14px}.pf-extra-theme-picker{gap:9px}.pf-extra-preview-frame{max-height:43dvh}}
